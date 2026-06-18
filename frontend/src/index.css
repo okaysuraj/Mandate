@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-white text-[#1A1A1A] antialiased selection:bg-[#1A1A1A] selection:text-white;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .mandate-card {
+    @apply bg-white border border-[#D9DADC] rounded-xl shadow-sm transition-all duration-300;
+  }
+  
+  .mandate-input {
+    @apply w-full bg-transparent border border-[#D9DADC] rounded-md px-4 py-3 text-[#1A1A1A] focus:outline-none focus:ring-1 focus:ring-[#1A1A1A] transition-colors placeholder:text-gray-400;
+  }
+  
+  .mandate-btn-primary {
+    @apply px-6 py-3 bg-[#1A1A1A] hover:bg-black text-white rounded-full font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .mandate-btn-secondary {
+    @apply px-6 py-3 bg-transparent border border-[#D9DADC] hover:border-[#1A1A1A] text-[#1A1A1A] rounded-full font-medium transition-all duration-300;
+  }
+  
+  .small-caps {
+    @apply text-xs font-semibold uppercase tracking-widest text-gray-500 font-['Space_Grotesk'];
+  }
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F9F9FB; 
+}
+::-webkit-scrollbar-thumb {
+  background: #D9DADC; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #A0A0A0; 
+}
