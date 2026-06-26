@@ -18,7 +18,7 @@ All endpoints require a valid `Bearer <JWT_TOKEN>` header unless otherwise speci
 - `POST /:id/invite` - Add a user to the workspace.
 
 ### Tasks (`/api/todos`)
-- `GET /` - Retrieve paginated tasks for the active workspace (Redis Cached).
+- `GET /` - Retrieve paginated tasks for the active workspace.
 - `POST /` - Create a new task.
 - `PUT /:id` - Update an existing task (e.g., mark completed).
 - `DELETE /:id` - Move a task to the trash.

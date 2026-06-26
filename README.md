@@ -8,12 +8,11 @@
 
 Mandate goes beyond simple to-do lists, providing a comprehensive, real-time workspace for modern teams:
 
-- 🧱 **Enterprise-Grade Architecture:** Built with MongoDB, Express, React, Node.js, and Redis.
+- 🧱 **Enterprise-Grade Architecture:** Built with MongoDB Atlas, Express, React, and Node.js.
 - ⚡ **Real-Time Collaboration:** Powered by WebSockets (Socket.io) to keep multiple team members in sync effortlessly.
 - 🗂️ **Workspaces & Projects:** Segregate context seamlessly with team workspaces and custom project groupings.
 - 📋 **Dynamic Views:** Switch instantly between Today, Upcoming, Calendar, and interactive Kanban boards.
 - 📅 **Integrated Calendar:** Manage events, meetings, and deadlines in a sleek monthly interface.
-- 🚀 **High Performance:** Utilizing Redis caching strategies for lightning-fast task retrieval and rate limiting.
 - 🧪 **Fully Tested:** Comprehensive automated backend API and frontend Playwright E2E test suites.
 - 🎨 **Premium UI/UX:** Responsive, dark-mode enabled interface built with Tailwind CSS, DaisyUI, and Framer Motion.
 
@@ -34,8 +33,7 @@ For detailed technical specifications, APIs, and deployment instructions, see ou
 
 ### Prerequisites
 - Node.js (v18+)
-- MongoDB Atlas (or local MongoDB)
-- Redis instance (Upstash or local)
+- MongoDB Atlas
 
 ### 1. Backend Setup
 ```bash
@@ -46,7 +44,6 @@ npm install
 # PORT=5001
 # MONGO_URI=your_mongo_connection_string
 # JWT_SECRET=your_secret_key
-# REDIS_URL=your_redis_connection_url
 
 npm run dev
 ```

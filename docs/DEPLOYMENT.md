@@ -6,7 +6,6 @@ This guide details how to deploy the Mandate platform in a robust production env
 - **Frontend:** Hosted on **Netlify** (Globally distributed CDN, excellent for Vite/React SPAs).
 - **Backend:** Hosted on **Render** (Fully managed PaaS, great for Express/WebSockets).
 - **Database:** Hosted on **MongoDB Atlas**.
-- **Cache:** Hosted on **Upstash Redis**.
 
 ---
 
@@ -17,10 +16,6 @@ This guide details how to deploy the Mandate platform in a robust production env
 2. Go to **Database Access** and create a user with read/write privileges.
 3. Go to **Network Access** and allow IP `0.0.0.0/0` (Allow from anywhere).
 4. Click **Connect -> Connect your application** and copy the `MONGO_URI` connection string.
-
-### Upstash Redis
-1. Create a free Redis database on [Upstash](https://upstash.com/).
-2. Copy the "Redis URL" connection string.
 
 ---
 
@@ -36,7 +31,6 @@ This guide details how to deploy the Mandate platform in a robust production env
    - **Start Command:** `npm start` (Make sure `start` is mapped to `node src/server.js` in `backend/package.json`)
 5. **Environment Variables:**
    - `MONGO_URI` = `<Your MongoDB String>`
-   - `REDIS_URL` = `<Your Upstash String>`
    - `JWT_SECRET` = `<Generate a secure random string>`
    - `PORT` = `10000`
 6. Click **Deploy**. Once finished, copy the provided `onrender.com` URL.

@@ -1,16 +1,4 @@
 import Todo from "../models/Todo.js";
-import redisClient from "../config/redisClient.js";
-
-const clearUserTodoCache = async (userId) => {
-  try {
-    const keys = await redisClient.keys(`todos:${userId}:*`);
-    if (keys.length > 0) {
-      await redisClient.del(keys);
-    }
-  } catch (error) {
-    console.error("Redis clear cache error:", error);
-  }
-};
 
 // @desc    Get all todos for a user (with pagination, filtering, and caching)
 // @route   GET /api/todos
@@ -19,15 +7,6 @@ export const getTodos = async (req, res) => {
   try {
     const { status, priority, isDeleted, project, page = 1, limit = 10 } = req.query;
     
-    // Create cache key based on query params
-    const cacheKey = `todos:${req.user.id}:${status || "all"}:${priority || "all"}:${isDeleted || "false"}:${project || "all"}:${page}:${limit}`;
-    
-    // Check cache
-    const cachedTodos = await redisClient.get(cacheKey);
-    if (cachedTodos) {
-      return res.status(200).json(JSON.parse(cachedTodos));
-    }
-
     // Build query
     const query = { user: req.user.id };
     if (status) query.status = status;
@@ -57,9 +36,6 @@ export const getTodos = async (req, res) => {
         pages: Math.ceil(total / limitNumber),
       },
     };
-
-    // Set cache (expire in 5 minutes)
-    await redisClient.setEx(cacheKey, 300, JSON.stringify(response));
 
     res.status(200).json(response);
   } catch (error) {
@@ -112,8 +88,6 @@ export const createTodo = async (req, res) => {
       user: req.user.id,
       workspaceId: req.user.activeWorkspace || req.user.id, // Fallback for now
     });
-
-    await clearUserTodoCache(req.user.id);
     
     // Broadcast to workspace
     if (req.io) {
@@ -149,8 +123,6 @@ export const updateTodo = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    await clearUserTodoCache(req.user.id);
-
     if (req.io) {
       req.io.to(updatedTodo.workspaceId?.toString()).emit("todo_updated", updatedTodo);
     }
@@ -179,8 +151,6 @@ export const deleteTodo = async (req, res) => {
     }
 
     await todo.deleteOne();
-
-    await clearUserTodoCache(req.user.id);
 
     if (req.io) {
       req.io.to(todo.workspaceId?.toString()).emit("todo_deleted", todo._id);
