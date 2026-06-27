@@ -9,20 +9,15 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    password: {
+    firebaseUid: {
       type: String,
-      required: true,
+      unique: true,
+      sparse: true,
     },
     name: {
       type: String,
       required: true,
       trim: true,
-    },
-    resetOtp: {
-      type: String,
-    },
-    resetOtpExpires: {
-      type: Date,
     },
     projects: {
       type: [String],

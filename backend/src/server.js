@@ -22,8 +22,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.NODE_ENV !== "production" ? "http://localhost:5173" : "*",
-    methods: ["GET", "POST", "PUT", "DELETE"]
+    origin: process.env.FRONTEND_URL || (process.env.NODE_ENV !== "production" ? "http://localhost:5173" : "*"),
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
   }
 });
 
@@ -55,13 +56,13 @@ const PORT = process.env.PORT || 5001;
 const __dirname = path.resolve();
 
 // middleware
-if (process.env.NODE_ENV !== "production") {
-  app.use(
-    cors({
-      origin: "http://localhost:5173",
-    })
-  );
-}
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || (process.env.NODE_ENV !== "production" ? "http://localhost:5173" : "*"),
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json()); // this middleware will parse JSON bodies: req.body
 app.use(rateLimiter);
 

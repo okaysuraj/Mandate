@@ -21,7 +21,7 @@ const LoginScreen = ({ navigation }) => {
       setLoading(true);
       await login(email, password);
     } catch (error) {
-      Alert.alert("Login Failed", error.response?.data?.message || "Invalid credentials");
+      Alert.alert("Login Failed", error.message || "Invalid credentials");
     } finally {
       setLoading(false);
     }

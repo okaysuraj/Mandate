@@ -1,6 +1,13 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import axios from "axios";
+import { auth } from "../config/firebase";
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+} from "firebase/auth";
 
 const AuthContext = createContext();
 
@@ -12,32 +19,51 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userInfo = localStorage.getItem("userInfo");
-    if (userInfo) {
-      setUser(JSON.parse(userInfo));
-      axios.defaults.headers.common["Authorization"] = `Bearer ${JSON.parse(userInfo).token}`;
-    }
-    setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const token = await firebaseUser.getIdToken();
+          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+          
+          const { data } = await axios.get("/api/auth/me");
+          setUser(data);
+          localStorage.setItem("userInfo", JSON.stringify(data));
+        } catch (error) {
+          console.error("Failed to sync auth state with backend", error);
+        }
+      } else {
+        setUser(null);
+        localStorage.removeItem("userInfo");
+        delete axios.defaults.headers.common["Authorization"];
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const login = async (email, password) => {
-    const { data } = await axios.post("/api/auth/login", { email, password });
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const token = await userCredential.user.getIdToken();
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    
+    const { data } = await axios.get("/api/auth/me");
     setUser(data);
     localStorage.setItem("userInfo", JSON.stringify(data));
-    axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
   };
 
   const register = async (name, email, password) => {
-    const { data } = await axios.post("/api/auth/register", { name, email, password });
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const token = await userCredential.user.getIdToken();
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    
+    const { data } = await axios.post("/api/auth/sync", { name });
     setUser(data);
     localStorage.setItem("userInfo", JSON.stringify(data));
-    axios.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("userInfo");
-    delete axios.defaults.headers.common["Authorization"];
+  const logout = async () => {
+    await signOut(auth);
     navigate("/");
   };
 

@@ -1,19 +1,10 @@
 import express from "express";
-import {
-  registerUser,
-  loginUser,
-  getMe,
-  forgotPassword,
-  verifyOtpAndResetPassword,
-} from "../controllers/authController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { syncUser, getMe } from "../controllers/authController.js";
+import { protect, verifyTokenOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
+router.post("/sync", verifyTokenOnly, syncUser);
 router.get("/me", protect, getMe);
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password", verifyOtpAndResetPassword);
 
 export default router;

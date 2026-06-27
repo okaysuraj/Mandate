@@ -14,7 +14,8 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      const newSocket = io(window.location.origin, {
+      const socketUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === "development" ? "http://localhost:5001" : window.location.origin);
+      const newSocket = io(socketUrl, {
         path: "/socket.io",
       });
       

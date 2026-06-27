@@ -22,7 +22,7 @@ const RegisterScreen = ({ navigation }) => {
       setLoading(true);
       await register(name, email, password);
     } catch (error) {
-      Alert.alert("Registration Failed", error.response?.data?.message || "Something went wrong");
+      Alert.alert("Registration Failed", error.message || "Something went wrong");
     } finally {
       setLoading(false);
     }

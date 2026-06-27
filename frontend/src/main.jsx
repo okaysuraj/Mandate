@@ -7,6 +7,9 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { WorkspaceProvider } from "./context/WorkspaceContext.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
+import axios from "axios";
+
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === "development" ? "http://localhost:5001" : "");
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
