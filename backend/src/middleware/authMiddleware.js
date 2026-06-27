@@ -1,4 +1,5 @@
-import admin from "../config/firebase.js";
+import "../config/firebase.js";
+import { getAuth } from "firebase-admin/auth";
 import User from "../models/User.js";
 
 export const verifyTokenOnly = async (req, res, next) => {
@@ -6,7 +7,7 @@ export const verifyTokenOnly = async (req, res, next) => {
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     try {
       token = req.headers.authorization.split(" ")[1];
-      req.firebaseUser = await admin.auth().verifyIdToken(token);
+      req.firebaseUser = await getAuth().verifyIdToken(token);
       next();
     } catch (error) {
       console.error(error);
@@ -28,7 +29,7 @@ export const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
 
       // Verify Firebase ID token
-      const decodedToken = await admin.auth().verifyIdToken(token);
+      const decodedToken = await getAuth().verifyIdToken(token);
 
       // Find user in MongoDB using firebaseUid or email
       req.user = await User.findOne({ 
