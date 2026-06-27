@@ -8,6 +8,11 @@ export const verifyTokenOnly = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ")[1];
       req.firebaseUser = await getAuth().verifyIdToken(token);
+      
+      if (!req.firebaseUser.email_verified) {
+        return res.status(403).json({ message: "Please verify your email address to access the API" });
+      }
+      
       next();
     } catch (error) {
       console.error(error);
@@ -30,6 +35,10 @@ export const protect = async (req, res, next) => {
 
       // Verify Firebase ID token
       const decodedToken = await getAuth().verifyIdToken(token);
+
+      if (!decodedToken.email_verified) {
+        return res.status(403).json({ message: "Please verify your email address to access the API" });
+      }
 
       // Find user in MongoDB using firebaseUid or email
       req.user = await User.findOne({ 

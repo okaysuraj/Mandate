@@ -19,7 +19,12 @@ const RegisterPage = () => {
       toast.success("Account created successfully!");
       navigate("/dashboard");
     } catch (error) {
-      toast.error(error.message || "Registration failed");
+      if (error.message === "VERIFICATION_EMAIL_SENT") {
+        toast.success("Verification email sent! Please check your inbox before logging in.", { duration: 5000 });
+        navigate("/login");
+      } else {
+        toast.error(error.message || "Registration failed");
+      }
     }
   };
 

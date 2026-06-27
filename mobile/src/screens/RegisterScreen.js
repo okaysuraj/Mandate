@@ -22,7 +22,12 @@ const RegisterScreen = ({ navigation }) => {
       setLoading(true);
       await register(name, email, password);
     } catch (error) {
-      Alert.alert("Registration Failed", error.message || "Something went wrong");
+      if (error.message === "VERIFICATION_EMAIL_SENT") {
+        Alert.alert("Success", "Verification email sent! Please check your inbox before logging in.");
+        navigation.navigate("Login");
+      } else {
+        Alert.alert("Registration Failed", error.message || "Something went wrong");
+      }
     } finally {
       setLoading(false);
     }

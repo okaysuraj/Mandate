@@ -7,7 +7,9 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signOut, 
-  onAuthStateChanged 
+  onAuthStateChanged,
+  sendEmailVerification,
+  updateProfile
 } from "firebase/auth";
 
 const AuthContext = createContext();
@@ -21,6 +23,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        if (!firebaseUser.emailVerified) {
+          await signOut(auth);
+          setUser(null);
+          await AsyncStorage.removeItem("userInfo");
+          delete axios.defaults.headers.common["Authorization"];
+          setLoading(false);
+          return;
+        }
+
         try {
           const token = await firebaseUser.getIdToken();
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -47,24 +58,27 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    
+    if (!userCredential.user.emailVerified) {
+      await signOut(auth);
+      throw new Error("Please verify your email to log in.");
+    }
+
     const token = await userCredential.user.getIdToken();
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     
-    // Explicitly sync just in case onAuthStateChanged is slow
-    const { data } = await axios.get(`${API_URL}/api/auth/me`);
+    // Use sync on login in case this is their first login after verifying email
+    const { data } = await axios.post(`${API_URL}/api/auth/sync`, { name: userCredential.user.displayName });
     setUser(data);
     await AsyncStorage.setItem("userInfo", JSON.stringify(data));
   };
 
   const register = async (name, email, password) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const token = await userCredential.user.getIdToken();
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    
-    // Sync with backend immediately to create MongoDB profile
-    const { data } = await axios.post(`${API_URL}/api/auth/sync`, { name });
-    setUser(data);
-    await AsyncStorage.setItem("userInfo", JSON.stringify(data));
+    await updateProfile(userCredential.user, { displayName: name });
+    await sendEmailVerification(userCredential.user);
+    await signOut(auth);
+    throw new Error("VERIFICATION_EMAIL_SENT");
   };
 
   const logout = async () => {
