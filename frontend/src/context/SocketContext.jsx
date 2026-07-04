@@ -14,7 +14,7 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      const socketUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === "development" ? "http://localhost:5001" : window.location.origin);
+      const socketUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === "development" ? "http://localhost:5001" : "https://mandate-ry4d.onrender.com");
       const newSocket = io(socketUrl, {
         path: "/socket.io",
       });
