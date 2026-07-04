@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>MANDATE | Night Operation Analytics</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;700;800&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-dim": "#1a1a1a",
+                    "on-secondary-fixed": "#e2e2e4",
+                    "on-primary": "#000000",
+                    "on-surface-variant": "#c4c7c7",
+                    "primary-fixed-dim": "#c8c6c5",
+                    "surface-tint": "#ffffff",
+                    "inverse-primary": "#000000",
+                    "on-tertiary": "#000000",
+                    "surface-container-low": "#161616",
+                    "on-error-container": "#ffdad6",
+                    "on-primary-fixed-variant": "#c8c6c5",
+                    "tertiary": "#69ff87",
+                    "surface": "#0f0f0f",
+                    "on-secondary-container": "#e1e2e4",
+                    "error": "#ffb4ab",
+                    "secondary-fixed-dim": "#c6c6c8",
+                    "tertiary-fixed": "#69ff87",
+                    "primary-fixed": "#e5e2e1",
+                    "background": "#0f0f0f",
+                    "on-tertiary-fixed-variant": "#69ff87",
+                    "surface-variant": "#2e3132",
+                    "surface-container-lowest": "#0a0a0a",
+                    "secondary-container": "#2e3132",
+                    "outline": "#8e9192",
+                    "inverse-surface": "#f9f9fb",
+                    "surface-bright": "#1c1c1c",
+                    "secondary": "#c6c6c8",
+                    "primary-container": "#ffffff",
+                    "on-secondary": "#000000",
+                    "on-error": "#690005",
+                    "secondary-fixed": "#e2e2e4",
+                    "on-primary-fixed": "#000000",
+                    "primary": "#ffffff",
+                    "inverse-on-surface": "#191c1e",
+                    "on-tertiary-fixed": "#002108",
+                    "on-primary-container": "#000000",
+                    "surface-container-high": "#282828",
+                    "surface-container": "#1f1f1f",
+                    "on-background": "#ffffff",
+                    "tertiary-fixed-dim": "#3ce36a",
+                    "on-surface": "#ffffff",
+                    "surface-container-highest": "#333333",
+                    "tertiary-container": "#00531e",
+                    "outline-variant": "#444748",
+                    "on-tertiary-container": "#69ff87",
+                    "on-secondary-fixed-variant": "#c6c6c8",
+                    "error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xl": "64px",
+                    "sm": "8px",
+                    "lg": "32px",
+                    "gutter": "24px",
+                    "container-max": "1440px",
+                    "unit": "4px",
+                    "md": "16px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "label-caps": ["JetBrains Mono"],
+                    "display-lg": ["Hanken Grotesk"],
+                    "label-sm": ["JetBrains Mono"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "label-caps": ["11px", {"lineHeight": "1.4", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                    "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "label-sm": ["12px", {"lineHeight": "1.4", "letterSpacing": "0em", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { display: none; }
+        body { -ms-overflow-style: none; scrollbar-width: none; }
+        .chart-grid {
+            background-image: radial-gradient(circle, #333333 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .bento-card {
+            border: 1px solid #2e3132;
+            background-color: #161616;
+            transition: background-color 0.2s ease;
+        }
+        .bento-card:active {
+            background-color: #1f1f1f;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface h-16 flex justify-between items-center px-gutter border-b border-surface-dim">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">menu</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold tracking-tighter text-primary">MANDATE</h1>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">account_circle</span>
+</div>
+</header>
+<main class="pt-20 pb-32 px-4 flex flex-col gap-4">
+<!-- KPI Section -->
+<section class="grid grid-cols-2 gap-4">
+<div class="bento-card p-4 rounded-xl flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-secondary">EFFICIENCY</span>
+<div class="flex items-baseline gap-1 mt-2">
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold tracking-tighter text-white">98.4</span>
+<span class="font-label-sm text-label-sm text-tertiary">%</span>
+</div>
+<div class="w-full bg-surface-container h-1 mt-4 rounded-full overflow-hidden">
+<div class="bg-white h-full w-[98.4%]"></div>
+</div>
+</div>
+<div class="bento-card p-4 rounded-xl flex flex-col justify-between">
+<span class="font-label-caps text-label-caps text-secondary">NODES</span>
+<div class="flex items-baseline gap-1 mt-2">
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold tracking-tighter text-white">1,204</span>
+</div>
+<div class="flex items-center gap-1 text-tertiary mt-4">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+<span class="font-label-sm text-label-sm">Active</span>
+</div>
+</div>
+</section>
+<!-- Throughput Performance (Line Chart Simulation) -->
+<section class="bento-card p-6 rounded-xl overflow-hidden relative">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h2 class="font-label-caps text-label-caps text-secondary mb-1">THROUGHPUT</h2>
+<p class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold tracking-tighter text-white">4.2 GB/s</p>
+</div>
+<div class="flex gap-2">
+<span class="px-2 py-1 bg-surface-container rounded-md font-label-sm text-label-sm text-white">1H</span>
+</div>
+</div>
+<div class="h-40 w-full chart-grid relative flex items-end">
+<svg class="w-full h-full" viewbox="0 0 400 160">
+<path d="M0,140 Q40,120 80,130 T160,80 T240,100 T320,40 T400,60" fill="none" stroke="#ffffff" stroke-width="3"></path>
+<circle cx="320" cy="40" fill="#ffffff" r="4"></circle>
+</svg>
+<div class="absolute bottom-0 left-0 w-full flex justify-between px-2 py-1 border-t border-surface-dim">
+<span class="font-label-sm text-label-sm text-secondary">08:00</span>
+<span class="font-label-sm text-label-sm text-secondary">09:00</span>
+<span class="font-label-sm text-label-sm text-secondary">10:00</span>
+</div>
+</div>
+</section>
+<!-- Node Heatmap -->
+<section class="bento-card p-6 rounded-xl">
+<h2 class="font-label-caps text-label-caps text-secondary mb-4">NODE LOAD DENSITY</h2>
+<div class="grid grid-cols-8 gap-1.5">
+<!-- Heatmap Blocks - Updated for dark mode -->
+<div class="aspect-square bg-surface-container rounded-sm"></div>
+<div class="aspect-square bg-surface-container rounded-sm"></div>
+<div class="aspect-square bg-white rounded-sm"></div>
+<div class="aspect-square bg-white/40 rounded-sm"></div>
+<div class="aspect-square bg-white/20 rounded-sm"></div>
+<div class="aspect-square bg-surface-container rounded-sm"></div>
+<div class="aspect-square bg-white/60 rounded-sm"></div>
+<div class="aspect-square bg-white rounded-sm"></div>
+<div class="aspect-square bg-white/10 rounded-sm"></div>
+<div class="aspect-square bg-white rounded-sm"></div>
+<div class="aspect-square bg-white/80 rounded-sm"></div>
+<div class="aspect-square bg-white/40 rounded-sm"></div>
+<div class="aspect-square bg-white/20 rounded-sm"></div>
+<div class="aspect-square bg-white rounded-sm"></div>
+<div class="aspect-square bg-surface-container rounded-sm"></div>
+<div class="aspect-square bg-white rounded-sm"></div>
+<div class="aspect-square bg-white rounded-sm"></div>
+<div class="aspect-square bg-white/30 rounded-sm"></div>
+<div class="aspect-square bg-white rounded-sm"></div>
+<div class="aspect-square bg-surface-container rounded-sm"></div>
+<div class="aspect-square bg-white/40 rounded-sm"></div>
+<div class="aspect-square bg-white/10 rounded-sm"></div>
+<div class="aspect-square bg-white/20 rounded-sm"></div>
+<div class="aspect-square bg-white rounded-sm"></div>
+<div class="aspect-square bg-surface-container rounded-sm"></div>
+<div class="aspect-square bg-white rounded-sm"></div>
+<div class="aspect-square bg-white/60 rounded-sm"></div>
+<div class="aspect-square bg-white rounded-sm"></div>
+<div class="aspect-square bg-white/10 rounded-sm"></div>
+<div class="aspect-square bg-white rounded-sm"></div>
+<div class="aspect-square bg-surface-container rounded-sm"></div>
+<div class="aspect-square bg-white/40 rounded-sm"></div>
+</div>
+<div class="mt-4 flex justify-between items-center">
+<div class="flex gap-2">
+<span class="w-2 h-2 bg-surface-container rounded-full"></span>
+<span class="w-2 h-2 bg-white/40 rounded-full"></span>
+<span class="w-2 h-2 bg-white rounded-full"></span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary uppercase">64 IDENTIFIED NODES</span>
+</div>
+</section>
+<!-- Anomalous Activity Log -->
+<section class="bento-card p-6 rounded-xl">
+<div class="flex justify-between items-center mb-4">
+<h2 class="font-label-caps text-label-caps text-secondary">ANOMALOUS ACTIVITY LOG</h2>
+<span class="font-label-sm text-label-sm text-error bg-error-container/20 px-2 py-0.5 rounded">3 NEW</span>
+</div>
+<div class="flex flex-col">
+<!-- Log Item -->
+<div class="py-4 border-b border-surface-dim flex justify-between items-start">
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-error mb-1">CRITICAL OVERFLOW</span>
+<span class="font-body-md font-bold text-white">NODE_XC_0942</span>
+<span class="font-label-sm text-label-sm text-secondary">Lat: 40.7128 N, Long: 74.0060 W</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">09:41:22</span>
+</div>
+<!-- Log Item -->
+<div class="py-4 border-b border-surface-dim flex justify-between items-start">
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-primary mb-1">ROUTING DRIFT</span>
+<span class="font-body-md font-bold text-white">SYS_GATEWAY_V</span>
+<span class="font-label-sm text-label-sm text-secondary">Protocol: IPV6_MANDATE_Z</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">09:22:04</span>
+</div>
+<!-- Log Item -->
+<div class="py-4 border-b border-surface-dim flex justify-between items-start">
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-primary mb-1">LATENCY SPIKE</span>
+<span class="font-body-md font-bold text-white">CORE_PRIMARY_0</span>
+<span class="font-label-sm text-label-sm text-secondary">+140ms jitter detected</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">08:59:15</span>
+</div>
+</div>
+<button class="w-full mt-4 py-3 text-center bg-surface-container hover:bg-surface-dim transition-colors rounded-full font-label-caps text-label-caps text-white">
+                VIEW ALL LOGS
+            </button>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 bg-surface border-t border-surface-dim pb-safe z-50">
+<!-- Dashboard (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary text-on-primary rounded-full px-6 py-2 transition-all duration-200 active:opacity-80" href="#">
+<span class="material-symbols-outlined mb-1">grid_view</span>
+<span class="font-label-caps text-label-caps">DASHBOARD</span>
+</a>
+<!-- System -->
+<a class="flex flex-col items-center justify-center text-secondary px-6 py-2 transition-all duration-200 hover:text-white active:opacity-80" href="#">
+<span class="material-symbols-outlined mb-1">settings_input_component</span>
+<span class="font-label-caps text-label-caps">SYSTEM</span>
+</a>
+<!-- Projects -->
+<a class="flex flex-col items-center justify-center text-secondary px-6 py-2 transition-all duration-200 hover:text-white active:opacity-80" href="#">
+<span class="material-symbols-outlined mb-1">account_tree</span>
+<span class="font-label-caps text-label-caps">PROJECTS</span>
+</a>
+<!-- Core -->
+<a class="flex flex-col items-center justify-center text-secondary px-6 py-2 transition-all duration-200 hover:text-white active:opacity-80" href="#">
+<span class="material-symbols-outlined mb-1">adjust</span>
+<span class="font-label-caps text-label-caps">CORE</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for activity logs
+        document.querySelectorAll('.bento-card').forEach(card => {
+            card.addEventListener('touchstart', function() {
+                this.classList.add('scale-[0.98]');
+            });
+            card.addEventListener('touchend', function() {
+                this.classList.remove('scale-[0.98]');
+            });
+        });
+
+        // Simple "real-time" indicator animation
+        setInterval(() => {
+            const progressBars = document.querySelectorAll('.bg-white.h-full');
+            progressBars.forEach(bar => {
+                const currentWidth = parseFloat(bar.style.width) || 98.4;
+                const variance = (Math.random() - 0.5) * 0.5;
+                bar.style.width = `${Math.min(100, Math.max(90, currentWidth + variance))}%`;
+            });
+        }, 3000);
+    </script>
+</body></html>

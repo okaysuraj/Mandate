@@ -37,3 +37,43 @@ export const addProject = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// @desc    Update user profile and preferences
+// @route   PUT /api/users/profile
+// @access  Private
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, timezone, preferences } = req.body;
+    
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (name !== undefined) user.name = name;
+    if (timezone !== undefined) user.timezone = timezone;
+    
+    if (preferences) {
+      if (preferences.theme !== undefined) user.preferences.theme = preferences.theme;
+      if (preferences.notifications !== undefined) user.preferences.notifications = preferences.notifications;
+      if (preferences.workHours) {
+        if (preferences.workHours.start !== undefined) user.preferences.workHours.start = preferences.workHours.start;
+        if (preferences.workHours.end !== undefined) user.preferences.workHours.end = preferences.workHours.end;
+      }
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      _id: user.id,
+      name: user.name,
+      email: user.email,
+      timezone: user.timezone,
+      preferences: user.preferences,
+      projects: user.projects,
+    });
+  } catch (error) {
+    console.error("Error in updateProfile controller", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

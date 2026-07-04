@@ -1,207 +1,238 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  Modal, SafeAreaView, ScrollView, Platform, Alert,
+  Modal, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator
 } from "react-native";
-import { colors, fonts, spacing, borderRadius } from "../theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 
-const PRIORITIES = ["low", "medium", "high"];
-const STATUSES = ["pending", "in-progress", "completed"];
+const TaskModal = ({ visible, onClose, onSave, task = null }) => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("pending");
+  const [priority, setPriority] = useState("medium");
+  const [loading, setLoading] = useState(false);
+  const { colors, typography, spacing, borderRadius } = useTheme();
 
-const TaskModal = ({ visible, onClose, onSave, initialData, projects = [] }) => {
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [content, setContent] = useState(initialData?.content || "");
-  const [priority, setPriority] = useState(initialData?.priority || "medium");
-  const [status, setStatus] = useState(initialData?.status || "pending");
-  const [project, setProject] = useState(initialData?.project || "");
-  const [dueDate, setDueDate] = useState(initialData?.dueDate ? new Date(initialData.dueDate).toISOString().slice(0, 10) : "");
-
-  const handleSave = () => {
-    if (!title.trim()) {
-      Alert.alert("Error", "Please enter a title");
-      return;
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title || "");
+      setDescription(task.description || "");
+      setStatus(task.status || "pending");
+      setPriority(task.priority || "medium");
+    } else {
+      setTitle("");
+      setDescription("");
+      setStatus("pending");
+      setPriority("medium");
     }
-    const taskData = {
-      title: title.trim(),
-      content: content.trim(),
-      priority,
-      status,
-      ...(project ? { project } : {}),
-      ...(dueDate ? { dueDate: new Date(dueDate).toISOString() } : {}),
-    };
-    onSave(taskData);
+  }, [task, visible]);
+
+  const handleSave = async () => {
+    if (!title.trim()) return;
+    setLoading(true);
+    try {
+      await onSave({
+        ...(task && { _id: task._id }),
+        title,
+        description,
+        status,
+        priority
+      });
+      onClose();
+    } catch (error) {
+      // handled
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getPriorityStyle = (p) => ({
-    backgroundColor: priority === p ? colors.primary : "transparent",
-    borderColor: priority === p ? colors.primary : colors.border,
-  });
-
-  const getPriorityTextStyle = (p) => ({
-    color: priority === p ? colors.white : colors.textSecondary,
-  });
-
-  const getStatusStyle = (s) => ({
-    backgroundColor: status === s ? colors.primary : "transparent",
-    borderColor: status === s ? colors.primary : colors.border,
-  });
-
-  const getStatusTextStyle = (s) => ({
-    color: status === s ? colors.white : colors.textSecondary,
-  });
+  const renderOptionBtn = (value, current, setValue, label) => {
+    const isSelected = value === current;
+    return (
+      <TouchableOpacity
+        style={[
+          styles.optionBtn,
+          { 
+            backgroundColor: isSelected ? colors.primary : colors.surfaceContainer,
+            borderColor: isSelected ? colors.primary : colors.outlineVariant,
+            borderRadius: borderRadius.DEFAULT
+          }
+        ]}
+        onPress={() => setValue(value)}
+      >
+        <Text style={[typography.labelCaps, { color: isSelected ? colors.onPrimary : colors.secondary }]}>
+          {label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}>
-            <Text style={styles.cancelText}>CANCEL</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>
-            {initialData ? "EDIT TASK" : "NEW TASK"}
-          </Text>
-          <TouchableOpacity onPress={handleSave}>
-            <Text style={styles.saveText}>SAVE</Text>
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>TITLE</Text>
-            <TextInput
-              style={styles.input}
-              value={title}
-              onChangeText={setTitle}
-              placeholder="What needs to be done?"
-              placeholderTextColor={colors.textMuted}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>DESCRIPTION</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={content}
-              onChangeText={setContent}
-              placeholder="Add details..."
-              placeholderTextColor={colors.textMuted}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>PRIORITY</Text>
-            <View style={styles.chipRow}>
-              {PRIORITIES.map((p) => (
-                <TouchableOpacity
-                  key={p}
-                  style={[styles.chip, getPriorityStyle(p)]}
-                  onPress={() => setPriority(p)}
-                >
-                  <Text style={[styles.chipText, getPriorityTextStyle(p)]}>
-                    {p.toUpperCase()}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+    <Modal visible={visible} animationType="slide" transparent={true}>
+      <KeyboardAvoidingView 
+        style={styles.modalOverlay} 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+          {/* Header */}
+          <View style={[styles.header, { borderBottomColor: colors.outlineVariant }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[typography.labelCaps, { color: colors.secondary }]}>NODE CONFIGURATION</Text>
+              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>
+                {task ? "EDIT TASK" : "NEW TASK"}
+              </Text>
             </View>
+            <TouchableOpacity onPress={onClose} style={[styles.closeBtn, { backgroundColor: colors.surfaceContainerHigh }]}>
+              <MaterialIcons name="close" size={24} color={colors.primary} />
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>STATUS</Text>
-            <View style={styles.chipRow}>
-              {STATUSES.map((s) => (
-                <TouchableOpacity
-                  key={s}
-                  style={[styles.chip, getStatusStyle(s)]}
-                  onPress={() => setStatus(s)}
-                >
-                  <Text style={[styles.chipText, getStatusTextStyle(s)]}>
-                    {s.toUpperCase().replace("-", " ")}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+          <ScrollView style={styles.formContent}>
+            {/* Title */}
+            <View style={styles.formGroup}>
+              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>NODE DESIGNATION</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  typography.bodyMd,
+                  { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, color: colors.primary }
+                ]}
+                placeholder="Enter designation..."
+                placeholderTextColor={colors.outline}
+                value={title}
+                onChangeText={setTitle}
+              />
             </View>
-          </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>DUE DATE (YYYY-MM-DD)</Text>
-            <TextInput
-              style={styles.input}
-              value={dueDate}
-              onChangeText={setDueDate}
-              placeholder="2026-06-30"
-              placeholderTextColor={colors.textMuted}
-              keyboardType={Platform.OS === "ios" ? "default" : "default"}
-            />
-          </View>
+            {/* Description */}
+            <View style={styles.formGroup}>
+              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>PARAMETERS / DESC</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  styles.textArea,
+                  typography.bodyMd,
+                  { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, color: colors.primary }
+                ]}
+                placeholder="Operational parameters..."
+                placeholderTextColor={colors.outline}
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+            </View>
 
-          {projects.length > 0 && (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>PROJECT</Text>
-              <View style={styles.chipRow}>
-                <TouchableOpacity
-                  style={[styles.chip, !project ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.border }]}
-                  onPress={() => setProject("")}
-                >
-                  <Text style={[styles.chipText, { color: !project ? colors.white : colors.textSecondary }]}>NONE</Text>
-                </TouchableOpacity>
-                {projects.map((p) => (
-                  <TouchableOpacity
-                    key={p}
-                    style={[styles.chip, project === p ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.border }]}
-                    onPress={() => setProject(p)}
-                  >
-                    <Text style={[styles.chipText, { color: project === p ? colors.white : colors.textSecondary }]}>
-                      {p.toUpperCase()}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+            {/* Priority */}
+            <View style={styles.formGroup}>
+              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>PRIORITY PROTOCOL</Text>
+              <View style={styles.optionsRow}>
+                {renderOptionBtn("low", priority, setPriority, "ROUTINE")}
+                {renderOptionBtn("medium", priority, setPriority, "MEDIUM")}
+                {renderOptionBtn("high", priority, setPriority, "CRITICAL")}
+                {renderOptionBtn("urgent", priority, setPriority, "URGENT")}
               </View>
             </View>
-          )}
-        </ScrollView>
-      </SafeAreaView>
+
+            {/* Status (only if editing) */}
+            {task && (
+              <View style={styles.formGroup}>
+                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>NODE STATUS</Text>
+                <View style={styles.optionsRow}>
+                  {renderOptionBtn("pending", status, setStatus, "PENDING")}
+                  {renderOptionBtn("in-progress", status, setStatus, "ACTIVE")}
+                  {renderOptionBtn("completed", status, setStatus, "COMPLETE")}
+                </View>
+              </View>
+            )}
+          </ScrollView>
+
+          {/* Footer */}
+          <View style={[styles.footer, { borderTopColor: colors.outlineVariant }]}>
+            <TouchableOpacity 
+              style={[styles.saveBtn, { backgroundColor: colors.primary, borderRadius: borderRadius.DEFAULT }, loading && { opacity: 0.7 }]}
+              onPress={handleSave}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={colors.onPrimary} />
+              ) : (
+                <>
+                  <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>COMMIT CHANGES</Text>
+                  <MaterialIcons name="check" size={18} color={colors.onPrimary} style={{ marginLeft: 8 }} />
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
   },
-  cancelText: { ...fonts.tiny, color: colors.textSecondary },
-  headerTitle: { ...fonts.tiny, color: colors.primary },
-  saveText: { ...fonts.tiny, color: colors.primary },
-  form: { padding: spacing.lg, gap: spacing.lg },
-  inputGroup: { gap: spacing.sm },
-  label: { ...fonts.tiny },
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '90%',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 24,
+    borderBottomWidth: 1,
+  },
+  closeBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  formContent: {
+    padding: 24,
+  },
+  formGroup: {
+    marginBottom: 24,
+  },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    paddingHorizontal: 16,
     paddingVertical: 14,
-    fontSize: 14,
-    color: colors.textPrimary,
   },
-  textArea: { minHeight: 100 },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
+  textArea: {
+    minHeight: 100,
+    paddingTop: 16,
+  },
+  optionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  optionBtn: {
     borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
-  chipText: { fontSize: 10, fontWeight: "700", letterSpacing: 1 },
+  footer: {
+    padding: 24,
+    borderTopWidth: 1,
+  },
+  saveBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+  }
 });
 
 export default TaskModal;

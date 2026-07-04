@@ -1,93 +1,81 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router";
-import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
+import { Link } from "react-router";
+import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import axios from "axios";
 
 const ForgotPasswordPage = () => {
-  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [isSent, setIsSent] = useState(false);
+  const { resetPassword } = useAuth();
 
-  const handleRequestOtp = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      await axios.post("/api/auth/forgot-password", { email });
-      toast.success("OTP sent! (Check backend console in dev)");
-      setStep(2);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to send OTP");
-    }
-  };
-
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post("/api/auth/reset-password", { email, otp, newPassword });
-      toast.success("Password reset successful!");
-      navigate("/login");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to reset password");
+      await resetPassword(email);
+      setIsSent(true);
+      toast.success("Recovery instructions dispatched.");
+    } catch (err) {
+      // error handled in auth context
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#F9F9FB] relative">
-      <Link to="/login" className="absolute top-8 left-8 sm:top-10 sm:left-10 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-[#1A1A1A] transition-colors font-['Space_Grotesk']">
-        ← Back to Login
-      </Link>
-      <div className="w-full max-w-md p-10 mandate-card shadow-lg shadow-black/5">
-        <div className="text-center mb-10">
-          <h2 className="small-caps mb-3 text-gray-500 tracking-widest">Mandate</h2>
-          <h1 className="text-4xl font-bold text-[#1A1A1A] uppercase tracking-tighter">
-            {step === 1 ? "Reset Password." : "Verify OTP."}
-          </h1>
-          <p className="text-gray-500 mt-4 text-sm">
-            {step === 1 
-              ? "Enter your email to receive a verification code." 
-              : "Enter the code sent to your email and your new password."}
-          </p>
+    <div className="min-h-screen bg-surface flex items-center justify-center px-lg">
+      <div className="w-full max-w-md">
+        {/* Brand */}
+        <div className="text-center mb-xl">
+          <Link to="/">
+            <h1 className="font-headline-lg text-headline-lg font-black tracking-tighter text-primary mb-sm">MANDATE</h1>
+          </Link>
+          <p className="font-label-caps text-label-caps text-on-surface-variant tracking-widest">CREDENTIAL RECOVERY</p>
         </div>
 
-        {step === 1 ? (
-          <form onSubmit={handleRequestOtp} className="flex flex-col gap-6">
-            <Input
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="name@company.com"
-            />
-            <Button type="submit" className="mt-2 w-full">
-              Send OTP
-            </Button>
-          </form>
+        {isSent ? (
+          <div className="bg-surface-container-low border border-outline-variant p-lg text-center rounded-md">
+            <span className="material-symbols-outlined text-[48px] text-primary mb-md">mark_email_read</span>
+            <h3 className="font-headline-lg text-[20px] text-primary mb-sm">TRANSMISSION COMPLETE</h3>
+            <p className="font-body-md text-body-md text-on-surface-variant mb-lg">
+              Instructions for resetting your access key have been transmitted to <span className="font-bold text-primary">{email}</span>.
+            </p>
+            <Link to="/login" className="mandate-btn-primary w-full inline-block">
+              RETURN TO AUTHENTICATION
+            </Link>
+          </div>
         ) : (
-          <form onSubmit={handleResetPassword} className="flex flex-col gap-6">
-            <Input
-              label="OTP"
-              type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              required
-              placeholder="123456"
-            />
-            <Input
-              label="New Password"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-            />
-            <Button type="submit" className="mt-2 w-full">
-              Reset Password
-            </Button>
+          <form onSubmit={handleSubmit} className="space-y-md">
+            <div className="space-y-xs">
+              <label className="block font-label-caps text-label-caps text-on-surface-variant">EMAIL ADDRESS</label>
+              <input
+                className="mandate-input"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="operator@mandate.systems"
+                required
+              />
+            </div>
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className="mandate-btn-primary w-full disabled:opacity-50 mt-lg"
+            >
+              {loading ? "INITIALIZING..." : "INITIATE RECOVERY"}
+            </button>
           </form>
+        )}
+
+        {!isSent && (
+          <div className="mt-lg text-center">
+            <span className="font-label-sm text-label-sm text-on-surface-variant">
+              Remember your access key?{" "}
+              <Link to="/login" className="text-primary font-bold hover:underline">AUTHENTICATE</Link>
+            </span>
+          </div>
         )}
       </div>
     </div>

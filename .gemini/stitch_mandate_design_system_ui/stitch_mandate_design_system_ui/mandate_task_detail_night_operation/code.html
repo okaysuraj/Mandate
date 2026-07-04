@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Core Synthesis Operation | MANDATE Industrial OS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#c4c7c7",
+                        "surface-dim": "#1c1b1b",
+                        "secondary-fixed-dim": "#454749",
+                        "on-primary-container": "#c8c6c5",
+                        "primary-fixed-dim": "#474746",
+                        "primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3ce36a",
+                        "on-secondary": "#1c1b1b",
+                        "error-container": "#93000a",
+                        "tertiary-container": "#00531e",
+                        "surface-bright": "#2e3132",
+                        "background": "#0f0f0f",
+                        "on-primary-fixed": "#ffffff",
+                        "inverse-on-surface": "#191c1e",
+                        "on-background": "#f9f9fb",
+                        "surface-variant": "#444748",
+                        "tertiary-fixed-dim": "#3ce36a",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#1c1b1b",
+                        "primary-container": "#f9f9fb",
+                        "on-secondary-fixed": "#f9f9fb",
+                        "error": "#ffdad6",
+                        "surface-tint": "#c8c6c5",
+                        "on-surface": "#f9f9fb",
+                        "outline": "#8e9192",
+                        "on-tertiary-container": "#69ff87",
+                        "surface-container-lowest": "#0f0f0f",
+                        "on-primary-fixed-variant": "#e1e2e4",
+                        "surface": "#1a1c1d",
+                        "tertiary-fixed": "#69ff87",
+                        "secondary-container": "#454749",
+                        "primary-fixed": "#f9f9fb",
+                        "surface-container-high": "#2e3132",
+                        "outline-variant": "#444748",
+                        "inverse-surface": "#f9f9fb",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-highest": "#333537",
+                        "surface-container": "#242628",
+                        "secondary-fixed": "#e2e2e4",
+                        "on-surface-variant": "#c4c7c7",
+                        "on-tertiary": "#002108",
+                        "on-primary": "#000000",
+                        "inverse-primary": "#000000",
+                        "on-secondary-container": "#e2e2e4",
+                        "secondary": "#c6c6c8",
+                        "on-tertiary-fixed": "#002108",
+                        "tertiary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "lg": "32px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "label-sm": ["JetBrains Mono"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "label-caps": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                        "label-sm": ["12px", {"lineHeight": "1.4", "letterSpacing": "0em", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "label-caps": ["11px", {"lineHeight": "1.4", "letterSpacing": "0.1em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #0f0f0f;
+            color: #f9f9fb;
+            -webkit-font-smoothing: antialiased;
+        }
+        .bento-card {
+            background-color: #1a1c1d;
+            border: 1px solid #333537;
+            transition: border-color 0.2s ease-in-out;
+        }
+        .bento-card:hover {
+            border-color: #ffffff;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #444748;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-hidden dark">
+<div class="flex h-screen w-full bg-background">
+<!-- SideNavBar (Shared Component) -->
+<aside class="hidden md:flex flex-col h-full py-lg px-md gap-md bg-surface border-r border-outline-variant w-64 shrink-0 overflow-y-auto">
+<div class="mb-lg">
+<h1 class="font-headline-lg text-headline-lg font-black tracking-tighter text-primary">MANDATE</h1>
+<p class="font-label-caps text-label-caps text-secondary">Industrial OS</p>
+</div>
+<nav class="flex-1 flex flex-col gap-sm">
+<!-- Dashboard (Inactive) -->
+<a class="flex items-center gap-md px-md py-sm rounded-full transition-all duration-150 text-secondary hover:text-primary hover:bg-surface-container" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<!-- Today (Inactive) -->
+<a class="flex items-center gap-md px-md py-sm rounded-full transition-all duration-150 text-secondary hover:text-primary hover:bg-surface-container" href="#">
+<span class="material-symbols-outlined" data-icon="event_upcoming">event_upcoming</span>
+<span class="font-label-caps text-label-caps">Today</span>
+</a>
+<!-- Backlog (Active mapped to Backlog for a specific task view) -->
+<a class="flex items-center gap-md px-md py-sm rounded-full transition-all duration-150 bg-primary text-on-primary" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-label-caps text-label-caps">Backlog</span>
+</a>
+<!-- Projects (Inactive) -->
+<a class="flex items-center gap-md px-md py-sm rounded-full transition-all duration-150 text-secondary hover:text-primary hover:bg-surface-container" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span class="font-label-caps text-label-caps">Projects</span>
+</a>
+<!-- Calendar (Inactive) -->
+<a class="flex items-center gap-md px-md py-sm rounded-full transition-all duration-150 text-secondary hover:text-primary hover:bg-surface-container" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-caps text-label-caps">Calendar</span>
+</a>
+<!-- Analytics (Inactive) -->
+<a class="flex items-center gap-md px-md py-sm rounded-full transition-all duration-150 text-secondary hover:text-primary hover:bg-surface-container" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-caps text-label-caps">Analytics</span>
+</a>
+</nav>
+<button class="mt-lg w-full py-md bg-primary text-on-primary rounded-full font-label-caps text-label-caps flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                New Task
+            </button>
+<div class="mt-auto border-t border-outline-variant pt-lg flex flex-col gap-sm">
+<a class="flex items-center gap-md px-md py-sm text-secondary hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-secondary hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-caps text-label-caps">Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col relative overflow-y-auto custom-scrollbar">
+<!-- Header Section -->
+<header class="px-xl pt-xl pb-lg max-w-container-max mx-auto w-full">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div class="space-y-sm">
+<div class="flex items-center gap-md">
+<span class="bg-primary text-on-primary px-md py-xs rounded-full font-label-caps text-label-caps">IN PROGRESS</span>
+<span class="text-on-secondary-fixed-variant font-label-caps text-label-caps tracking-widest">OP-ID: 992-DELTA</span>
+</div>
+<h2 class="font-display-lg text-display-lg text-primary max-w-4xl">Core Synthesis Operation</h2>
+</div>
+<div class="flex gap-sm">
+<button class="p-md bg-surface-container hover:bg-surface-container-high transition-colors rounded-full border border-outline-variant text-primary">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+<button class="p-md bg-surface-container hover:bg-surface-container-high transition-colors rounded-full border border-outline-variant text-primary">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Content Bento Grid -->
+<section class="px-xl pb-xl max-w-container-max mx-auto w-full grid grid-cols-12 gap-gutter">
+<!-- Sub-tasks & Checklist (Left Column) -->
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-gutter">
+<div class="bento-card p-lg rounded-lg">
+<div class="flex items-center justify-between mb-lg border-b border-surface-container-high pb-md">
+<h3 class="font-headline-lg text-headline-lg text-primary">System Requirements</h3>
+<span class="text-on-tertiary-container font-label-caps text-label-caps">4/5 VALIDATED</span>
+</div>
+<div class="space-y-md">
+<div class="flex items-center justify-between p-md bg-surface-container-low rounded-md border-l-4 border-tertiary-fixed">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-tertiary-fixed" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div>
+<p class="font-bold text-primary">Neural Link Stability</p>
+<p class="text-sm text-secondary">Latency optimized at 4.2ms</p>
+</div>
+</div>
+<span class="font-label-caps text-label-sm text-on-secondary-fixed-variant">VERIFIED</span>
+</div>
+<div class="flex items-center justify-between p-md bg-surface-container-low rounded-md border-l-4 border-tertiary-fixed">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-tertiary-fixed" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div>
+<p class="font-bold text-primary">Atmospheric Integrity</p>
+<p class="text-sm text-secondary">Pressurization nominal at 1.0 ATM</p>
+</div>
+</div>
+<span class="font-label-caps text-label-sm text-on-secondary-fixed-variant">VERIFIED</span>
+</div>
+<div class="flex items-center justify-between p-md bg-surface-container-low rounded-md border-l-4 border-tertiary-fixed">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-tertiary-fixed" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div>
+<p class="font-bold text-primary">Encryption Protocol X-9</p>
+<p class="text-sm text-secondary">RSA-4096 handshake complete</p>
+</div>
+</div>
+<span class="font-label-caps text-label-sm text-on-secondary-fixed-variant">VERIFIED</span>
+</div>
+<div class="flex items-center justify-between p-md bg-surface-container-low rounded-md border-l-4 border-error">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-error" data-icon="pending">pending</span>
+<div>
+<p class="font-bold text-primary">Coolant Circulation</p>
+<p class="text-sm text-secondary">Thermal bypass initiated, awaiting flow sensor</p>
+</div>
+</div>
+<span class="font-label-caps text-label-sm text-error">PENDING</span>
+</div>
+</div>
+</div>
+<div class="bento-card p-lg rounded-lg">
+<h3 class="font-headline-lg text-headline-lg text-primary mb-lg border-b border-surface-container-high pb-md">Operational Summary</h3>
+<div class="space-y-md text-secondary leading-relaxed">
+<p>This operation involves the high-precision alignment of primary core processors. Each synthesis cycle requires exact timing and synchronization with the external grid. Failure to maintain coolant levels may result in immediate emergency shutdown protocols. Ensure all telemetry data is logged prior to final commit.</p>
+</div>
+<div class="mt-lg grid grid-cols-1 sm:grid-cols-3 gap-md">
+<div class="p-md bg-surface-container rounded-md">
+<p class="font-label-caps text-label-caps text-secondary mb-xs">ASSIGNED UNIT</p>
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed-dim border border-outline"></div>
+<span class="font-bold text-primary">E. VALERIUS</span>
+</div>
+</div>
+<div class="p-md bg-surface-container rounded-md">
+<p class="font-label-caps text-label-caps text-secondary mb-xs">ESTIMATED ETO</p>
+<span class="font-bold text-primary">04:22:15</span>
+</div>
+<div class="p-md bg-surface-container rounded-md">
+<p class="font-label-caps text-label-caps text-secondary mb-xs">PRIORITY</p>
+<span class="font-bold text-primary">CRITICAL</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Telemetry & Logs (Right Column) -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
+<div class="bento-card p-lg rounded-lg flex-1">
+<div class="flex items-center justify-between mb-lg">
+<h3 class="font-label-caps text-label-caps font-bold text-primary">Telemetry Data</h3>
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed animate-pulse"></span>
+</div>
+<div class="space-y-lg">
+<div>
+<div class="flex justify-between items-end mb-xs">
+<span class="text-sm font-label-caps text-secondary">Core Load</span>
+<span class="font-bold text-headline-lg text-primary leading-none">78%</span>
+</div>
+<div class="h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[78%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-end mb-xs">
+<span class="text-sm font-label-caps text-secondary">Heat Flux</span>
+<span class="font-bold text-headline-lg text-primary leading-none">1.2 MW</span>
+</div>
+<div class="h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[45%]"></div>
+</div>
+</div>
+<div class="pt-md border-t border-surface-container-high">
+<h4 class="font-label-caps text-label-caps text-secondary mb-md">Action Logs</h4>
+<div class="space-y-sm max-h-[320px] overflow-y-auto custom-scrollbar pr-sm">
+<div class="flex gap-md py-sm">
+<span class="font-label-caps text-label-sm text-secondary shrink-0">12:04</span>
+<p class="text-sm text-secondary"><span class="font-bold text-primary">SYS_ROOT:</span> Initialization complete. All nodes responsive.</p>
+</div>
+<div class="flex gap-md py-sm">
+<span class="font-label-caps text-label-sm text-secondary shrink-0">12:15</span>
+<p class="text-sm text-secondary"><span class="font-bold text-primary">OP_MGR:</span> Shifted synthesis cycle to delta-4 frequency.</p>
+</div>
+<div class="flex gap-md py-sm">
+<span class="font-label-caps text-label-sm text-secondary shrink-0">12:22</span>
+<p class="text-sm text-secondary"><span class="font-bold text-primary">SENS_9:</span> Warning: Coolant flow variance detected. Adjusting pumps.</p>
+</div>
+<div class="flex gap-md py-sm">
+<span class="font-label-caps text-label-sm text-secondary shrink-0">12:45</span>
+<p class="text-sm text-secondary"><span class="font-bold text-primary">E_VAL:</span> Manual override engaged for phase synchronization.</p>
+</div>
+<div class="flex gap-md py-sm">
+<span class="font-label-caps text-label-sm text-secondary shrink-0">13:01</span>
+<p class="text-sm text-secondary"><span class="font-bold text-primary">SYS_ROOT:</span> Heartbeat verified. Continuity stable.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Small Map/Location Card -->
+<div class="bento-card h-48 rounded-lg overflow-hidden relative border-none">
+<img class="w-full h-full object-cover grayscale brightness-50" data-alt="A monochromatic technical satellite map view of an industrial complex featuring sharp lines, metallic surfaces, and glowing grid overlays. High contrast lighting with deep shadows and brilliant white highlights, emphasizing a futuristic, surgical precision aesthetic." data-location="Site Sector 7G" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPubuvUPifQgU85zsZ8hYntsnFHVEl0MwBUdz9q0kmn0pg2JVszbwC6llgL2DUlq4rBtphzq6eNZkJupvi5ZsUapCMliuY_fbf5uRiY0sdhcO7GiZcImxRXjix0Rwa6wG64ahk5joxRFQ4vsFYMdL9dLUz4mytfvlgWPFbn8oB39kEbg8Fwh5TU2A9BfcmZrJOZr5J_4kxT3iFk4zGpjAvYssaKEKR-U4aENa_IiqkmtFJexqjOKVFUA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent flex items-end p-lg">
+<div class="text-on-primary">
+<p class="font-label-caps text-label-caps opacity-70">Location</p>
+<p class="font-bold">SITE SECTOR 7G — CENTRAL HUB</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Floating Action Bar -->
+<footer class="sticky bottom-0 w-full bg-surface-container-lowest/80 backdrop-blur-md border-t border-outline-variant p-lg flex justify-end items-center px-xl">
+<div class="flex items-center gap-xl">
+<div class="hidden md:flex items-center gap-md">
+<span class="material-symbols-outlined text-secondary" data-icon="lock">lock</span>
+<p class="text-sm text-secondary italic">Signed as Engineer-409</p>
+</div>
+<button class="px-xl py-md bg-primary text-on-primary rounded-full font-label-caps text-label-caps hover:scale-105 transition-transform active:scale-95 flex items-center gap-md shadow-lg shadow-white/5">
+                        Commit Completion
+                        <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</footer>
+</main>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+        // Subtle hover effects for task items
+        document.querySelectorAll('.bento-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-2px)';
+                card.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0px)';
+            });
+        });
+
+        // Click effect for navigation
+        const navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                // Prevent default for demo
+                e.preventDefault();
+            });
+        });
+    </script>
+</body></html>

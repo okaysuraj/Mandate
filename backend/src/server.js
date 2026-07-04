@@ -5,13 +5,18 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 
-import todoRoutes from "./routes/todoRoutes.js";
+import taskRoutes from "./routes/taskRoutes.js";
+import planningRoutes from "./routes/planningRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import workspaceRoutes from "./routes/workspaceRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
+import documentRoutes from "./routes/documentRoutes.js";
+import goalRoutes from "./routes/goalRoutes.js";
+import automationRoutes from "./routes/automationRoutes.js";
 import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import { initReminderService } from "./services/reminderService.js";
@@ -72,13 +77,18 @@ app.use(rateLimiter);
 //   next();
 // });
 
-app.use("/api/todos", todoRoutes);
+app.use("/api/tasks", taskRoutes);
+app.use("/api/planning", planningRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/workspaces", workspaceRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/documents", documentRoutes);
+app.use("/api/goals", goalRoutes);
+app.use("/api/automations", automationRoutes);
 
 app.get("/", (req, res) => {
   res.send("Mandate API is running...");

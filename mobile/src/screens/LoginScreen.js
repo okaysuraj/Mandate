@@ -1,160 +1,180 @@
 import React, { useState } from "react";
-import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  SafeAreaView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import { colors, fonts, spacing, borderRadius } from "../theme";
+import { useTheme } from "../context/ThemeContext";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { colors, typography, spacing, borderRadius } = useTheme();
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
-      return;
-    }
+    if (!email || !password) return;
+    setLoading(true);
     try {
-      setLoading(true);
       await login(email, password);
     } catch (error) {
-      Alert.alert("Login Failed", error.message || "Invalid credentials");
+      // error handled in context
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+      <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+        style={styles.keyboardView}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Text style={styles.backText}>← BACK</Text>
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
+        </View>
 
-          <View style={styles.card}>
-            <Text style={styles.brandLabel}>MANDATE</Text>
-            <Text style={styles.title}>Welcome Back.</Text>
-            <Text style={styles.subtitle}>Enter your credentials to access the portal.</Text>
+        <View style={styles.content}>
+          <View style={styles.brandContainer}>
+            <Text style={[typography.headlineLg, { color: colors.primary, textAlign: 'center', marginBottom: spacing.sm }]}>MANDATE</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary, textAlign: 'center' }]}>SYSTEM ACCESS</Text>
+          </View>
 
-            <View style={styles.form}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>EMAIL</Text>
-                <TextInput
-                  style={styles.input}
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="name@company.com"
-                  placeholderTextColor={colors.textMuted}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>PASSWORD</Text>
-                <TextInput
-                  style={styles.input}
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="••••••••"
-                  placeholderTextColor={colors.textMuted}
-                  secureTextEntry
-                />
-              </View>
-
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handleLogin}
-                disabled={loading}
-                activeOpacity={0.8}
-              >
-                {loading ? (
-                  <ActivityIndicator color={colors.white} />
-                ) : (
-                  <Text style={styles.buttonText}>LOG IN</Text>
-                )}
-              </TouchableOpacity>
+          <View style={styles.formContainer}>
+            <View style={styles.inputGroup}>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.xs }]}>EMAIL ADDRESS</Text>
+              <TextInput
+                style={[
+                  styles.input, 
+                  typography.bodyMd, 
+                  { 
+                    backgroundColor: colors.surfaceContainerLowest, 
+                    borderColor: colors.outlineVariant,
+                    color: colors.onSurface
+                  }
+                ]}
+                placeholder="operator@mandate.systems"
+                placeholderTextColor={colors.outline}
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
             </View>
 
-            <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")} style={styles.link}>
-              <Text style={styles.linkText}>FORGOT PASSWORD?</Text>
+            <View style={styles.inputGroup}>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.xs }]}>ACCESS KEY</Text>
+              <TextInput
+                style={[
+                  styles.input, 
+                  typography.bodyMd, 
+                  { 
+                    backgroundColor: colors.surfaceContainerLowest, 
+                    borderColor: colors.outlineVariant,
+                    color: colors.onSurface
+                  }
+                ]}
+                placeholder="••••••••••••"
+                placeholderTextColor={colors.outline}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+            </View>
+
+            <TouchableOpacity 
+              style={styles.forgotPassword}
+              onPress={() => navigation.navigate("ForgotPassword")}
+            >
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, textDecorationLine: 'underline' }]}>
+                Forgot access key?
+              </Text>
             </TouchableOpacity>
 
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-                <Text style={styles.footerLink}>Create an account</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity 
+              style={[
+                styles.primaryButton, 
+                { backgroundColor: colors.primary, borderRadius: borderRadius.DEFAULT },
+                loading && { opacity: 0.7 }
+              ]}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={colors.onPrimary} />
+              ) : (
+                <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>AUTHENTICATE</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.footerLink}
+              onPress={() => navigation.navigate("Register")}
+            >
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>
+                No credentials? <Text style={{ color: colors.primary, fontWeight: '700' }}>REQUEST ACCESS</Text>
+              </Text>
+            </TouchableOpacity>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { flexGrow: 1, justifyContent: "center", padding: spacing.lg },
-  backButton: { position: "absolute", top: spacing.md, left: 0 },
-  backText: { ...fonts.tiny, color: colors.textSecondary },
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 4,
+  container: {
+    flex: 1,
   },
-  brandLabel: { ...fonts.tiny, textAlign: "center", marginBottom: spacing.sm },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: colors.primary,
-    textAlign: "center",
-    letterSpacing: -1,
-    textTransform: "uppercase",
+  keyboardView: {
+    flex: 1,
   },
-  subtitle: { ...fonts.small, textAlign: "center", marginTop: spacing.sm, marginBottom: spacing.lg },
-  form: { gap: spacing.md },
-  inputGroup: { gap: spacing.xs },
-  label: { ...fonts.tiny },
+  header: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: "center",
+  },
+  brandContainer: {
+    marginBottom: 48,
+  },
+  formContainer: {
+    gap: 24,
+  },
+  inputGroup: {
+    gap: 4,
+  },
   input: {
-    backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    paddingHorizontal: 16,
     paddingVertical: 14,
-    fontSize: 14,
-    color: colors.textPrimary,
   },
-  button: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.full,
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginTop: -8,
+  },
+  primaryButton: {
+    paddingVertical: 16,
     alignItems: "center",
-    marginTop: spacing.sm,
+    justifyContent: "center",
+    marginTop: 8,
   },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: colors.white, fontSize: 11, fontWeight: "700", letterSpacing: 2 },
-  link: { alignItems: "center", marginTop: spacing.lg },
-  linkText: { ...fonts.tiny, color: colors.textSecondary },
-  footer: { flexDirection: "row", justifyContent: "center", marginTop: spacing.md },
-  footerText: { ...fonts.small },
-  footerLink: { ...fonts.small, fontWeight: "700", color: colors.primary },
+  footerLink: {
+    alignItems: "center",
+    marginTop: 24,
+  }
 });
 
 export default LoginScreen;

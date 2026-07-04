@@ -1,142 +1,165 @@
 import React, { useState } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, TextInput, Alert, ActivityIndicator,
+  SafeAreaView, ScrollView, TextInput
 } from "react-native";
-import axios from "axios";
-import { useWorkspace } from "../context/WorkspaceContext";
-import { API_URL } from "../config";
-import { colors, fonts, spacing, borderRadius } from "../theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 
 const TeamSettingsScreen = ({ navigation }) => {
-  const { activeWorkspace, fetchWorkspaces } = useWorkspace();
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { colors, typography, spacing, borderRadius } = useTheme();
+  const [inviteEmail, setInviteEmail] = useState("");
 
-  const handleInvite = async () => {
-    if (!email.trim()) {
-      Alert.alert("Error", "Please enter an email address");
-      return;
-    }
-    try {
-      setLoading(true);
-      await axios.post(`${API_URL}/api/workspaces/${activeWorkspace._id}/invite`, {
-        email: email.trim(),
-      });
-      Alert.alert("Success", "Invitation sent!");
-      setEmail("");
-      fetchWorkspaces();
-    } catch (error) {
-      Alert.alert("Error", error.response?.data?.message || "Failed to send invite");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const members = [
+    { id: '1', name: 'Alexander Sterling', email: 'alex@mandate.systems', role: 'Admin' },
+    { id: '2', name: 'Elena Rostova', email: 'elena@mandate.systems', role: 'Operator' },
+    { id: '3', name: 'Marcus Chen', email: 'marcus@mandate.systems', role: 'Observer' },
+  ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backText}>← BACK</Text>
-        </TouchableOpacity>
-
-        <View style={styles.headerSection}>
-          <Text style={styles.heroTitle}>TEAM</Text>
-          <Text style={styles.heroSubtitle}>{activeWorkspace?.name?.toUpperCase() || "WORKSPACE"}</Text>
-        </View>
-
-        {/* Members */}
-        <Text style={styles.sectionTitle}>MEMBERS</Text>
-        {activeWorkspace?.members?.map((member, idx) => (
-          <View key={idx} style={styles.memberItem}>
-            <View style={styles.memberAvatar}>
-              <Text style={styles.memberAvatarText}>
-                {member.user?.name?.charAt(0)?.toUpperCase() || member.role?.charAt(0) || "M"}
-              </Text>
-            </View>
-            <View style={styles.memberInfo}>
-              <Text style={styles.memberName}>{member.user?.name || "Team Member"}</Text>
-              <Text style={styles.memberRole}>{member.role}</Text>
-            </View>
-          </View>
-        ))}
-
-        {/* Invite */}
-        <Text style={[styles.sectionTitle, { marginTop: spacing.xl }]}>INVITE MEMBER</Text>
-        <View style={styles.inviteRow}>
-          <TextInput
-            style={styles.inviteInput}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="colleague@company.com"
-            placeholderTextColor={colors.textMuted}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TouchableOpacity
-            style={[styles.inviteBtn, loading && { opacity: 0.5 }]}
-            onPress={handleInvite}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color={colors.white} size="small" />
-            ) : (
-              <Text style={styles.inviteBtnText}>INVITE</Text>
-            )}
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>
+        <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>TEAM SETUP</Text>
+        <View style={styles.headerRight} />
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Invite Section */}
+        <View style={styles.section}>
+          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.md }]}>INVITE OPERATOR</Text>
+          
+          <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
+            <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: 8 }]}>Enter email to dispatch invitation</Text>
+            <View style={styles.inviteRow}>
+              <TextInput
+                style={[
+                  styles.input, 
+                  typography.bodyMd, 
+                  { 
+                    backgroundColor: colors.surfaceContainer, 
+                    borderColor: colors.outlineVariant,
+                    color: colors.primary
+                  }
+                ]}
+                placeholder="new.operator@domain.com"
+                placeholderTextColor={colors.outline}
+                value={inviteEmail}
+                onChangeText={setInviteEmail}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity style={[styles.inviteBtn, { backgroundColor: colors.primary }]}>
+                <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>SEND</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* Active Roster */}
+        <View style={styles.section}>
+          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.md }]}>ACTIVE ROSTER</Text>
+          
+          <View style={[styles.listGroup, { borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
+            {members.map((member, index) => (
+              <View 
+                key={member.id} 
+                style={[
+                  styles.memberRow, 
+                  { backgroundColor: colors.surfaceContainerLowest },
+                  index !== members.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.outlineVariant }
+                ]}
+              >
+                <View style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}>
+                  <Text style={[typography.labelCaps, { color: colors.primary }]}>{member.name.charAt(0)}</Text>
+                </View>
+                <View style={styles.memberInfo}>
+                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>{member.name}</Text>
+                  <Text style={[typography.labelSm, { color: colors.secondary }]}>{member.role} • {member.email}</Text>
+                </View>
+                <TouchableOpacity>
+                  <MaterialIcons name="more-vert" size={20} color={colors.secondary} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
-  scrollContent: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl },
-  backButton: { marginTop: spacing.lg },
-  backText: { ...fonts.tiny, color: colors.textSecondary },
-  headerSection: { marginTop: spacing.md, marginBottom: spacing.xl },
-  heroTitle: { fontSize: 48, fontWeight: "900", color: colors.primary, letterSpacing: -2 },
-  heroSubtitle: { ...fonts.tiny, marginTop: spacing.xs },
-  sectionTitle: { ...fonts.tiny, marginBottom: spacing.md },
-  memberItem: {
+  container: {
+    flex: 1,
+  },
+  header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: spacing.md,
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-    gap: spacing.md,
   },
-  memberAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
+  headerLeft: {
+    flex: 1,
+    alignItems: 'flex-start',
   },
-  memberAvatarText: { color: colors.white, fontSize: 14, fontWeight: "700" },
-  memberInfo: { flex: 1 },
-  memberName: { fontSize: 14, fontWeight: "600", color: colors.textPrimary },
-  memberRole: { ...fonts.tiny, marginTop: 2 },
-  inviteRow: { flexDirection: "row", gap: spacing.sm },
-  inviteInput: {
+  headerRight: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  scrollContent: {
+    padding: 16,
+  },
+  section: {
+    marginBottom: 32,
+  },
+  card: {
+    padding: 16,
+    borderWidth: 1,
+  },
+  inviteRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-    fontSize: 13,
-    color: colors.textPrimary,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   inviteBtn: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.sm,
-    justifyContent: "center",
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
   },
-  inviteBtnText: { ...fonts.tiny, color: colors.white },
+  listGroup: {
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  memberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  memberInfo: {
+    flex: 1,
+  }
 });
 
 export default TeamSettingsScreen;

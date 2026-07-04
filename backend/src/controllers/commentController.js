@@ -2,7 +2,7 @@ import Comment from "../models/Comment.js";
 
 export const getComments = async (req, res) => {
   try {
-    const comments = await Comment.find({ todoId: req.params.todoId })
+    const comments = await Comment.find({ taskId: req.params.taskId })
       .populate("user", "name email")
       .sort({ createdAt: -1 });
     res.json(comments);
@@ -15,20 +15,20 @@ export const addComment = async (req, res) => {
   try {
     const { content } = req.body;
     
-    // Get Todo to find workspaceId
-    const Todo = (await import("../models/Todo.js")).default;
-    const todo = await Todo.findById(req.params.todoId);
-    if (!todo) return res.status(404).json({ message: "Todo not found" });
+    // Get Task to find workspaceId
+    const Task = (await import("../models/Task.js")).default;
+    const task = await Task.findById(req.params.taskId);
+    if (!task) return res.status(404).json({ message: "Task not found" });
 
     const comment = await Comment.create({
-      todoId: req.params.todoId,
+      taskId: req.params.taskId,
       user: req.user.id,
       content,
     });
     const populated = await comment.populate("user", "name email");
 
     if (req.io) {
-      req.io.to(todo.workspaceId.toString()).emit("comment_created", populated);
+      req.io.to(task.workspaceId.toString()).emit("comment_created", populated);
     }
 
     res.status(201).json(populated);
@@ -48,11 +48,11 @@ export const deleteComment = async (req, res) => {
 
     await comment.deleteOne();
     
-    // Get Todo to find workspaceId for broadcasting
-    const Todo = (await import("../models/Todo.js")).default;
-    const todo = await Todo.findById(comment.todoId);
-    if (todo && req.io) {
-      req.io.to(todo.workspaceId.toString()).emit("comment_deleted", { commentId: req.params.id, todoId: todo._id });
+    // Get Task to find workspaceId for broadcasting
+    const Task = (await import("../models/Task.js")).default;
+    const task = await Task.findById(comment.taskId);
+    if (task && req.io) {
+      req.io.to(task.workspaceId.toString()).emit("comment_deleted", { commentId: req.params.id, taskId: task._id });
     }
 
     res.json({ message: "Comment removed" });

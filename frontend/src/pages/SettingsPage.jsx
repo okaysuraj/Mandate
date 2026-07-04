@@ -1,95 +1,203 @@
-import React from 'react';
-import Navbar from '../components/Navbar';
-import { User, Laptop } from 'lucide-react';
-import { Button } from '../components/ui/Button';
-import { Link } from 'react-router';
-import { Inbox, Calendar, CalendarDays, Settings } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const SettingsPage = () => {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("ACCOUNT");
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    jobTitle: "",
+    timezone: "UTC -05:00 Eastern Time",
+    criticalAlerts: true,
+    weeklyReports: false,
+    dataRetention: "90",
+  });
+
+  const tabs = ["ACCOUNT", "SECURITY", "WORKSPACE", "BILLING"];
+
+  const handleSave = async () => {
+    try {
+      await axios.put("/api/users/profile", { name: formData.name });
+      toast.success("Settings saved");
+    } catch (error) {
+      toast.error("Failed to save settings");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0A0A0A] font-sans text-[#1A1A1A] dark:text-white flex flex-col">
-      <Navbar />
+    <div className="font-body-md text-body-md flex flex-col min-h-screen bg-surface">
+      <Navbar variant="landing" />
 
-      <main className="flex-1 max-w-[1400px] w-full mx-auto px-8 py-16 flex flex-col md:flex-row gap-12 lg:gap-24 relative">
-        {/* Left Sidebar (same as HomePage for navigation) */}
-        <aside className="w-full md:w-56 shrink-0 flex flex-col gap-10 mt-2 hidden md:flex">
-          <nav className="flex flex-col gap-5">
-            <Link to="/dashboard" className="flex items-center gap-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
-              <Inbox size={18} /> Inbox
-            </Link>
-            <Link to="/dashboard" className="flex items-center gap-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
-              <Calendar size={18} /> Today
-            </Link>
-            <Link to="/dashboard" className="flex items-center gap-4 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-[#1A1A1A] dark:hover:text-white transition-colors">
-              <CalendarDays size={18} /> Upcoming
-            </Link>
-            <button className="flex items-center gap-4 text-sm font-bold text-[#1A1A1A] dark:text-white relative mt-4">
-              <span className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[#1A1A1A] dark:bg-white rounded-full"></span>
-              <Settings size={18} /> Settings
-            </button>
-          </nav>
-        </aside>
+      <main className="flex-grow pt-32 pb-xl px-lg max-w-[1440px] mx-auto w-full">
+        <div className="mb-xl">
+          <h1 className="font-headline-lg text-headline-lg mb-sm">Settings</h1>
+          <p className="text-on-surface-variant font-body-md">Manage your account preferences and workspace configurations.</p>
+        </div>
 
-        {/* Settings Content */}
-        <div className="flex-1 max-w-3xl">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase text-[#1A1A1A] dark:text-white font-['Space_Grotesk'] leading-none mb-12">
-            Settings
-          </h1>
+        <div className="settings-grid">
+          {/* Sidebar Tabs */}
+          <aside className="space-y-xs">
+            {tabs.map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`w-full text-left px-md py-sm rounded-md font-label-caps text-label-caps transition-all ${
+                  activeTab === tab
+                    ? "bg-surface-container-low text-primary font-bold border-l-4 border-primary"
+                    : "text-on-surface-variant hover:bg-surface-container-low hover:text-primary"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </aside>
 
-          <div className="flex flex-col md:flex-row gap-12">
-            {/* Settings Sidebar */}
-            <aside className="w-full md:w-48 shrink-0">
-              <nav className="flex flex-col gap-4">
-                <button className="text-left text-sm font-bold text-[#1A1A1A] dark:text-white py-2 border-l-2 border-[#1A1A1A] dark:border-white pl-4">
-                  Profile
-                </button>
-                <button className="text-left text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-[#1A1A1A] dark:hover:text-white transition-colors py-2 pl-4 border-l-2 border-transparent">
-                  Preferences
-                </button>
-                <button className="text-left text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-[#1A1A1A] dark:hover:text-white transition-colors py-2 pl-4 border-l-2 border-transparent">
-                  Security
-                </button>
-                <button className="text-left text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-[#1A1A1A] dark:hover:text-white transition-colors py-2 pl-4 border-l-2 border-transparent">
-                  Notifications
-                </button>
-              </nav>
-            </aside>
-
-            {/* Settings Panels */}
-            <div className="flex-1 flex flex-col gap-12">
-              <section>
-                <div className="flex items-center gap-3 mb-6">
-                  <User size={20} className="text-gray-400" />
-                  <h2 className="text-lg font-bold font-['Space_Grotesk'] tracking-tight">Profile Information</h2>
-                </div>
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-500 tracking-widest uppercase mb-2">Display Name</label>
-                    <input type="text" placeholder="John Doe" className="w-full px-4 py-3 bg-[#F9F9FB] dark:bg-[#1A1A1A] border border-[#EDEDF0] dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] dark:focus:ring-white transition-all disabled:opacity-50" disabled />
+          {/* Form Canvas */}
+          <section className="max-w-2xl">
+            {/* Profile Section */}
+            <div className="mb-xl">
+              <h2 className="font-label-caps text-label-caps text-on-primary-container mb-lg">PROFILE IDENTITY</h2>
+              <div className="flex items-center gap-lg mb-lg">
+                <div className="w-24 h-24 rounded-full bg-surface-container overflow-hidden border border-outline-variant relative group">
+                  <div className="w-full h-full flex items-center justify-center bg-surface-container-high">
+                    <span className="material-symbols-outlined text-[40px] text-on-surface-variant">person</span>
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-500 tracking-widest uppercase mb-2">Email Address</label>
-                    <input type="email" placeholder="john@example.com" className="w-full px-4 py-3 bg-[#F9F9FB] dark:bg-[#1A1A1A] border border-[#EDEDF0] dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1A1A1A] dark:focus:ring-white transition-all disabled:opacity-50" disabled />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
+                    <span className="material-symbols-outlined text-white">edit</span>
                   </div>
-                  <Button disabled>Save Changes</Button>
                 </div>
-              </section>
-
-              <div className="w-full h-px bg-[#F0F0F0] dark:bg-gray-800"></div>
-
-              <section>
-                <div className="flex items-center gap-3 mb-6">
-                  <Laptop size={20} className="text-gray-400" />
-                  <h2 className="text-lg font-bold font-['Space_Grotesk'] tracking-tight">System Preferences</h2>
+                <div>
+                  <button className="px-md py-xs bg-surface-container-high border border-outline-variant rounded-full font-label-caps text-label-sm hover:bg-surface-dim transition-colors">UPDATE PHOTO</button>
+                  <p className="mt-xs font-label-sm text-on-surface-variant opacity-70">JPG or PNG. Max 5MB.</p>
                 </div>
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Settings implementation pending future update. For now, use the Dark Mode toggle in the profile menu.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+                <div className="space-y-xs">
+                  <label className="block font-label-caps text-label-caps text-on-surface-variant">FULL NAME</label>
+                  <input
+                    className="mandate-input"
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
                 </div>
-              </section>
+                <div className="space-y-xs">
+                  <label className="block font-label-caps text-label-caps text-on-surface-variant">JOB TITLE</label>
+                  <input
+                    className="mandate-input"
+                    type="text"
+                    value={formData.jobTitle}
+                    onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                    placeholder="Senior Systems Architect"
+                  />
+                </div>
+                <div className="space-y-xs md:col-span-2">
+                  <label className="block font-label-caps text-label-caps text-on-surface-variant">EMAIL ADDRESS</label>
+                  <input
+                    className="mandate-input"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+
+            {/* Notifications */}
+            <div className="mb-xl pt-lg border-t border-surface-container-high">
+              <h2 className="font-label-caps text-label-caps text-on-primary-container mb-lg">SYSTEM NOTIFICATIONS</h2>
+              <div className="space-y-md">
+                <div className="flex items-center justify-between p-md bg-surface-container-lowest border border-outline-variant rounded-md">
+                  <div>
+                    <h3 className="font-bold font-body-md">Critical Alerts</h3>
+                    <p className="text-on-surface-variant font-label-sm">Immediate notification for system failures.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={formData.criticalAlerts}
+                      onChange={(e) => setFormData({ ...formData, criticalAlerts: e.target.checked })}
+                    />
+                    <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+                <div className="flex items-center justify-between p-md bg-surface-container-lowest border border-outline-variant rounded-md">
+                  <div>
+                    <h3 className="font-bold font-body-md">Weekly Reports</h3>
+                    <p className="text-on-surface-variant font-label-sm">Digest of workspace activity every Monday.</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={formData.weeklyReports}
+                      onChange={(e) => setFormData({ ...formData, weeklyReports: e.target.checked })}
+                    />
+                    <div className="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Workspace Preferences */}
+            <div className="mb-xl pt-lg border-t border-surface-container-high">
+              <h2 className="font-label-caps text-label-caps text-on-primary-container mb-lg">WORKSPACE PREFERENCES</h2>
+              <div className="space-y-md">
+                <div className="space-y-xs">
+                  <label className="block font-label-caps text-label-caps text-on-surface-variant">DEFAULT TIMEZONE</label>
+                  <select
+                    className="mandate-input appearance-none"
+                    value={formData.timezone}
+                    onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                  >
+                    <option>UTC -05:00 Eastern Time</option>
+                    <option>UTC +00:00 Greenwich Mean Time</option>
+                    <option>UTC +01:00 Central European Time</option>
+                    <option>UTC +05:30 India Standard Time</option>
+                  </select>
+                </div>
+                <div className="space-y-xs">
+                  <label className="block font-label-caps text-label-caps text-on-surface-variant">DATA RETENTION POLICY</label>
+                  <div className="flex gap-sm">
+                    {["90", "180", "365"].map(days => (
+                      <button
+                        key={days}
+                        onClick={() => setFormData({ ...formData, dataRetention: days })}
+                        className={`px-md py-sm border rounded-md font-label-sm transition-colors ${
+                          formData.dataRetention === days
+                            ? "border-primary bg-primary text-on-primary"
+                            : "border-outline-variant hover:border-primary"
+                        }`}
+                      >
+                        {days} DAYS
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Save */}
+            <div className="flex justify-end pt-xl">
+              <button
+                onClick={handleSave}
+                className="px-xl py-md bg-primary text-on-primary rounded-full font-label-caps text-label-caps font-bold hover:opacity-80 transition-opacity flex items-center gap-sm"
+              >
+                SAVE CHANGES
+                <span className="material-symbols-outlined text-sm">check_circle</span>
+              </button>
+            </div>
+          </section>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };

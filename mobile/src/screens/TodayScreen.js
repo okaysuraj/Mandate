@@ -1,37 +1,30 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, FlatList, RefreshControl, Alert, ActivityIndicator,
+  SafeAreaView, ScrollView, RefreshControl
 } from "react-native";
 import axios from "axios";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { API_URL } from "../config";
-import { colors, fonts, spacing, borderRadius } from "../theme";
-import TaskModal from "./TaskModal";
-
-const PRIORITY_COLORS = {
-  high: "#EF4444",
-  medium: "#F59E0B",
-  low: "#22C55E",
-};
+import { useTheme } from "../context/ThemeContext";
 
 const TodayScreen = ({ navigation }) => {
-  const [todos, setTodos] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingTodo, setEditingTodo] = useState(null);
 
-  const { user, updateUser } = useAuth();
+  const { user } = useAuth();
   const { socket } = useSocket();
+  const { colors, typography, spacing, borderRadius } = useTheme();
 
-  const fetchTodos = useCallback(async () => {
+  const fetchTasks = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/api/todos`, {
-        params: { page: 1, limit: 100, isDeleted: "false" },
+      const { data } = await axios.get(`${API_URL}/api/tasks`, {
+        params: { page: 1, limit: 100 },
       });
-      setTodos(data.data);
+      setTasks(data.data || data); // handle standard pagination format
     } catch (error) {
       console.error("Failed to load tasks", error);
     } finally {
@@ -41,275 +34,248 @@ const TodayScreen = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    if (user) fetchTodos();
-  }, [user, fetchTodos]);
+    if (user) fetchTasks();
+  }, [user, fetchTasks]);
 
   useEffect(() => {
     if (!socket) return;
-    const handleCreated = (t) => setTodos((prev) => [t, ...prev]);
-    const handleUpdated = (t) => setTodos((prev) => prev.map((x) => (x._id === t._id ? t : x)));
-    const handleDeleted = (id) => setTodos((prev) => prev.filter((x) => x._id !== id));
-    socket.on("todo_created", handleCreated);
-    socket.on("todo_updated", handleUpdated);
-    socket.on("todo_deleted", handleDeleted);
+    const handleCreated = (t) => setTasks((prev) => [t, ...prev]);
+    const handleUpdated = (t) => setTasks((prev) => prev.map((x) => (x._id === t._id ? t : x)));
+    const handleDeleted = (id) => setTasks((prev) => prev.filter((x) => x._id !== id));
+
+    socket.on("task:created", handleCreated);
+    socket.on("task:updated", handleUpdated);
+    socket.on("task:deleted", handleDeleted);
     return () => {
-      socket.off("todo_created", handleCreated);
-      socket.off("todo_updated", handleUpdated);
-      socket.off("todo_deleted", handleDeleted);
+      socket.off("task:created", handleCreated);
+      socket.off("task:updated", handleUpdated);
+      socket.off("task:deleted", handleDeleted);
     };
   }, [socket]);
 
-  const handleSave = async (taskData) => {
-    try {
-      if (editingTodo) {
-        await axios.put(`${API_URL}/api/todos/${editingTodo._id}`, taskData);
-      } else {
-        await axios.post(`${API_URL}/api/todos`, taskData);
-      }
-      setModalVisible(false);
-      setEditingTodo(null);
-      fetchTodos();
-    } catch (error) {
-      Alert.alert("Error", error.response?.data?.message || "Failed to save task");
-    }
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchTasks();
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await axios.put(`${API_URL}/api/todos/${id}`, { isDeleted: true });
-      fetchTodos();
-    } catch {
-      Alert.alert("Error", "Failed to delete task");
-    }
-  };
-
-  const handleStatusChange = async (id, newStatus) => {
-    try {
-      await axios.put(`${API_URL}/api/todos/${id}`, { status: newStatus });
-      fetchTodos();
-    } catch {
-      Alert.alert("Error", "Failed to update status");
-    }
-  };
-
-  const todayTodos = todos.filter((t) => {
-    if (!t.dueDate) return false;
-    const due = new Date(t.dueDate);
-    const today = new Date();
-    return (
-      due.getDate() === today.getDate() &&
-      due.getMonth() === today.getMonth() &&
-      due.getFullYear() === today.getFullYear()
-    );
-  });
-
-  const upcomingTodos = todos.filter((t) => {
-    if (!t.dueDate) return false;
-    const due = new Date(t.dueDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return due > today && t.status !== "completed";
-  });
-
-  const completedCount = todos.filter((t) => t.status === "completed").length;
-  const efficiency = (() => {
-    const completed = todos.filter((t) => t.status === "completed");
-    if (completed.length === 0) return 0;
-    let onTime = 0;
-    completed.forEach((t) => {
-      if (!t.dueDate) { onTime++; return; }
-      const c = new Date(t.updatedAt);
-      const d = new Date(t.dueDate);
-      c.setHours(0, 0, 0, 0);
-      d.setHours(0, 0, 0, 0);
-      if (c <= d) onTime++;
-    });
-    return Math.round((onTime / completed.length) * 100);
-  })();
-
-  const getNextStatus = (current) => {
-    if (current === "pending") return "in-progress";
-    if (current === "in-progress") return "completed";
-    return "pending";
-  };
-
-  const renderTodoItem = ({ item }) => (
-    <View style={styles.todoItem}>
-      <TouchableOpacity
-        style={[styles.statusCircle, item.status === "completed" && styles.statusCompleted]}
-        onPress={() => handleStatusChange(item._id, getNextStatus(item.status))}
-      >
-        {item.status === "completed" && <Text style={styles.checkMark}>✓</Text>}
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.todoContent}
-        onPress={() => { setEditingTodo(item); setModalVisible(true); }}
-        onLongPress={() =>
-          Alert.alert("Delete Task", "Move this task to trash?", [
-            { text: "Cancel", style: "cancel" },
-            { text: "Delete", style: "destructive", onPress: () => handleDelete(item._id) },
-          ])
-        }
-      >
-        <View style={styles.todoHeader}>
-          <Text
-            style={[styles.todoTitle, item.status === "completed" && styles.todoTitleCompleted]}
-            numberOfLines={1}
-          >
-            {item.title}
-          </Text>
-          <View style={[styles.priorityDot, { backgroundColor: PRIORITY_COLORS[item.priority] || colors.textMuted }]} />
-        </View>
-        {item.dueDate && (
-          <Text style={styles.todoDueDate}>
-            {new Date(item.dueDate).toLocaleDateString()}
-          </Text>
-        )}
-      </TouchableOpacity>
-    </View>
-  );
-
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.status === "completed").length;
+  const efficiency = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : "0.0";
+  const activeTasks = tasks.filter(t => t.status !== "completed");
+  const recentActivity = [...tasks].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 3);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        data={todayTodos.length > 0 ? todayTodos : upcomingTodos}
-        keyExtractor={(item) => item._id}
-        renderItem={renderTodoItem}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchTodos(); }} tintColor={colors.primary} />
-        }
-        ListHeaderComponent={
-          <View style={styles.headerSection}>
-            <Text style={styles.heroTitle}>
-              {todayTodos.length > 0 ? "TODAY" : "UPCOMING"}
-            </Text>
-            <Text style={styles.heroSubtitle}>YOUR TASK OVERVIEW</Text>
-          </View>
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No tasks found. Enjoy the focus.</Text>
-          </View>
-        }
-        ListFooterComponent={
-          <View style={styles.statsRow}>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>EFFICIENCY</Text>
-              <Text style={styles.statValue}>{efficiency}%</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statLabel}>COMPLETION</Text>
-              <Text style={styles.statValue}>{completedCount}/{todos.length}</Text>
-            </View>
-          </View>
-        }
-      />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+      {/* TopAppBar */}
+      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity>
+            <MaterialIcons name="menu" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+        <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>MANDATE</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
+            <MaterialIcons name="account-circle" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+      </View>
 
-      {/* FAB */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => { setEditingTodo(null); setModalVisible(true); }}
-        activeOpacity={0.8}
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
-        <Text style={styles.fabIcon}>+</Text>
-      </TouchableOpacity>
+        {/* Header Section */}
+        <View style={styles.section}>
+          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>GLOBAL STATUS</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase' }]}>PRECISION METRICS</Text>
+        </View>
 
-      <TaskModal
-        visible={modalVisible}
-        onClose={() => { setModalVisible(false); setEditingTodo(null); }}
-        onSave={handleSave}
-        initialData={editingTodo}
-        projects={user?.projects || []}
-      />
+        {/* Stacking Metrics */}
+        <View style={styles.metricsContainer}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
+            <View>
+              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>Efficiency</Text>
+              <View style={styles.metricRow}>
+                <Text style={[typography.headlineLg, { fontFamily: 'JetBrainsMono-Bold' }]}>{loading ? "—" : efficiency}</Text>
+                <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginLeft: 4 }]}>%</Text>
+              </View>
+            </View>
+            <View style={[styles.iconCircle, { backgroundColor: colors.surfaceContainerLow }]}>
+              <MaterialIcons name="bolt" size={24} color={colors.primary} />
+            </View>
+          </View>
+
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
+            <View>
+              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>Nodes</Text>
+              <View style={styles.metricRow}>
+                <Text style={[typography.headlineLg, { fontFamily: 'JetBrainsMono-Bold' }]}>{loading ? "—" : totalTasks}</Text>
+                <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, marginLeft: 4 }]}>Live</Text>
+              </View>
+            </View>
+            <View style={[styles.iconCircle, { backgroundColor: colors.surfaceContainerLow }]}>
+              <MaterialIcons name="hub" size={24} color={colors.primary} />
+            </View>
+          </View>
+
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
+            <View>
+              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>Latency</Text>
+              <View style={styles.metricRow}>
+                <Text style={[typography.headlineLg, { fontFamily: 'JetBrainsMono-Bold' }]}>12.4</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary, marginLeft: 4 }]}>ms</Text>
+              </View>
+            </View>
+            <View style={[styles.iconCircle, { backgroundColor: colors.surfaceContainerLow }]}>
+              <MaterialIcons name="speed" size={24} color={colors.primary} />
+            </View>
+          </View>
+        </View>
+
+        {/* Active Projects */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[typography.labelCaps, { color: colors.primary }]}>Active Projects</Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Kanban")}>
+              <Text style={[typography.labelSm, { color: colors.secondary, textDecorationLine: 'underline' }]}>View All</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={{ gap: spacing.sm }}>
+            {activeTasks.length === 0 ? (
+              <Text style={[typography.labelSm, { color: colors.secondary, textAlign: 'center', padding: spacing.md }]}>No active projects.</Text>
+            ) : (
+              activeTasks.slice(0, 3).map((task, i) => (
+                <View key={task._id} style={[styles.projectCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
+                  <View style={[styles.projectIcon, { backgroundColor: i % 2 === 0 ? colors.primary : colors.secondaryContainer }]}>
+                    <Text style={[typography.labelCaps, { color: i % 2 === 0 ? colors.onPrimary : colors.primary, fontSize: 10 }]}>P-0{i+1}</Text>
+                  </View>
+                  <View style={{ flex: 1, paddingHorizontal: spacing.md }}>
+                    <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700' }]} numberOfLines={1}>{task.title}</Text>
+                    <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>Priority: {task.priority || 'Standard'}</Text>
+                  </View>
+                  <View style={[styles.progressBadge, { backgroundColor: colors.surfaceContainer }]}>
+                    <Text style={[typography.labelSm, { color: colors.primary, fontSize: 10 }]}>Active</Text>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+        </View>
+
+        {/* Activity Log */}
+        <View style={[styles.section, { paddingBottom: spacing.xl }]}>
+          <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: spacing.md }]}>Activity Log</Text>
+          <View style={[styles.timeline, { borderLeftColor: colors.outlineVariant }]}>
+            {recentActivity.map((task, i) => (
+              <View key={task._id || i} style={styles.timelineItem}>
+                <View style={[styles.timelineDot, { backgroundColor: i === 0 ? colors.primary : colors.outline }]} />
+                <Text style={[typography.labelSm, { fontWeight: '700', color: i === 0 ? colors.primary : colors.onSurfaceVariant }]} numberOfLines={1}>
+                  {task.title}
+                </Text>
+                <Text style={[typography.labelSm, { fontSize: 10, color: colors.secondary, marginTop: 2 }]}>
+                  {new Date(task.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Update
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  listContent: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
-  headerSection: { marginTop: spacing.lg, marginBottom: spacing.xl },
-  heroTitle: {
-    fontSize: 48,
-    fontWeight: "900",
-    color: colors.primary,
-    letterSpacing: -2,
-    textTransform: "uppercase",
+  container: {
+    flex: 1,
   },
-  heroSubtitle: { ...fonts.tiny, marginTop: spacing.xs },
-  emptyState: {
-    paddingVertical: spacing.xxl,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: colors.borderLight,
-    alignItems: "center",
-  },
-  emptyText: { ...fonts.small, fontWeight: "600" },
-  todoItem: {
+  header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: spacing.md,
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-    gap: spacing.md,
   },
-  statusCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: colors.border,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  statusCompleted: { backgroundColor: colors.primary, borderColor: colors.primary },
-  checkMark: { color: colors.white, fontSize: 12, fontWeight: "700" },
-  todoContent: { flex: 1 },
-  todoHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  todoTitle: { fontSize: 14, fontWeight: "600", color: colors.textPrimary, flex: 1, marginRight: spacing.sm },
-  todoTitleCompleted: { textDecorationLine: "line-through", color: colors.textMuted },
-  priorityDot: { width: 8, height: 8, borderRadius: 4 },
-  todoDueDate: { ...fonts.tiny, marginTop: 2 },
-  statsRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.xl },
-  statCard: {
+  headerLeft: {
     flex: 1,
-    backgroundColor: colors.background,
+    alignItems: 'flex-start',
+  },
+  headerRight: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  scrollContent: {
+    padding: 24,
+    gap: 32,
+  },
+  section: {
+    // marginBottom: 32
+  },
+  metricsContainer: {
+    gap: 16,
+  },
+  bentoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 24,
     borderWidth: 1,
-    borderColor: colors.borderLight,
-    padding: spacing.md,
-    borderRadius: 2,
   },
-  statLabel: { ...fonts.tiny, marginBottom: spacing.sm },
-  statValue: { fontSize: 28, fontWeight: "800", color: colors.primary, letterSpacing: -1 },
-  fab: {
-    position: "absolute",
-    bottom: spacing.lg,
-    right: spacing.lg,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
+  metricRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
   },
-  fabIcon: { color: colors.white, fontSize: 28, fontWeight: "300", marginTop: -2 },
+  iconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 16,
+  },
+  projectCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderWidth: 1,
+  },
+  projectIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+  },
+  timeline: {
+    borderLeftWidth: 1,
+    marginLeft: 8,
+    paddingLeft: 16,
+    gap: 24,
+  },
+  timelineItem: {
+    position: 'relative',
+  },
+  timelineDot: {
+    position: 'absolute',
+    left: -21, // 16 (padding) + 1 (border half) + 4 (dot half)
+    top: 4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  }
 });
 
 export default TodayScreen;

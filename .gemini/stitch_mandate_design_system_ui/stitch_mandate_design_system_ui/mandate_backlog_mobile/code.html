@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>MANDATE INDUSTRIAL | SYSTEM BACKLOG</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700;800&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e1e2e4",
+                    "on-tertiary-container": "#00983d",
+                    "on-primary-fixed": "#1c1b1b",
+                    "on-background": "#191c1e",
+                    "on-secondary-fixed-variant": "#454749",
+                    "tertiary-fixed-dim": "#3ce36a",
+                    "tertiary-fixed": "#69ff87",
+                    "primary-container": "#1c1b1b",
+                    "surface-bright": "#f9f9fb",
+                    "on-error": "#ffffff",
+                    "secondary-fixed-dim": "#c6c6c8",
+                    "on-primary-container": "#858383",
+                    "surface-container": "#edeef0",
+                    "on-surface": "#191c1e",
+                    "inverse-surface": "#2e3132",
+                    "secondary-container": "#dfdfe1",
+                    "secondary-fixed": "#e2e2e4",
+                    "surface-container-high": "#e7e8ea",
+                    "secondary": "#5d5e60",
+                    "on-secondary-fixed": "#1a1c1d",
+                    "on-primary-fixed-variant": "#474746",
+                    "on-error-container": "#93000a",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#f9f9fb",
+                    "on-secondary-container": "#616365",
+                    "outline-variant": "#c4c7c7",
+                    "surface-variant": "#e1e2e4",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed": "#e5e2e1",
+                    "inverse-primary": "#c8c6c5",
+                    "error-container": "#ffdad6",
+                    "background": "#f9f9fb",
+                    "surface-container-low": "#f3f3f5",
+                    "surface-dim": "#d9dadc",
+                    "error": "#ba1a1a",
+                    "on-tertiary-fixed": "#002108",
+                    "surface-tint": "#5f5e5e",
+                    "primary": "#000000",
+                    "outline": "#747878",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#00531e",
+                    "on-surface-variant": "#444748",
+                    "tertiary-container": "#002108",
+                    "tertiary": "#000000",
+                    "primary-fixed-dim": "#c8c6c5",
+                    "inverse-on-surface": "#f0f1f3"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "unit": "4px",
+                    "container-max": "1440px",
+                    "xl": "64px",
+                    "md": "16px",
+                    "lg": "32px",
+                    "xs": "4px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "label-sm": ["JetBrains Mono"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "label-caps": ["JetBrains Mono"],
+                    "display-lg": ["Hanken Grotesk"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "1.4", "letterSpacing": "0em", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["11px", {"lineHeight": "1.4", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                    "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f9f9fb;
+            color: #191c1e;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bento-card {
+            background: #ffffff;
+            border: 1px solid #D9DADC;
+            transition: background-color 0.2s ease;
+        }
+        .bento-card:active {
+            background-color: #F3F3F5;
+            transform: scale(0.98);
+        }
+        .status-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.05em;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+        }
+        /* Custom Scrollbar for Horizontal Metrics */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 z-50 bg-surface border-b border-outline-variant flex items-center justify-between px-md py-sm h-16">
+<div class="flex items-center gap-sm">
+<button class="p-sm hover:bg-surface-container-low transition-colors rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold tracking-tighter text-primary">MANDATE</h1>
+</div>
+<button class="p-sm hover:bg-surface-container-low transition-colors rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">account_circle</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="flex-1 pb-24 overflow-x-hidden">
+<!-- Screen Title Section -->
+<section class="px-gutter pt-lg pb-md">
+<div class="flex items-baseline justify-between mb-xs">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile font-extrabold tracking-tight">SYSTEM BACKLOG</h2>
+<span class="font-label-sm text-label-sm text-secondary">ID: MT-SYS-004</span>
+</div>
+<div class="h-1 w-12 bg-primary"></div>
+</section>
+<!-- Performance Overview: Horizontal Scroll Metrics -->
+<section class="mb-lg">
+<div class="flex overflow-x-auto no-scrollbar gap-md px-gutter">
+<!-- LOAD_FACTOR -->
+<div class="flex-shrink-0 w-40 bento-card p-md rounded-none border-l-4 border-l-primary">
+<p class="font-label-caps text-label-caps text-secondary mb-xs">LOAD_FACTOR</p>
+<div class="flex items-baseline gap-xs">
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold">84.2</span>
+<span class="font-label-sm text-label-sm text-secondary">%</span>
+</div>
+</div>
+<!-- QUEUE_LATENCY -->
+<div class="flex-shrink-0 w-40 bento-card p-md rounded-none">
+<p class="font-label-caps text-label-caps text-secondary mb-xs">QUEUE_LATENCY</p>
+<div class="flex items-baseline gap-xs">
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold">12</span>
+<span class="font-label-sm text-label-sm text-secondary">ms</span>
+</div>
+</div>
+<!-- PRIORITY_ALERTS -->
+<div class="flex-shrink-0 w-40 bento-card p-md rounded-none">
+<p class="font-label-caps text-label-caps text-secondary mb-xs">PRIORITY_ALERTS</p>
+<div class="flex items-baseline gap-xs">
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold">03</span>
+</div>
+</div>
+<!-- UPTIME_METRIC -->
+<div class="flex-shrink-0 w-40 bento-card p-md rounded-none">
+<p class="font-label-caps text-label-caps text-secondary mb-xs">UPTIME_METRIC</p>
+<div class="flex items-baseline gap-xs">
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold">99.9</span>
+<span class="font-label-sm text-label-sm text-secondary">%</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Task List Header -->
+<section class="px-gutter mb-sm flex justify-between items-center">
+<h3 class="font-label-caps text-label-caps text-primary">LIVE_TASKS [12]</h3>
+<button class="flex items-center gap-xs text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+<span class="font-label-sm text-label-sm">SORT</span>
+</button>
+</section>
+<!-- Main Tasks High-Density List -->
+<section class="px-gutter space-y-sm">
+<!-- Card 1 -->
+<div class="bento-card p-md flex flex-col gap-sm border-t-4 border-t-error">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-sm text-label-sm text-secondary block">#MN-9042</span>
+<h4 class="font-body-md text-body-md font-bold text-primary">Thermal Matrix Synchronization</h4>
+</div>
+<span class="status-pill bg-error-container text-on-error-container">ACTIVE</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<span class="status-pill bg-surface-container-highest text-primary font-bold">CRITICAL</span>
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-surface overflow-hidden bg-surface-dim">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a technical industrial operator, monochromatic grayscale style, studio lighting against a clean white background, high-end corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjP0WuQIRPUajTngMu-9FzX5NRv0K4HgHYOVWwKZebknzGc2LrIaY1sfijmlOGOuVTvJnx-rb8dYHUtwZ50iiNoR5dTrq6f6H5o-X5r2vkOGXfMCmajA5POADM6hoQizhJZ2fRprOeHXRKmy-P9r2qvC91RBx05hzFizyv9VF_r-H1QM5xONw-sA6JtXMtgxHYl4VIU5858U9KUHrToN_PKbc5nIEw9GqRsE-w5fKX-ctJjOALPqDLWg"/>
+</div>
+<div class="w-6 h-6 rounded-full border-2 border-surface overflow-hidden bg-surface-dim">
+<img class="w-full h-full object-cover" data-alt="A portrait of a systems engineer in a high-tech environment, stark monochrome black and white photography, sharp focus, professional industrial vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhSq4UHw6XAn39xF4VsdsM64mzzuJkQZw2zgZsyHaqMm-KsLN-hLk8DgzqqTfBWXOcXCk71y6Rmlr-viWMm-Lw5IfP4edi4Goq0rFL2oM3DCMtHUQjWfSRH-EzxQI79J0LL5hyfR45I7vr1UzXs_sW-mVMc-6nvSq9JQ_0M2H6j0ROOSHBLvQzFNcZ14fZYV0ZxX_0TSMB-bKiiVKl6ki1Hsmygko8pDSBbaerNpE9wUAKzF2PVyAKUw"/>
+</div>
+<div class="w-6 h-6 rounded-full border-2 border-surface flex items-center justify-center bg-primary text-white text-[8px] font-bold">+2</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-[20px]">chevron_right</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bento-card p-md flex flex-col gap-sm border-t-4 border-t-primary">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-sm text-label-sm text-secondary block">#MN-8821</span>
+<h4 class="font-body-md text-body-md font-bold text-primary">Sub-Zero Coolant Calibration</h4>
+</div>
+<span class="status-pill bg-secondary-container text-on-secondary-container">PENDING</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<span class="status-pill bg-surface-container-highest text-primary font-bold">ROUTINE</span>
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-surface overflow-hidden bg-surface-dim">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a manufacturing specialist, minimalist monochrome style, neutral expression, high-contrast industrial lighting, clean aesthetics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7k_5_Rp13Tw-Nkgh_giO4KlWAFPZajOV4OgJ7gpDPzwb_Z3Q6id_1s-RICtcALy2IQbm64j8rAlbFzk_BOiKxFSVAmyoupqn2tR2W75j6DnKU8sPtBN_QOskbZwnzuyOneTJHo5mHdQK3f1IlneD1V6mrZRpPFA75BL0rLfC3yUnBDVWr3gJH5NBUSRkX6kLAesIh8Z9Ks4cV-qA5LPAnqzd7A_DWedRBisbOnEqbnY_Onmj92KStOQ"/>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-[20px]">chevron_right</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bento-card p-md flex flex-col gap-sm border-t-4 border-t-error">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-sm text-label-sm text-secondary block">#MN-9105</span>
+<h4 class="font-body-md text-body-md font-bold text-primary">Kinetic Dampener Overhaul</h4>
+</div>
+<span class="status-pill bg-error-container text-on-error-container">WARNING</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<span class="status-pill bg-surface-container-highest text-primary font-bold">URGENT</span>
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-surface overflow-hidden bg-surface-dim">
+<img class="w-full h-full object-cover" data-alt="A portrait of an industrial technician wearing high-tech gear, monochromatic black and white, cinematic lighting, minimalist professional background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6jTi3iC4ojLaOD1Us_wODfqQTgfSFphim0YRJX0fFw_QdfAInxysaSBzLIsk1yjXTz1hi4Mc8SnPxDO28FigMhiixFE4LarIskf21vfHnvC5r5wyPaZxlpTo3bwCA02smB7q0BB23UiJH56nVXUEgPrkFXdGreI0RmUiJ9Jovzw_DdQbPgXb9Dj2GJolcqH0Ek72Rr_lij3Un8Ekz_6AFf_Ze23SSZsyKCgbXI1oz0r_6rgO_bW2vOg"/>
+</div>
+<div class="w-6 h-6 rounded-full border-2 border-surface overflow-hidden bg-surface-dim">
+<img class="w-full h-full object-cover" data-alt="A sharp, monochromatic portrait of a technology lead, clean white background, high-end professional lighting, modern industrial style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBU8krpjvHferDpDgT8CR5LE_--u18URgtxyAlCxIFBZw94vrSJoXtUZEHtNzAPP7WFK7RMajRCf4KWXt_Uz1PmgEOkOy9br1JZ7opI0tyUUwRCYNQ0ARTvUkuzcq7HEX4LmwoE9PrRwjQFbcJqfOrMGkEH63qPHTTby8wf4R1jNCxIHJBit34b2pARAU-iAKTpAZ_5xNHlFZizbSo_Rd7fpZw_tlczXT84wzOnyi-z4A6BrDw3AC4gUw"/>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-[20px]">chevron_right</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bento-card p-md flex flex-col gap-sm border-t-4 border-t-primary">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-sm text-label-sm text-secondary block">#MN-7742</span>
+<h4 class="font-body-md text-body-md font-bold text-primary">Logistics API Refactor</h4>
+</div>
+<span class="status-pill bg-secondary-container text-on-secondary-container">ACTIVE</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-sm">
+<span class="status-pill bg-surface-container-highest text-primary font-bold">ROUTINE</span>
+<div class="flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-surface overflow-hidden bg-surface-dim">
+<img class="w-full h-full object-cover" data-alt="High-contrast monochrome photography of a female technician, bright studio lighting, professional industrial portrait, modern minimalist vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8QiUGI1WlH0uKf33mJrUdhfWkTtrahTI1YZQbG4A7jjB8A-xJZe_VPHvGeiqR6uZIkznfyZBvaKQ29TkYbtqJq3m8eN5-3OtUhAWdA9vyXeMSSi1zSGX3BvcgUb5Y71JRv0t0TgHaQO8BeXoLoKwrpmNOa5mWxfsyQq411zX9j9fXBAHxoomv0aIgMAcB9emXKFdyePRenKSZV9Oyj1TuDhv-PS63LgkJAVkV_s3TipEA_y-8fg3Exw"/>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary text-[20px]">chevron_right</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface border-t border-outline-variant h-16 flex justify-around items-center">
+<!-- SYSTEM Tab - Active -->
+<a class="flex flex-col items-center justify-center text-primary border-t-2 border-primary pt-2 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-label-sm text-[10px] mt-0.5">SYSTEM</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary pt-2 active:scale-95 transition-transform hover:text-primary" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-label-sm text-[10px] mt-0.5">DASHBOARD</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary pt-2 active:scale-95 transition-transform hover:text-primary" href="#">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+<span class="font-label-sm text-[10px] mt-0.5">ASSETS</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary pt-2 active:scale-95 transition-transform hover:text-primary" href="#">
+<span class="material-symbols-outlined">error_med</span>
+<span class="font-label-sm text-[10px] mt-0.5">ALERTS</span>
+</a>
+</nav>
+<!-- Footer for context -->
+<footer class="w-full px-gutter py-lg flex flex-col space-y-md items-center text-center bg-surface-container mt-auto mb-16">
+<span class="font-label-caps text-label-caps text-secondary">© 2024 MANDATE INDUSTRIAL</span>
+<div class="flex gap-md">
+<a class="font-label-sm text-label-sm text-secondary hover:text-primary underline" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-secondary hover:text-primary" href="#">Terms</a>
+<a class="font-label-sm text-label-sm text-secondary hover:text-primary" href="#">Support</a>
+</div>
+</footer>
+<script>
+        // Simple micro-interaction for cards
+        document.querySelectorAll('.bento-card').forEach(card => {
+            card.addEventListener('click', () => {
+                // Pulse effect or navigation mock
+                console.log('Task selected');
+            });
+        });
+    </script>
+</body></html>

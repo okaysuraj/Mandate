@@ -6,7 +6,7 @@ const isDevice = !__DEV__ || Constants.executionEnvironment === "storeClient" ||
 
 // Use the machine's local network IP for physical devices,
 // localhost/10.0.2.2 for simulators/emulators
-const LOCAL_IP = "192.168.0.7";
+const LOCAL_IP = "10.85.178.156";
 
 export const API_URL = Platform.select({
   ios: isDevice ? `http://${LOCAL_IP}:5001` : "http://localhost:5001",

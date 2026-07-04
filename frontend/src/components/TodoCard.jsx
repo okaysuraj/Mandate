@@ -1,63 +1,79 @@
-// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
+import { Zap, Clock, Calendar, CheckCircle } from "lucide-react";
 
-const TodoCard = ({ todo, onEdit, onDelete, onStatusChange, isTrashView, onRestore, onPermanentDelete }) => {
-  const isCompleted = todo.status === "completed";
+const TodoCard = ({ todo: task, onEdit, onDelete, onStatusChange }) => {
+  const isCompleted = task.status === "done";
 
-  const toggleStatus = () => {
-    if (isTrashView) return;
-    onStatusChange(todo._id, isCompleted ? "pending" : "completed");
+  const toggleStatus = (e) => {
+    e.stopPropagation();
+    onStatusChange(task._id, isCompleted ? "todo" : "done");
+  };
+
+  const getPriorityColor = () => {
+    if (task.priority === 'high') return 'text-red-500 bg-red-50 dark:bg-red-500/10';
+    if (task.priority === 'medium') return 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-500/10';
+    return 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-500/10';
   };
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, height: 0 }}
-      className="group flex items-start gap-5 py-6 border-b border-[#F0F0F0] dark:border-gray-800 relative w-full"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className={`group flex flex-col gap-3 p-4 rounded-xl border bg-white dark:bg-black/40 shadow-sm hover:shadow-md transition-all relative w-full ${isCompleted ? 'opacity-60 border-green-200 dark:border-green-900/30' : 'border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20'}`}
+      onClick={onEdit}
     >
-      <button 
-        onClick={toggleStatus}
-        disabled={isTrashView}
-        className={`mt-1 shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors
-          ${isCompleted ? 'border-[#1A1A1A] bg-[#1A1A1A] dark:border-white dark:bg-white' : 'border-gray-400 hover:border-[#1A1A1A] dark:hover:border-white'}
-          ${isTrashView ? 'opacity-50 cursor-not-allowed' : ''}`}
-      >
-        {isCompleted && (
-          <svg className="w-3.5 h-3.5 text-white dark:text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
-        )}
-      </button>
-
-      <div className="flex-1 cursor-pointer pr-32" onClick={() => !isTrashView && onEdit(todo)}>
-        <h3 className={`text-[17px] font-medium transition-colors
-          ${isCompleted ? 'line-through text-gray-400' : 'text-[#1A1A1A] dark:text-white'}`}
+      <div className="flex items-start gap-3">
+        <button 
+          onClick={toggleStatus}
+          className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all mt-0.5
+            ${isCompleted ? 'border-green-500 bg-green-500' : 'border-zinc-300 dark:border-zinc-600 hover:border-black dark:hover:border-white'}`}
         >
-          {todo.title}
-        </h3>
-        <div className="flex items-center gap-2 mt-1.5 text-[11px] font-bold text-gray-500 tracking-widest font-['Space_Grotesk']">
-           <span className="capitalize">{todo.project || 'Inbox'}</span>
-           <span className="w-[3px] h-[3px] rounded-full bg-gray-400"></span>
-           {todo.priority && <span className="capitalize">{todo.priority} Priority</span>}
-           {todo.dueDate && !isNaN(new Date(todo.dueDate)) && (
-             <>
-               <span className="w-[3px] h-[3px] rounded-full bg-gray-400"></span>
-               <span>{new Date(todo.dueDate).toLocaleDateString()}</span>
-             </>
-           )}
+          {isCompleted && <CheckCircle className="w-3.5 h-3.5 text-white" />}
+        </button>
+
+        <div className="flex-1 min-w-0 pr-8">
+          <h3 className={`text-sm font-semibold truncate transition-colors
+            ${isCompleted ? 'line-through text-zinc-400' : 'text-black dark:text-white'}`}
+          >
+            {task.title}
+          </h3>
+          {task.intent && (
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 truncate flex items-center">
+              <Zap className="w-3 h-3 mr-1 shrink-0" /> {task.intent}
+            </p>
+          )}
         </div>
       </div>
 
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-         {isTrashView ? (
-           <>
-             <button onClick={() => onRestore(todo._id)} className="text-[10px] font-bold text-green-600 hover:text-green-700 uppercase tracking-widest px-3 py-1.5 border border-green-200 rounded-sm bg-green-50">Restore</button>
-             <button onClick={() => onPermanentDelete(todo._id)} className="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase tracking-widest px-3 py-1.5 border border-red-100 rounded-sm bg-red-50">Delete Forever</button>
-           </>
-         ) : (
-           <button onClick={() => onDelete(todo._id)} className="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase tracking-widest px-3 py-1.5 border border-red-100 rounded-sm bg-red-50 dark:bg-red-900/20 dark:border-red-900">Delete</button>
-         )}
+      <div className="flex flex-wrap items-center gap-2 mt-1">
+        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${getPriorityColor()}`}>
+          {task.priority || 'Medium'}
+        </span>
+        
+        {task.timeEstimate && (
+          <span className="flex items-center text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-white/5 px-2 py-0.5 rounded">
+            <Clock className="w-3 h-3 mr-1" /> {task.timeEstimate}m
+          </span>
+        )}
+        
+        {task.dueDate && (
+          <span className="flex items-center text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-white/5 px-2 py-0.5 rounded">
+            <Calendar className="w-3 h-3 mr-1" /> {new Date(task.dueDate).toLocaleDateString()}
+          </span>
+        )}
+      </div>
+
+      <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-3 right-3 flex items-center gap-2">
+        <button 
+          onClick={(e) => { e.stopPropagation(); onDelete(task._id); }} 
+          className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-md transition-colors"
+          title="Delete Task"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
     </motion.div>
   );

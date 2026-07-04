@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MANDATE | Industrial Analytics Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed-variant": "#454749",
+                    "surface-dim": "#d9dadc",
+                    "secondary-fixed-dim": "#c6c6c8",
+                    "on-primary-container": "#858383",
+                    "primary-fixed-dim": "#c8c6c5",
+                    "primary": "#000000",
+                    "on-tertiary-fixed-variant": "#00531e",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#002108",
+                    "surface-bright": "#f9f9fb",
+                    "background": "#f9f9fb",
+                    "on-primary-fixed": "#1c1b1b",
+                    "inverse-on-surface": "#f0f1f3",
+                    "on-background": "#191c1e",
+                    "surface-variant": "#e1e2e4",
+                    "tertiary-fixed-dim": "#3ce36a",
+                    "on-error": "#ffffff",
+                    "surface-container-low": "#f3f3f5",
+                    "primary-container": "#1c1b1b",
+                    "on-secondary-fixed": "#1a1c1d",
+                    "error": "#ba1a1a",
+                    "surface-tint": "#5f5e5e",
+                    "on-surface": "#191c1e",
+                    "outline": "#747878",
+                    "on-tertiary-container": "#00983d",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#474746",
+                    "surface": "#f9f9fb",
+                    "tertiary-fixed": "#69ff87",
+                    "secondary-container": "#dfdfe1",
+                    "primary-fixed": "#e5e2e1",
+                    "surface-container-high": "#e7e8ea",
+                    "outline-variant": "#c4c7c7",
+                    "inverse-surface": "#2e3132",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e1e2e4",
+                    "surface-container": "#edeef0",
+                    "secondary-fixed": "#e2e2e4",
+                    "on-surface-variant": "#444748",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#c8c6c5",
+                    "on-secondary-container": "#616365",
+                    "secondary": "#5d5e60",
+                    "on-tertiary-fixed": "#002108",
+                    "tertiary": "#000000"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xl": "64px",
+                    "gutter": "24px",
+                    "container-max": "1440px",
+                    "unit": "4px",
+                    "sm": "8px",
+                    "md": "16px",
+                    "lg": "32px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "display-lg": ["Hanken Grotesk"],
+                    "label-sm": ["JetBrains Mono"],
+                    "headline-lg": ["Hanken Grotesk"],
+                    "body-md": ["Hanken Grotesk"],
+                    "label-caps": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "label-sm": ["12px", {"lineHeight": "1.4", "letterSpacing": "0em", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                    "label-caps": ["11px", {"lineHeight": "1.4", "letterSpacing": "0.1em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #f9f9fb;
+            color: #191c1e;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        .bento-card {
+            background: #ffffff;
+            border: 1px solid #D9DADC;
+            border-radius: 0; /* Industrial sharp edges for cards as per Raw Tech philosophy */
+            padding: 32px;
+            transition: background-color 0.2s ease;
+        }
+        .bento-card:hover {
+            background-color: #F3F3F5;
+        }
+        .status-chip {
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-family: 'JetBrains Mono';
+            font-size: 10px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .chart-line {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: dash 3s ease-in-out forwards;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: 0; }
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md flex flex-col min-h-screen">
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-lg py-md bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-xl">
+<span class="text-headline-lg font-headline-lg font-black tracking-tighter text-primary">MANDATE</span>
+<nav class="hidden md:flex items-center gap-lg">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 font-label-caps text-label-caps" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 font-label-caps text-label-caps" href="#">Workspaces</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-caps text-label-caps" href="#">Reports</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 font-label-caps text-label-caps" href="#">Archive</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary">notifications</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A sharp, minimalist profile portrait of a high-end industrial design professional, shot in high contrast black and white. The lighting is clinical and bright, emphasizing a professional and meticulous aesthetic consistent with a modern corporate technology identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8uT3TGW6TCT191nlNKcOGE9YAJydmscB_Oh2B8vt_RPgc00-DeV35Ra_3_ETCrPs8sJEia14IUuEDgsRgt2t4BCuXITa3dKBXUNtkIL97kQgo-_AacHFYf4KoYv5oTCc5PG-gMOAK33qhfTblQdrQ8iQKW2HcD-HEYUvKQg-2dVhkgvj4Ouu3WGWJKpIdLcsWciA4faUXp5GZ2RgfuPMagUYZrmpRkw-Lnzce2FthMMC8oFOwKQKyQw"/>
+</div>
+</div>
+</header>
+<main class="mt-24 px-lg py-xl flex-grow container mx-auto max-w-[1440px]">
+<!-- Page Header -->
+<div class="mb-xl flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-unit uppercase tracking-widest">Global Analytics Cluster</span>
+<h1 class="font-headline-lg text-headline-lg text-primary">Industrial Review Dashboard</h1>
+</div>
+<div class="flex gap-sm">
+<button class="bg-primary text-on-primary px-lg py-sm rounded-full font-label-caps text-label-caps hover:opacity-80 transition-opacity">Export Data</button>
+<button class="border border-outline-variant text-on-surface-variant px-lg py-sm rounded-full font-label-caps text-label-caps hover:bg-surface-container-low transition-colors">Configuration</button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="bento-grid">
+<!-- Key Metric: Nominal State -->
+<div class="bento-card col-span-12 md:col-span-4 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant">System Efficiency</span>
+<span class="status-chip bg-tertiary-fixed text-on-tertiary-fixed px-sm py-xs">Stable</span>
+</div>
+<div class="font-display-lg text-display-lg leading-none mb-xs">89.4%</div>
+<div class="font-label-caps text-label-caps text-primary tracking-widest">NOMINAL</div>
+</div>
+<div class="mt-lg pt-md border-t border-f3f3f5">
+<span class="text-label-sm font-label-sm text-on-surface-variant">+2.4% from last epoch</span>
+</div>
+</div>
+<!-- Throughput Chart (Asymmetric larger card) -->
+<div class="bento-card col-span-12 md:col-span-8">
+<div class="flex justify-between items-center mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant">System Throughput (24H)</span>
+<div class="flex gap-sm">
+<div class="w-3 h-3 bg-primary"></div>
+<span class="font-label-sm text-label-sm">Primary Node</span>
+</div>
+</div>
+<div class="h-48 w-full relative flex items-end justify-between overflow-hidden">
+<!-- SVG Chart Logic -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 800 200">
+<path class="chart-line" d="M0,150 Q50,130 100,140 T200,100 T300,120 T400,60 T500,80 T600,40 T700,50 L800,20" fill="none" stroke="#000" stroke-width="3"></path>
+<rect fill="url(#grid)" height="200" width="800" x="0" y="0"></rect>
+<defs>
+<pattern height="40" id="grid" patternunits="userSpaceOnUse" width="40">
+<path d="M 40 0 L 0 0 0 40" fill="none" stroke="#F3F3F5" stroke-width="1"></path>
+</pattern>
+</defs>
+</svg>
+</div>
+<div class="flex justify-between mt-md font-label-sm text-label-sm text-on-surface-variant">
+<span>00:00</span>
+<span>06:00</span>
+<span>12:00</span>
+<span>18:00</span>
+<span>23:59</span>
+</div>
+</div>
+<!-- Heatmap Latency (Data Density) -->
+<div class="bento-card col-span-12 md:col-span-7">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-lg">Network Latency Heatmap</span>
+<div class="grid grid-cols-12 gap-1 h-40">
+<!-- Generating a pseudo-heatmap with CSS -->
+<div class="bg-primary opacity-10"></div><div class="bg-primary opacity-20"></div><div class="bg-primary opacity-40"></div><div class="bg-primary opacity-10"></div>
+<div class="bg-primary opacity-60"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-20"></div>
+<div class="bg-primary opacity-30"></div><div class="bg-primary opacity-80"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div>
+<div class="bg-primary opacity-5"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-15"></div><div class="bg-primary opacity-5"></div>
+<div class="bg-primary opacity-10"></div><div class="bg-primary opacity-90"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-5"></div>
+<div class="bg-primary opacity-5"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-5"></div><div class="bg-primary opacity-10"></div>
+<div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-5"></div>
+<div class="bg-primary opacity-10"></div><div class="bg-primary opacity-5"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-100"></div>
+<div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div>
+<div class="bg-primary opacity-10"></div><div class="bg-primary opacity-40"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div>
+<div class="bg-primary opacity-20"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div>
+<div class="bg-primary opacity-30"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div><div class="bg-primary opacity-10"></div>
+</div>
+<div class="flex justify-between items-center mt-md">
+<div class="flex items-center gap-sm">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Low Latency</span>
+<div class="flex gap-px">
+<div class="w-2 h-2 bg-primary opacity-10"></div>
+<div class="w-2 h-2 bg-primary opacity-40"></div>
+<div class="w-2 h-2 bg-primary opacity-70"></div>
+<div class="w-2 h-2 bg-primary"></div>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Critical Delay</span>
+</div>
+</div>
+</div>
+<!-- Node Efficiency Bars -->
+<div class="bento-card col-span-12 md:col-span-5">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-lg">Node Performance Index</span>
+<div class="space-y-md">
+<div class="space-y-xs">
+<div class="flex justify-between text-label-sm font-label-sm">
+<span>Node Alpha-9</span>
+<span>92%</span>
+</div>
+<div class="h-2 w-full bg-surface-container">
+<div class="h-full bg-primary" style="width: 92%;"></div>
+</div>
+</div>
+<div class="space-y-xs">
+<div class="flex justify-between text-label-sm font-label-sm">
+<span>Node Beta-2</span>
+<span>84%</span>
+</div>
+<div class="h-2 w-full bg-surface-container">
+<div class="h-full bg-primary" style="width: 84%;"></div>
+</div>
+</div>
+<div class="space-y-xs">
+<div class="flex justify-between text-label-sm font-label-sm">
+<span>Node Gamma-5</span>
+<span>98%</span>
+</div>
+<div class="h-2 w-full bg-surface-container">
+<div class="h-full bg-primary" style="width: 98%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Real-time Asset Monitoring -->
+<div class="bento-card col-span-12 md:col-span-6 overflow-hidden relative group">
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center grayscale opacity-10 group-hover:opacity-20 transition-opacity duration-500" data-alt="A high-density industrial factory floor view through a wide-angle lens, presented in monochromatic black and white. The image shows rows of automated machinery and robotic arms under bright, uniform lighting. The atmosphere is clean, clinical, and technologically advanced, reflecting a state-of-the-art manufacturing environment." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAHd0xOe0uhD4ExRByZ6VHYnoAWQooVCePyzrnd1IN-oIwtEgOqjEy0EC9qhyhoumDJOG0iXxs_s1OAUeQgWv2AelLJ6aUBxjOQIJ5MYqpbAXeIHv1Yl3lfUD0pnlpKEDWNXhTsK87jMPDNlFFEvs4K31EMaLWB-XqoiIMiFWlb1I4q5X3Zrz6Uha1Ww9UvUK1_2YWusa6MXKb_vW2UkiKVPYyC0tW42sISXeRD1EujZYHxE16EwKEixQ')"></div>
+</div>
+<div class="relative z-10 flex flex-col h-full justify-between">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Asset Visual Feed</span>
+<h3 class="font-headline-lg text-headline-lg mt-sm">Cluster 014</h3>
+</div>
+<div class="mt-xl">
+<span class="status-chip bg-primary text-on-primary">Live Monitoring</span>
+<div class="mt-sm flex items-center gap-xs text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[14px]">videocam</span>
+<span>Primary Camera Array Active</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Transactional Log / Density List -->
+<div class="bento-card col-span-12 md:col-span-6 flex flex-col">
+<div class="flex justify-between items-center mb-lg">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Anomalous Activity Log</span>
+<button class="text-label-sm font-label-sm text-primary underline">View Full History</button>
+</div>
+<div class="flex-grow space-y-px">
+<div class="flex justify-between py-sm border-b border-surface-container-low hover:bg-surface-container-low px-sm -mx-sm transition-colors cursor-pointer">
+<span class="text-label-sm font-label-sm">#TX-9041: Voltage Spike Detected</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">14:22:01</span>
+</div>
+<div class="flex justify-between py-sm border-b border-surface-container-low hover:bg-surface-container-low px-sm -mx-sm transition-colors cursor-pointer">
+<span class="text-label-sm font-label-sm">#TX-9039: Cache Re-initialization</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">14:18:55</span>
+</div>
+<div class="flex justify-between py-sm border-b border-surface-container-low hover:bg-surface-container-low px-sm -mx-sm transition-colors cursor-pointer">
+<span class="text-label-sm font-label-sm text-error">#TX-9035: Critical Handshake Error</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">14:05:12</span>
+</div>
+<div class="flex justify-between py-sm border-b border-surface-container-low hover:bg-surface-container-low px-sm -mx-sm transition-colors cursor-pointer">
+<span class="text-label-sm font-label-sm">#TX-9031: Maintenance Routine Start</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">13:59:44</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="w-full py-xl px-lg mt-auto flex flex-col md:flex-row justify-between items-center gap-md border-t border-outline-variant bg-surface-container-low">
+<span class="font-label-caps text-label-caps font-bold text-primary">MANDATE</span>
+<div class="flex gap-lg">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-all duration-300" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-all duration-300" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-all duration-300" href="#">Legal</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-all duration-300" href="#">Security</a>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">© 2024 MANDATE INDUSTRIAL SYSTEMS. ALL RIGHTS RESERVED.</span>
+</footer>
+<script>
+        // Simple interactive heatmap hover effect
+        document.querySelectorAll('.grid-cols-12 > div').forEach(cell => {
+            cell.addEventListener('mouseenter', () => {
+                cell.style.outline = '1px solid #000';
+                cell.style.zIndex = '10';
+            });
+            cell.addEventListener('mouseleave', () => {
+                cell.style.outline = 'none';
+                cell.style.zIndex = '1';
+            });
+        });
+    </script>
+</body></html>

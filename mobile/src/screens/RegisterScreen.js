@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  SafeAreaView, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import { colors, fonts, spacing, borderRadius } from "../theme";
+import { useTheme } from "../context/ThemeContext";
 
 const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState("");
@@ -12,161 +11,178 @@ const RegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
+  const { colors, typography, spacing, borderRadius } = useTheme();
 
   const handleRegister = async () => {
-    if (!name || !email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
-      return;
-    }
+    if (!name || !email || !password) return;
+    setLoading(true);
     try {
-      setLoading(true);
       await register(name, email, password);
     } catch (error) {
-      if (error.message === "VERIFICATION_EMAIL_SENT") {
-        Alert.alert("Success", "Verification email sent! Please check your inbox before logging in.");
-        navigation.navigate("Login");
-      } else {
-        Alert.alert("Registration Failed", error.message || "Something went wrong");
-      }
+      // error handled in context
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+      <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+        style={styles.keyboardView}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Text style={styles.backText}>← BACK</Text>
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
+        </View>
 
-          <View style={styles.card}>
-            <Text style={styles.brandLabel}>MANDATE</Text>
-            <Text style={styles.title}>Create Account.</Text>
-            <Text style={styles.subtitle}>Join the elite cohort of thinkers and builders.</Text>
-
-            <View style={styles.form}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>NAME</Text>
-                <TextInput
-                  style={styles.input}
-                  value={name}
-                  onChangeText={setName}
-                  placeholder="Your full name"
-                  placeholderTextColor={colors.textMuted}
-                  autoCorrect={false}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>EMAIL</Text>
-                <TextInput
-                  style={styles.input}
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="name@company.com"
-                  placeholderTextColor={colors.textMuted}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>PASSWORD</Text>
-                <TextInput
-                  style={styles.input}
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="••••••••"
-                  placeholderTextColor={colors.textMuted}
-                  secureTextEntry
-                />
-              </View>
-
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handleRegister}
-                disabled={loading}
-                activeOpacity={0.8}
-              >
-                {loading ? (
-                  <ActivityIndicator color={colors.white} />
-                ) : (
-                  <Text style={styles.buttonText}>CREATE ACCOUNT</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account? </Text>
-              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                <Text style={styles.footerLink}>Log in</Text>
-              </TouchableOpacity>
-            </View>
+        <View style={styles.content}>
+          <View style={styles.brandContainer}>
+            <Text style={[typography.headlineLg, { color: colors.primary, textAlign: 'center', marginBottom: spacing.sm }]}>MANDATE</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary, textAlign: 'center' }]}>REQUEST SYSTEM ACCESS</Text>
           </View>
-        </ScrollView>
+
+          <View style={styles.formContainer}>
+            <View style={styles.inputGroup}>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.xs }]}>OPERATOR NAME</Text>
+              <TextInput
+                style={[
+                  styles.input, 
+                  typography.bodyMd, 
+                  { 
+                    backgroundColor: colors.surfaceContainerLowest, 
+                    borderColor: colors.outlineVariant,
+                    color: colors.onSurface
+                  }
+                ]}
+                placeholder="Alexander Sterling"
+                placeholderTextColor={colors.outline}
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.xs }]}>EMAIL ADDRESS</Text>
+              <TextInput
+                style={[
+                  styles.input, 
+                  typography.bodyMd, 
+                  { 
+                    backgroundColor: colors.surfaceContainerLowest, 
+                    borderColor: colors.outlineVariant,
+                    color: colors.onSurface
+                  }
+                ]}
+                placeholder="operator@mandate.systems"
+                placeholderTextColor={colors.outline}
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.xs }]}>ACCESS KEY</Text>
+              <TextInput
+                style={[
+                  styles.input, 
+                  typography.bodyMd, 
+                  { 
+                    backgroundColor: colors.surfaceContainerLowest, 
+                    borderColor: colors.outlineVariant,
+                    color: colors.onSurface
+                  }
+                ]}
+                placeholder="••••••••••••"
+                placeholderTextColor={colors.outline}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+            </View>
+
+            <TouchableOpacity 
+              style={[
+                styles.primaryButton, 
+                { backgroundColor: colors.primary, borderRadius: borderRadius.DEFAULT },
+                loading && { opacity: 0.7 }
+              ]}
+              onPress={handleRegister}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={colors.onPrimary} />
+              ) : (
+                <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>PROVISION ACCESS</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.footerLink}
+              onPress={() => navigation.navigate("Login")}
+            >
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>
+                Already authorized? <Text style={{ color: colors.primary, fontWeight: '700' }}>AUTHENTICATE</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { flexGrow: 1, justifyContent: "center", padding: spacing.lg },
-  backButton: { position: "absolute", top: spacing.md, left: 0, zIndex: 1 },
-  backText: { ...fonts.tiny, color: colors.textSecondary },
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 4,
+  container: {
+    flex: 1,
   },
-  brandLabel: { ...fonts.tiny, textAlign: "center", marginBottom: spacing.sm },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: colors.primary,
-    textAlign: "center",
-    letterSpacing: -1,
-    textTransform: "uppercase",
+  keyboardView: {
+    flex: 1,
   },
-  subtitle: { ...fonts.small, textAlign: "center", marginTop: spacing.sm, marginBottom: spacing.lg },
-  form: { gap: spacing.md },
-  inputGroup: { gap: spacing.xs },
-  label: { ...fonts.tiny },
+  header: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: "center",
+  },
+  brandContainer: {
+    marginBottom: 48,
+  },
+  formContainer: {
+    gap: 24,
+  },
+  inputGroup: {
+    gap: 4,
+  },
   input: {
-    backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    paddingHorizontal: 16,
     paddingVertical: 14,
-    fontSize: 14,
-    color: colors.textPrimary,
   },
-  button: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.full,
+  primaryButton: {
+    paddingVertical: 16,
     alignItems: "center",
-    marginTop: spacing.sm,
+    justifyContent: "center",
+    marginTop: 8,
   },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: colors.white, fontSize: 11, fontWeight: "700", letterSpacing: 2 },
-  footer: { flexDirection: "row", justifyContent: "center", marginTop: spacing.lg },
-  footerText: { ...fonts.small },
-  footerLink: { ...fonts.small, fontWeight: "700", color: colors.primary },
+  footerLink: {
+    alignItems: "center",
+    marginTop: 24,
+  }
 });
 
 export default RegisterScreen;

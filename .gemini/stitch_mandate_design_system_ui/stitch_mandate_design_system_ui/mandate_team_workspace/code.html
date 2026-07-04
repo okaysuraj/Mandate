@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mandate | Team Workspace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;700;800&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#454749",
+                        "secondary": "#5d5e60",
+                        "primary": "#000000",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#d9dadc",
+                        "on-primary-container": "#858383",
+                        "primary-container": "#1c1b1b",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c4c7c7",
+                        "on-error-container": "#93000a",
+                        "background": "#f9f9fb",
+                        "primary-fixed-dim": "#c8c6c5",
+                        "primary-fixed": "#e5e2e1",
+                        "tertiary": "#000000",
+                        "secondary-fixed-dim": "#c6c6c8",
+                        "inverse-primary": "#c8c6c5",
+                        "on-tertiary-fixed": "#002108",
+                        "tertiary-fixed": "#69ff87",
+                        "tertiary-container": "#002108",
+                        "on-primary-fixed-variant": "#474746",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f9f9fb",
+                        "on-primary": "#ffffff",
+                        "surface": "#f9f9fb",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#00983d",
+                        "tertiary-fixed-dim": "#3ce36a",
+                        "surface-variant": "#e1e2e4",
+                        "surface-tint": "#5f5e5e",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#1c1b1b",
+                        "secondary-fixed": "#e2e2e4",
+                        "inverse-surface": "#2e3132",
+                        "on-surface": "#191c1e",
+                        "on-secondary-container": "#616365",
+                        "surface-container-highest": "#e1e2e4",
+                        "on-background": "#191c1e",
+                        "surface-container-low": "#f3f3f5",
+                        "surface-container-high": "#e7e8ea",
+                        "inverse-on-surface": "#f0f1f3",
+                        "on-secondary-fixed": "#1a1c1d",
+                        "on-surface-variant": "#444748",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#00531e",
+                        "outline": "#747878",
+                        "surface-container": "#edeef0",
+                        "secondary-container": "#dfdfe1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "container-max": "1440px",
+                        "md": "16px",
+                        "xl": "64px",
+                        "gutter": "24px",
+                        "lg": "32px",
+                        "xs": "4px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-md": ["Hanken Grotesk"],
+                        "label-sm": ["JetBrains Mono"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-caps": ["11px", {"lineHeight": "1.4", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "1.4", "letterSpacing": "0em", "fontWeight": "500"}],
+                        "display-lg": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Hanken Grotesk', sans-serif; background-color: #f9f9fb; }
+        .bento-card { transition: all 0.2s ease-in-out; border: 1px solid #D9DADC; background: #FFFFFF; }
+        .bento-card:hover { background: #F3F3F5; }
+        .sidebar-item { transition: all 0.15s ease-in-out; }
+    </style>
+</head>
+<body class="bg-background text-on-surface overflow-x-hidden">
+<!-- Shell Container -->
+<div class="flex min-h-screen">
+<!-- SideNavBar (Mandatory from JSON) -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface border-r border-outline-variant py-lg px-md gap-md z-50">
+<div class="mb-lg">
+<h1 class="font-headline-lg text-headline-lg font-black tracking-tighter text-primary">MANDATE</h1>
+<p class="font-label-caps text-label-caps text-secondary">Industrial OS</p>
+</div>
+<button class="mb-md bg-primary text-on-primary rounded-full py-sm px-md flex items-center justify-center gap-sm font-label-caps text-label-caps hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Task
+            </button>
+<nav class="flex-1 flex flex-col gap-xs">
+<!-- Dashboard Active State -->
+<a class="sidebar-item flex items-center gap-md px-md py-sm bg-primary text-on-primary rounded-full" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="sidebar-item flex items-center gap-md px-md py-sm text-secondary hover:text-primary hover:bg-surface-container rounded-full" href="#">
+<span class="material-symbols-outlined">event_upcoming</span>
+<span class="font-label-caps text-label-caps">Today</span>
+</a>
+<a class="sidebar-item flex items-center gap-md px-md py-sm text-secondary hover:text-primary hover:bg-surface-container rounded-full" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-caps text-label-caps">Backlog</span>
+</a>
+<a class="sidebar-item flex items-center gap-md px-md py-sm text-secondary hover:text-primary hover:bg-surface-container rounded-full" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-caps text-label-caps">Projects</span>
+</a>
+<a class="sidebar-item flex items-center gap-md px-md py-sm text-secondary hover:text-primary hover:bg-surface-container rounded-full" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-caps text-label-caps">Calendar</span>
+</a>
+<a class="sidebar-item flex items-center gap-md px-md py-sm text-secondary hover:text-primary hover:bg-surface-container rounded-full" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-caps text-label-caps">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-md flex flex-col gap-xs">
+<a class="sidebar-item flex items-center gap-md px-md py-sm text-secondary hover:text-primary hover:bg-surface-container rounded-full" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+<a class="sidebar-item flex items-center gap-md px-md py-sm text-secondary hover:text-primary hover:bg-surface-container rounded-full" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-caps text-label-caps">Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 p-md md:p-xl flex flex-col gap-xl">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full max-w-container-max mx-auto mb-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-primary">Team Workspace</h2>
+<p class="font-body-md text-body-md text-secondary">Personnel Overview &amp; Asset Allocation</p>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden sm:block">
+<input class="bg-surface-container-low border-none rounded-full px-lg py-sm text-label-sm font-label-sm w-64 focus:ring-2 focus:ring-primary" placeholder="Search system..." type="text"/>
+<span class="material-symbols-outlined absolute right-md top-1/2 -translate-y-1/2 text-secondary text-[20px]">search</span>
+</div>
+<button class="material-symbols-outlined p-sm hover:bg-surface-container rounded-full transition-colors">notifications</button>
+<button class="material-symbols-outlined p-sm hover:bg-surface-container rounded-full transition-colors">settings</button>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-dim">
+<img class="w-full h-full object-cover" data-alt="A clean professional headshot of a female industrial project manager in a minimalist studio. High-contrast monochrome lighting highlighting facial features. She wears a dark tactical turtleneck, looking directly into the camera with an authoritative but calm expression. The background is a soft, out-of-focus industrial warehouse with clean metallic lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhGpO7AxsnLsJMA6TT9SsFwfLhsC7m2rZUponHRZxWaep1bIRSXfYA5i7QrWdqgAGJGqxcv7HW2Hd1c_0-kAADw5uk0s8iGvztcsotjqmi3mVP4sXhfyig9ZdUEck9XPK5V6s2lwKtSJDShDl0lua62F1jApLrvZL8v0HyBZw0JyVn24Wf6mMoDWDE3hqE9g0lgUK4tcfNhZTTmHz_p4LgCPP4h6LUVipdedYA6UyQh67sOzfnLhrsAw"/>
+</div>
+</div>
+</header>
+<!-- Grid Layout: Active Operators & System Status -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter max-w-container-max w-full mx-auto">
+<!-- Active Operators (Bento) -->
+<div class="lg:col-span-8 flex flex-col gap-lg">
+<div class="flex items-center justify-between">
+<h3 class="font-label-caps text-label-caps text-primary tracking-widest">ACTIVE OPERATORS</h3>
+<span class="px-md py-xs bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm rounded-full">14 ONLINE</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Operator Card 1 -->
+<div class="bento-card p-lg rounded-none md:rounded-DEFAULT flex items-center gap-md group">
+<div class="relative">
+<div class="w-12 h-12 rounded-full bg-surface-dim overflow-hidden grayscale group-hover:grayscale-0 transition-all">
+<img class="w-full h-full object-cover" data-alt="A close-up high-contrast minimalist profile photo of a male engineer wearing precision eye protection and a clean white utility vest. The lighting is cold and clinical, casting sharp shadows on a neutral gray background. The overall aesthetic is raw tech and industrial precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2VV5s7EdmWo3VSGZV7_sTM3X6N1yCpoP6DOnbBQCw8RKYi0ZdE7ttOKFJCCdnBthfMweDcDzDeNNCKidJ1zTRAkCeTXk-1cHxJB6SR-S1rnEFeXF3un7fizXyHasYvZuACcqfKG4vCKluAx2wEm1nA_6rEVl9raOUbfE-Nvzals1xt-KDPtJjDf-KuXShyYYKYEjayYF2KAPV98bokBN40HQMYrF-4znKn9uD2zS042dT1-ZW555nmQ"/>
+</div>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-tertiary-fixed-dim border-2 border-white rounded-full"></div>
+</div>
+<div class="flex-1">
+<div class="font-headline-lg text-[18px] font-bold text-primary">K. Vance</div>
+<div class="font-label-sm text-label-sm text-secondary">STRUCTURAL ANALYST</div>
+</div>
+<div class="text-right">
+<div class="font-label-caps text-[10px] text-secondary">ALLOCATION</div>
+<div class="font-label-sm text-label-sm text-primary font-bold">NODE_049</div>
+</div>
+</div>
+<!-- Operator Card 2 -->
+<div class="bento-card p-lg rounded-none md:rounded-DEFAULT flex items-center gap-md group">
+<div class="relative">
+<div class="w-12 h-12 rounded-full bg-surface-dim overflow-hidden grayscale group-hover:grayscale-0 transition-all">
+<img class="w-full h-full object-cover" data-alt="A minimalist high-key profile portrait of a female technician with short cropped hair. She wears a sleek dark techwear jumpsuit. The lighting is bright and airy, with subtle blue accents in the shadows. The mood is highly professional, clean, and futuristic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQfpbSD7aJBAmAzEpLWXFtwzSNGSfm0IQ4kLnuYn0Ww7hd5BXge9fALsytbym5bSM-UKYKHWyYuHm9FxfKtBz7BSX6rP8xcCBkbryrYC9hwZIbFM33XxGPxKDCeYP9o6Og03BONPWUxdj2duYM7Lsh4aQSDkN3vv4u_jbxGRZXmB6MxgZRhg01affRElOE9PGupP_4G1SrJ6rbd55YXBHGcl03HEDIbhYOt7yqbyAAaYvNYxWKw7Dy-w"/>
+</div>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-tertiary-fixed-dim border-2 border-white rounded-full"></div>
+</div>
+<div class="flex-1">
+<div class="font-headline-lg text-[18px] font-bold text-primary">M. Sato</div>
+<div class="font-label-sm text-label-sm text-secondary">GRID COORDINATOR</div>
+</div>
+<div class="text-right">
+<div class="font-label-caps text-[10px] text-secondary">ALLOCATION</div>
+<div class="font-label-sm text-label-sm text-primary font-bold">CORE_X</div>
+</div>
+</div>
+<!-- Operator Card 3 -->
+<div class="bento-card p-lg rounded-none md:rounded-DEFAULT flex items-center gap-md group">
+<div class="relative">
+<div class="w-12 h-12 rounded-full bg-surface-dim overflow-hidden grayscale group-hover:grayscale-0 transition-all">
+<img class="w-full h-full object-cover" data-alt="A portrait of a senior industrial supervisor in a monochrome, high-contrast style. He has a focused expression, wearing a minimalist black utility shirt. The background is a clean white studio with sharp vertical shadow lines creating a rhythmic, architectural feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuOYuHyib2d2c0-k4zVEulgIgvdEv0-T73iv6Sjec2ZSiR8HwxWc8iWqeGGgzu2YFS340CVu1EaeSa-fOhNLgi-96HFZka2HlvYLBY_kR55FwR4rGzo9mOzpFxWRk4wmlKhHt09UHyOkU9hOZPoCz0f5NC7pcgeF9s4Lx7Bd6TIpjmYo4Rsy-PpYsmnsV_YpLzMSkrDXXEIIlkPHwVTK3e5S1USQ9M1OFJpnIBAwkvzCupZ3Tn-7BlBg"/>
+</div>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-tertiary-fixed-dim border-2 border-white rounded-full"></div>
+</div>
+<div class="flex-1">
+<div class="font-headline-lg text-[18px] font-bold text-primary">D. Thorne</div>
+<div class="font-label-sm text-label-sm text-secondary">LOGISTICS LEAD</div>
+</div>
+<div class="text-right">
+<div class="font-label-caps text-[10px] text-secondary">ALLOCATION</div>
+<div class="font-label-sm text-label-sm text-primary font-bold">TRANSIT_02</div>
+</div>
+</div>
+<!-- Operator Card 4 -->
+<div class="bento-card p-lg rounded-none md:rounded-DEFAULT flex items-center gap-md group">
+<div class="relative">
+<div class="w-12 h-12 rounded-full bg-surface-dim overflow-hidden grayscale group-hover:grayscale-0 transition-all">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a tech specialist in a clean-room environment. Wearing a white tech jacket. The composition is off-center with significant negative space. Stark monochrome palette with deep black textures and bright white surfaces." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyqyYIoWBP_fo1RlRHDb70Hs-vs99MvJGw45CSrI5xco8WSygd2_INeFjq_yw4dkTmWYHkyMhoP5GlXP6cdofyVyurx1k_43KT3BiLeeqW-wfgdpM9x1X1znzmvAWpOdTKCPmTV4z0cZ-vRgd1xRYgh90kMUQZlCdLJFsg82VehcTC2u3veiGmJ9JxEerbk1f1tPiuONsQzOXZ90C8wIHgJ5IanRDlZ21uGnqaUclQhzlvDxe6t_s3Gg"/>
+</div>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-on-secondary-container border-2 border-white rounded-full"></div>
+</div>
+<div class="flex-1">
+<div class="font-headline-lg text-[18px] font-bold text-primary">J. Miller</div>
+<div class="font-label-sm text-label-sm text-secondary">ASSET OPS</div>
+</div>
+<div class="text-right">
+<div class="font-label-caps text-[10px] text-secondary">ALLOCATION</div>
+<div class="font-label-sm text-label-sm text-secondary italic">OFF-SITE</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Asset Allocation Status -->
+<div class="lg:col-span-4 flex flex-col gap-lg">
+<h3 class="font-label-caps text-label-caps text-primary tracking-widest">ASSET ALLOCATION</h3>
+<div class="bento-card p-lg h-full flex flex-col justify-between">
+<div class="flex flex-col gap-md">
+<div class="flex justify-between items-end">
+<span class="font-label-sm text-label-sm text-secondary">SYSTEM BANDWIDTH</span>
+<span class="font-headline-lg text-[24px] font-bold">82%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[82%]"></div>
+</div>
+</div>
+<div class="space-y-sm mt-lg">
+<div class="flex justify-between py-xs border-b border-surface-container">
+<span class="font-label-sm text-label-sm text-secondary">Thermal Units</span>
+<span class="font-label-sm text-label-sm font-bold">NOMINAL</span>
+</div>
+<div class="flex justify-between py-xs border-b border-surface-container">
+<span class="font-label-sm text-label-sm text-secondary">Storage Cluster</span>
+<span class="font-label-sm text-label-sm font-bold">4.2PB FREE</span>
+</div>
+<div class="flex justify-between py-xs border-b border-surface-container">
+<span class="font-label-sm text-label-sm text-secondary">Network Latency</span>
+<span class="font-label-sm text-label-sm font-bold">12MS</span>
+</div>
+</div>
+<button class="mt-lg w-full py-md border border-outline-variant rounded-full font-label-caps text-label-caps hover:bg-surface-container-low transition-colors">
+                            VIEW FULL TELEMETRY
+                        </button>
+</div>
+</div>
+</section>
+<!-- Bottom Sections: Announcements & Documentation -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-xl max-w-container-max w-full mx-auto">
+<!-- System Announcements -->
+<div class="flex flex-col gap-lg">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary">campaign</span>
+<h3 class="font-label-caps text-label-caps text-primary tracking-widest">SYSTEM ANNOUNCEMENTS</h3>
+</div>
+<div class="space-y-gutter">
+<div class="border-l-4 border-primary pl-lg py-sm">
+<div class="font-label-caps text-[10px] text-secondary mb-xs">MARCH 24, 08:30</div>
+<h4 class="font-headline-lg text-[18px] font-bold mb-xs">Scheduled Core Maintenance</h4>
+<p class="font-body-md text-body-md text-secondary">Main processing cluster will undergo optimization at 23:00 UTC. Expect 5ms latency increases across all active nodes.</p>
+</div>
+<div class="border-l-4 border-outline-variant pl-lg py-sm">
+<div class="font-label-caps text-[10px] text-secondary mb-xs">MARCH 23, 14:15</div>
+<h4 class="font-headline-lg text-[18px] font-bold mb-xs">New Security Protocols Active</h4>
+<p class="font-body-md text-body-md text-secondary">L2 encryption now mandatory for all asset documentation shared via the hub.</p>
+</div>
+</div>
+</div>
+<!-- Shared Documentation -->
+<div class="flex flex-col gap-lg">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary">description</span>
+<h3 class="font-label-caps text-label-caps text-primary tracking-widest">SHARED DOCUMENTATION</h3>
+</div>
+<div class="bento-card divide-y divide-surface-container-low">
+<a class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors group" href="#">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">folder</span>
+<div>
+<div class="font-label-sm text-label-sm font-bold text-primary">Standard_Operating_Procedures_v2.pdf</div>
+<div class="font-label-caps text-[10px] text-secondary">UPDATED 2 DAYS AGO BY SATO</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary group-hover:translate-x-1 transition-transform">chevron_right</span>
+</a>
+<a class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors group" href="#">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">description</span>
+<div>
+<div class="font-label-sm text-label-sm font-bold text-primary">Emergency_Bypass_Codes.enc</div>
+<div class="font-label-caps text-[10px] text-secondary">ENCRYPTED • ACCESS RESTRICTED</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary group-hover:translate-x-1 transition-transform">lock</span>
+</a>
+<a class="flex items-center justify-between p-md hover:bg-surface-container-low transition-colors group" href="#">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-secondary group-hover:text-primary transition-colors">inventory</span>
+<div>
+<div class="font-label-sm text-label-sm font-bold text-primary">Asset_Inventory_Q1.xlsx</div>
+<div class="font-label-caps text-[10px] text-secondary">REVIEW PENDING</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary group-hover:translate-x-1 transition-transform">chevron_right</span>
+</a>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Mobile BottomNavBar (Hidden on desktop) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-surface border-t border-outline-variant flex justify-around items-center h-xl z-50">
+<button class="flex flex-col items-center gap-xs text-primary">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-label-caps">Home</span>
+</button>
+<button class="flex flex-col items-center gap-xs text-secondary">
+<span class="material-symbols-outlined">group</span>
+<span class="text-[10px] font-label-caps">Team</span>
+</button>
+<button class="flex flex-col items-center gap-xs text-secondary">
+<span class="material-symbols-outlined">description</span>
+<span class="text-[10px] font-label-caps">Docs</span>
+</button>
+<button class="flex flex-col items-center gap-xs text-secondary">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-label-caps">Settings</span>
+</button>
+</nav>
+<!-- Floating Action Button (Only for core hub screen) -->
+<button class="fixed bottom-gutter right-gutter md:bottom-xl md:right-xl w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-40">
+<span class="material-symbols-outlined">add</span>
+</button>
+<script>
+        // Simple Micro-interaction: Update time and simulated load
+        function updateSystemTime() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+            
+            const timeLabels = document.querySelectorAll('.font-label-caps.text-\\[10px\\]');
+            if(timeLabels.length > 0) {
+                // We'll just update one for demo purpose or keep them static for design integrity
+            }
+        }
+        setInterval(updateSystemTime, 1000);
+
+        // Simulated connectivity indicator animation
+        const statusIndicators = document.querySelectorAll('.bg-tertiary-fixed-dim');
+        statusIndicators.forEach(indicator => {
+            indicator.style.animation = 'pulse 2s infinite ease-in-out';
+        });
+
+        // Add pulse animation keyframe
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes pulse {
+                0% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.6; transform: scale(1.1); }
+                100% { opacity: 1; transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body></html>

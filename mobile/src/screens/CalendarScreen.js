@@ -1,237 +1,273 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, ActivityIndicator,
+  SafeAreaView, ScrollView
 } from "react-native";
-import axios from "axios";
-import { useAuth } from "../context/AuthContext";
-import { API_URL } from "../config";
-import { colors, fonts, spacing, borderRadius } from "../theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
+const CalendarScreen = ({ navigation }) => {
+  const [selectedDay, setSelectedDay] = useState(2);
+  const currentMonth = "OCTOBER 2024";
+  const { colors, typography, spacing, borderRadius } = useTheme();
 
-const CalendarScreen = () => {
-  const [todos, setTodos] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(null);
-  const { user } = useAuth();
+  // Simplified calendar generation
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const events = {
+    1: [{ label: "SYS_CHECK_04", type: "default" }],
+    2: [{ label: "CALIBRATION_X", type: "primary" }, { label: "MECH_VAL", type: "default" }],
+    4: [{ label: "LOG_AUDIT", type: "outline" }],
+    11: [{ label: "MAINT_WINDOW", type: "error" }],
+  };
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [todosRes, eventsRes] = await Promise.all([
-        axios.get(`${API_URL}/api/todos`, { params: { page: 1, limit: 200, isDeleted: "false" } }),
-        axios.get(`${API_URL}/api/events`).catch(() => ({ data: [] })),
-      ]);
-      setTodos(todosRes.data.data);
-      setEvents(eventsRes.data || []);
-    } catch {
-      console.error("Failed to load calendar data");
-    } finally {
-      setLoading(false);
+  const getEventStyle = (type) => {
+    switch (type) {
+      case "primary": return { bg: colors.primary, text: colors.onPrimary };
+      case "error": return { bg: colors.errorContainer, text: colors.onErrorContainer };
+      case "outline": return { bg: colors.surface, text: colors.secondary, border: colors.outlineVariant };
+      default: return { bg: colors.surfaceContainerHigh, text: colors.secondary };
     }
-  }, []);
-
-  useEffect(() => {
-    if (user) fetchData();
-  }, [user, fetchData]);
-
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
-
-  const getItemsForDate = (day) => {
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    const dayTodos = todos.filter((t) => {
-      if (!t.dueDate) return false;
-      return t.dueDate.slice(0, 10) === dateStr;
-    });
-    const dayEvents = events.filter((e) => {
-      if (!e.date) return false;
-      return e.date.slice(0, 10) === dateStr;
-    });
-    return [...dayTodos.map((t) => ({ ...t, type: "task" })), ...dayEvents.map((e) => ({ ...e, type: "event" }))];
   };
-
-  const isToday = (day) => {
-    const today = new Date();
-    return day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-  };
-
-  const selectedItems = selectedDate ? getItemsForDate(selectedDate) : [];
-
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const calendarCells = [];
-  for (let i = 0; i < firstDay; i++) calendarCells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) calendarCells.push(d);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+      {/* TopAppBar */}
+      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+        <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>CALENDAR</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity>
+            <MaterialIcons name="more-vert" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.headerSection}>
-          <Text style={styles.heroTitle}>CALENDAR</Text>
-          <Text style={styles.heroSubtitle}>YOUR SCHEDULE</Text>
+        {/* Month Header */}
+        <View style={styles.monthHeader}>
+          <View>
+            <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{currentMonth}</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary }]}>PROTOCOL SCHEDULE: PHASE 04</Text>
+          </View>
+          <View style={styles.monthActions}>
+            <TouchableOpacity style={[styles.iconButton, { borderColor: colors.outlineVariant }]}>
+              <MaterialIcons name="chevron-left" size={20} color={colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.iconButton, { borderColor: colors.outlineVariant }]}>
+              <MaterialIcons name="chevron-right" size={20} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Month Navigation */}
-        <View style={styles.monthNav}>
-          <TouchableOpacity onPress={prevMonth}>
-            <Text style={styles.navArrow}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.monthLabel}>
-            {MONTHS[month]} {year}
-          </Text>
-          <TouchableOpacity onPress={nextMonth}>
-            <Text style={styles.navArrow}>→</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Day Headers */}
-        <View style={styles.dayHeaders}>
-          {DAYS.map((d) => (
-            <Text key={d} style={styles.dayHeaderText}>{d}</Text>
-          ))}
-        </View>
-
-        {/* Calendar Grid */}
-        <View style={styles.calendarGrid}>
-          {calendarCells.map((day, idx) => {
-            if (day === null) {
-              return <View key={`empty-${idx}`} style={styles.dayCell} />;
-            }
-            const items = getItemsForDate(day);
-            const hasItems = items.length > 0;
-            const today = isToday(day);
-            const selected = selectedDate === day;
-
-            return (
-              <TouchableOpacity
-                key={day}
-                style={[
-                  styles.dayCell,
-                  today && styles.dayCellToday,
-                  selected && styles.dayCellSelected,
-                ]}
-                onPress={() => setSelectedDate(day === selectedDate ? null : day)}
-              >
-                <Text
+        {/* Calendar Grid (Simplified for mobile vertical scrolling list view alternative or actual grid) */}
+        {/* Realistically, rendering a 7-column grid in RN looks like this: */}
+        <View style={[styles.calendarGrid, { borderColor: colors.outlineVariant, backgroundColor: colors.outlineVariant }]}>
+          {/* Day Headers */}
+          <View style={[styles.weekRow, { backgroundColor: colors.surface }]}>
+            {["M", "T", "W", "T", "F", "S", "S"].map((day, i) => (
+              <View key={i} style={styles.dayHeaderCell}>
+                <Text style={[typography.labelCaps, { color: colors.secondary }]}>{day}</Text>
+              </View>
+            ))}
+          </View>
+          
+          <View style={styles.daysWrapper}>
+            {/* Filler for 1st of month (assuming starts on Tuesday for visual sake) */}
+            <View style={[styles.dayCell, { backgroundColor: colors.surfaceContainerLow }]} />
+            
+            {days.map((day) => {
+              const isSelected = selectedDay === day;
+              const dayEvents = events[day];
+              
+              return (
+                <TouchableOpacity
+                  key={day}
                   style={[
-                    styles.dayNumber,
-                    today && styles.dayNumberToday,
-                    selected && styles.dayNumberSelected,
+                    styles.dayCell,
+                    { backgroundColor: colors.surfaceContainerLowest },
+                    isSelected && { borderWidth: 2, borderColor: colors.primary }
                   ]}
+                  onPress={() => setSelectedDay(day)}
                 >
-                  {day}
-                </Text>
-                {hasItems && (
-                  <View style={[styles.itemDot, selected && { backgroundColor: colors.white }]} />
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Selected Day Items */}
-        {selectedDate && (
-          <View style={styles.selectedSection}>
-            <Text style={styles.selectedTitle}>
-              {MONTHS[month]} {selectedDate}
-            </Text>
-            {selectedItems.length === 0 ? (
-              <Text style={styles.noItemsText}>No items scheduled</Text>
-            ) : (
-              selectedItems.map((item, idx) => (
-                <View key={idx} style={styles.itemCard}>
-                  <View style={[styles.itemTypeBadge, { backgroundColor: item.type === "event" ? "#6366F1" : colors.primary }]}>
-                    <Text style={styles.itemTypeText}>
-                      {item.type === "event" ? "EVENT" : "TASK"}
+                  <View style={styles.dayNumberRow}>
+                    <Text style={[typography.labelSm, { color: isSelected ? colors.primary : colors.secondary, fontWeight: isSelected ? '700' : '500' }]}>
+                      {String(day).padStart(2, '0')}
                     </Text>
                   </View>
-                  <Text style={styles.itemTitle}>{item.title}</Text>
-                </View>
-              ))
+                  {dayEvents && (
+                    <View style={styles.eventDots}>
+                      {dayEvents.map((e, i) => {
+                        const style = getEventStyle(e.type);
+                        return <View key={i} style={[styles.dot, { backgroundColor: style.bg }]} />;
+                      })}
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Selected Day Details */}
+        <View style={[styles.detailsSection, { borderTopColor: colors.outlineVariant }]}>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 4 }]}>
+            {new Date(2024, 9, selectedDay).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: '2-digit' }).toUpperCase()}
+          </Text>
+          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.lg }]}>
+            INDUSTRIAL LIFECYCLE: ACTIVE
+          </Text>
+
+          <View style={styles.scheduleList}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <View style={[styles.activeDot, { backgroundColor: colors.primary }]} />
+              <Text style={[typography.labelCaps, { color: colors.secondary }]}>SCHEDULED OPERATIONS</Text>
+            </View>
+
+            {events[selectedDay] ? (
+              events[selectedDay].map((evt, i) => {
+                const style = getEventStyle(evt.type);
+                return (
+                  <View key={i} style={[styles.eventCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.sm }]}>
+                    <View style={styles.eventCardHeader}>
+                      <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>08:00 — 10:30</Text>
+                      <View style={[styles.eventBadge, { backgroundColor: style.bg, borderWidth: style.border ? 1 : 0, borderColor: style.border }]}>
+                        <Text style={[typography.labelCaps, { color: style.text, fontSize: 9 }]}>PROTOCOL</Text>
+                      </View>
+                    </View>
+                    <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>{evt.label}</Text>
+                    <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4 }]}>Standard alignment and verification procedure.</Text>
+                  </View>
+                );
+              })
+            ) : (
+              <Text style={[typography.labelSm, { color: colors.secondary }]}>No operations scheduled.</Text>
             )}
           </View>
-        )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  scrollContent: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl },
-  headerSection: { marginTop: spacing.lg, marginBottom: spacing.lg },
-  heroTitle: { fontSize: 48, fontWeight: "900", color: colors.primary, letterSpacing: -2 },
-  heroSubtitle: { ...fonts.tiny, marginTop: spacing.xs },
-  monthNav: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing.lg,
-  },
-  navArrow: { fontSize: 20, fontWeight: "700", color: colors.primary, padding: spacing.sm },
-  monthLabel: { fontSize: 16, fontWeight: "700", color: colors.primary, letterSpacing: -0.5 },
-  dayHeaders: { flexDirection: "row", marginBottom: spacing.sm },
-  dayHeaderText: {
+  container: {
     flex: 1,
-    textAlign: "center",
-    ...fonts.tiny,
-    fontSize: 9,
   },
-  calendarGrid: { flexDirection: "row", flexWrap: "wrap" },
-  dayCell: {
-    width: `${100 / 7}%`,
-    aspectRatio: 1,
-    justifyContent: "center",
+  header: {
+    flexDirection: "row",
     alignItems: "center",
-    borderRadius: borderRadius.sm,
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
   },
-  dayCellToday: { backgroundColor: colors.background },
-  dayCellSelected: { backgroundColor: colors.primary },
-  dayNumber: { fontSize: 14, fontWeight: "600", color: colors.textPrimary },
-  dayNumberToday: { fontWeight: "800" },
-  dayNumberSelected: { color: colors.white },
-  itemDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: colors.primary, marginTop: 2 },
-  selectedSection: { marginTop: spacing.xl },
-  selectedTitle: { ...fonts.sectionHeading, marginBottom: spacing.md },
-  noItemsText: { ...fonts.small, fontWeight: "600" },
-  itemCard: {
-    backgroundColor: colors.background,
+  headerLeft: {
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  headerRight: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  monthHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    padding: 16,
+    marginTop: 8,
+  },
+  monthActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: colors.borderLight,
-    borderRadius: borderRadius.sm,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  itemTypeBadge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: spacing.sm,
+  calendarGrid: {
+    margin: 16,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    borderRightWidth: 0,
+  },
+  weekRow: {
+    flexDirection: 'row',
+  },
+  dayHeaderCell: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: 'transparent', // The background color of the grid container acts as border
+  },
+  daysWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  dayCell: {
+    width: '14.28%', // 100/7
+    aspectRatio: 1,
+    padding: 4,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: 'transparent',
+  },
+  dayNumberRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
+  eventDots: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 2,
+    marginTop: 4,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  detailsSection: {
+    padding: 16,
+    borderTopWidth: 1,
+    marginTop: 8,
+  },
+  scheduleList: {
+    marginTop: 8,
+  },
+  activeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  eventCard: {
+    padding: 16,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  eventCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  eventBadge: {
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: borderRadius.full,
-    marginBottom: spacing.xs,
-  },
-  itemTypeText: { color: colors.white, fontSize: 8, fontWeight: "700", letterSpacing: 1 },
-  itemTitle: { fontSize: 14, fontWeight: "600", color: colors.textPrimary },
+    borderRadius: 4,
+  }
 });
 
 export default CalendarScreen;

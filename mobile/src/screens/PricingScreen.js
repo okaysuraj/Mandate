@@ -1,170 +1,88 @@
 import React from "react";
-import {
-  View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView,
-} from "react-native";
-import { colors, fonts, spacing, borderRadius } from "../theme";
-
-const PLANS = [
-  {
-    name: "Standard",
-    price: "₹0",
-    period: "/ forever",
-    description: "Perfect for individuals looking to gain control over their daily tasks.",
-    features: [
-      "Up to 100 active tasks",
-      "Basic categorization",
-      "Standard sync across devices",
-    ],
-    dark: false,
-    buttonText: "GET STARTED",
-  },
-  {
-    name: "Pro",
-    price: "₹99",
-    period: "/ month",
-    description: "For professionals who demand the absolute best out of their workflow.",
-    features: [
-      "Unlimited tasks & projects",
-      "Advanced analytics & insights",
-      "Priority support",
-      "Custom themes",
-    ],
-    dark: true,
-    recommended: true,
-    buttonText: "UPGRADE TO PRO",
-  },
-];
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 
 const PricingScreen = ({ navigation }) => {
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backText}>← BACK</Text>
-        </TouchableOpacity>
+  const { colors, typography, spacing, borderRadius } = useTheme();
 
-        <View style={styles.headerSection}>
-          <Text style={styles.label}>PRICING</Text>
-          <Text style={styles.heroTitle}>SIMPLE.{"\n"}TRANSPARENT.</Text>
-          <Text style={styles.heroSubtitle}>
-            Invest in precision tools that scale with your ambitions.
-          </Text>
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+        <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>BILLING</Text>
+        <View style={styles.headerRight} />
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.heroSection}>
+          <Text style={[typography.headlineLg, { color: colors.primary, textAlign: 'center', marginBottom: 8 }]}>PLANS</Text>
+          <Text style={[typography.bodyMd, { color: colors.secondary, textAlign: 'center' }]}>Select your operational tier.</Text>
         </View>
 
-        {PLANS.map((plan) => (
-          <View
-            key={plan.name}
-            style={[styles.planCard, plan.dark && styles.planCardDark]}
-          >
-            {plan.recommended && (
-              <View style={styles.recommendedBadge}>
-                <Text style={styles.recommendedText}>RECOMMENDED</Text>
-              </View>
-            )}
-
-            <Text style={[styles.planName, plan.dark && { color: colors.white }]}>
-              {plan.name}
-            </Text>
-
-            <View style={styles.priceRow}>
-              <Text style={[styles.price, plan.dark && { color: colors.white }]}>
-                {plan.price}
-              </Text>
-              <Text style={[styles.period, plan.dark && { color: "#9CA3AF" }]}>
-                {plan.period}
-              </Text>
-            </View>
-
-            <Text style={[styles.planDesc, plan.dark && { color: "#9CA3AF" }]}>
-              {plan.description}
-            </Text>
-
-            {plan.features.map((f, idx) => (
-              <View key={idx} style={styles.featureRow}>
-                <Text style={[styles.checkIcon, plan.dark && { color: colors.white }]}>✓</Text>
-                <Text style={[styles.featureText, plan.dark && { color: colors.white }]}>{f}</Text>
-              </View>
-            ))}
-
-            <TouchableOpacity
-              style={[styles.planButton, plan.dark && styles.planButtonLight]}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.planButtonText, plan.dark && { color: colors.primary }]}>
-                {plan.buttonText}
-              </Text>
-            </TouchableOpacity>
+        <View style={[styles.planCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
+          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>FREE TIER</Text>
+          <Text style={[typography.headlineLg, { color: colors.primary, marginBottom: 16 }]}>$0<Text style={[typography.bodyMd, { color: colors.secondary }]}>/mo</Text></Text>
+          <View style={styles.featuresList}>
+            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>• 1 Workspace</Text>
+            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>• 3 Team Members</Text>
+            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>• Basic Analytics</Text>
           </View>
-        ))}
+          <TouchableOpacity style={[styles.planBtn, { backgroundColor: colors.surfaceContainerHigh }]}>
+            <Text style={[typography.labelCaps, { color: colors.primary }]}>CURRENT PLAN</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={[styles.planCard, { backgroundColor: colors.primary, borderColor: colors.primary, borderRadius: borderRadius.DEFAULT }]}>
+          <Text style={[typography.labelCaps, { color: colors.onPrimary, opacity: 0.8, marginBottom: 8 }]}>PRO TIER</Text>
+          <Text style={[typography.headlineLg, { color: colors.onPrimary, marginBottom: 16 }]}>$49<Text style={[typography.bodyMd, { color: colors.onPrimary, opacity: 0.8 }]}>/mo</Text></Text>
+          <View style={styles.featuresList}>
+            <Text style={[typography.labelSm, { color: colors.onPrimary }]}>• Unlimited Workspaces</Text>
+            <Text style={[typography.labelSm, { color: colors.onPrimary }]}>• Unlimited Team Members</Text>
+            <Text style={[typography.labelSm, { color: colors.onPrimary }]}>• Advanced Analytics & Exports</Text>
+          </View>
+          <TouchableOpacity style={[styles.planBtn, { backgroundColor: colors.onPrimary }]}>
+            <Text style={[typography.labelCaps, { color: colors.primary }]}>UPGRADE NOW</Text>
+          </TouchableOpacity>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl },
-  backButton: { marginTop: spacing.lg },
-  backText: { ...fonts.tiny, color: colors.textSecondary },
-  headerSection: { marginTop: spacing.md, marginBottom: spacing.xl, alignItems: "center" },
-  label: { ...fonts.tiny, marginBottom: spacing.sm },
-  heroTitle: {
-    fontSize: 36,
-    fontWeight: "900",
-    color: colors.primary,
-    letterSpacing: -2,
-    textAlign: "center",
-    textTransform: "uppercase",
-  },
-  heroSubtitle: { ...fonts.small, textAlign: "center", marginTop: spacing.sm, letterSpacing: 0.5 },
-  planCard: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.xl,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  planCardDark: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  recommendedBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: "rgba(255,255,255,0.1)",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
-    marginBottom: spacing.md,
-  },
-  recommendedText: { color: colors.white, fontSize: 9, fontWeight: "700", letterSpacing: 2 },
-  planName: { fontSize: 22, fontWeight: "800", color: colors.primary, letterSpacing: -0.5 },
-  priceRow: { flexDirection: "row", alignItems: "baseline", gap: spacing.sm, marginTop: spacing.sm, marginBottom: spacing.md },
-  price: { fontSize: 40, fontWeight: "900", color: colors.primary, letterSpacing: -2 },
-  period: { fontSize: 13, fontWeight: "500", color: colors.textSecondary },
-  planDesc: { ...fonts.small, marginBottom: spacing.lg, lineHeight: 18 },
-  featureRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginBottom: spacing.md },
-  checkIcon: { fontSize: 14, fontWeight: "700", color: colors.primary },
-  featureText: { fontSize: 13, fontWeight: "600", color: colors.textPrimary },
-  planButton: {
-    backgroundColor: "transparent",
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.full,
+  container: { flex: 1 },
+  header: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  headerLeft: { flex: 1, alignItems: 'flex-start' },
+  headerRight: { flex: 1, alignItems: 'flex-end' },
+  scrollContent: { padding: 24, paddingBottom: 64 },
+  heroSection: { marginBottom: 32, alignItems: 'center' },
+  planCard: {
+    padding: 24,
     borderWidth: 1,
-    borderColor: colors.border,
-    marginTop: spacing.sm,
+    marginBottom: 24,
   },
-  planButtonLight: {
-    backgroundColor: colors.white,
-    borderColor: colors.white,
+  featuresList: {
+    gap: 8,
+    marginBottom: 24,
   },
-  planButtonText: { fontSize: 10, fontWeight: "700", letterSpacing: 2, color: colors.primary },
+  planBtn: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 8,
+  }
 });
 
 export default PricingScreen;

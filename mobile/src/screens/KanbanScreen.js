@@ -1,42 +1,32 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, FlatList, RefreshControl, Alert, ActivityIndicator,
+  SafeAreaView, FlatList, RefreshControl, Modal, TextInput
 } from "react-native";
 import axios from "axios";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import { API_URL } from "../config";
-import { colors, fonts, spacing, borderRadius } from "../theme";
-import TaskModal from "./TaskModal";
+import { useTheme } from "../context/ThemeContext";
 
-const COLUMNS = [
-  { key: "pending", label: "PENDING" },
-  { key: "in-progress", label: "IN PROGRESS" },
-  { key: "completed", label: "COMPLETED" },
-];
-
-const PRIORITY_COLORS = {
-  high: "#EF4444",
-  medium: "#F59E0B",
-  low: "#22C55E",
-};
-
-const KanbanScreen = () => {
-  const [todos, setTodos] = useState([]);
+const KanbanScreen = ({ navigation }) => {
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingTodo, setEditingTodo] = useState(null);
+  
   const { user } = useAuth();
+  const { socket } = useSocket();
+  const { colors, typography, spacing, borderRadius } = useTheme();
 
-  const fetchTodos = useCallback(async () => {
+  const fetchTasks = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/api/todos`, {
-        params: { page: 1, limit: 100, isDeleted: "false" },
+      const { data } = await axios.get(`${API_URL}/api/tasks`, {
+        params: { limit: 100 },
       });
-      setTodos(data.data);
-    } catch {
-      Alert.alert("Error", "Failed to load tasks");
+      setTasks(data.data || data);
+    } catch (error) {
+      console.error("Failed to load tasks", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -44,198 +34,195 @@ const KanbanScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (user) fetchTodos();
-  }, [user, fetchTodos]);
+    if (user) fetchTasks();
+  }, [user, fetchTasks]);
 
-  const handleStatusChange = async (id, newStatus) => {
-    try {
-      await axios.put(`${API_URL}/api/todos/${id}`, { status: newStatus });
-      fetchTodos();
-    } catch {
-      Alert.alert("Error", "Failed to update status");
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchTasks();
+  };
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'completed': return { bg: colors.onTertiaryContainer, text: colors.onTertiary, dot: colors.onTertiary, label: 'COMPLETE' };
+      case 'in-progress': return { bg: colors.surfaceContainerHigh, text: colors.onSurfaceVariant, dot: colors.onTertiaryContainer, label: 'ACTIVE', isPulse: true };
+      default: return { bg: colors.surfaceContainerHigh, text: colors.onSurfaceVariant, dot: colors.outline, label: 'PENDING' };
     }
   };
 
-  const handleSave = async (taskData) => {
-    try {
-      if (editingTodo) {
-        await axios.put(`${API_URL}/api/todos/${editingTodo._id}`, taskData);
-      } else {
-        await axios.post(`${API_URL}/api/todos`, taskData);
-      }
-      setModalVisible(false);
-      setEditingTodo(null);
-      fetchTodos();
-    } catch (error) {
-      Alert.alert("Error", error.response?.data?.message || "Failed to save task");
-    }
-  };
-
-  if (loading) {
+  const renderItem = ({ item, index }) => {
+    const sStyle = getStatusStyle(item.status);
+    
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+      <TouchableOpacity 
+        style={[styles.taskCard, { borderBottomColor: colors.surfaceContainer }]}
+        activeOpacity={0.7}
+      >
+        <View style={styles.taskHeader}>
+          <Text style={[typography.labelSm, { color: colors.secondary }]}>
+            #MN-{String(9000 - index).padStart(4, '0')}
+          </Text>
+          <MaterialIcons name="more-horiz" size={20} color={colors.secondary} />
         </View>
-      </SafeAreaView>
+        
+        <View style={styles.taskBody}>
+          <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700', marginBottom: 2 }]}>
+            {item.title}
+          </Text>
+          <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
+            {item.description || "No description"}
+          </Text>
+        </View>
+
+        <View style={styles.taskFooter}>
+          <View style={[styles.statusChip, { backgroundColor: sStyle.bg, borderColor: colors.outlineVariant, borderWidth: item.status !== 'completed' ? 1 : 0 }]}>
+            <View style={[styles.statusDot, { backgroundColor: sStyle.dot }]} />
+            <Text style={[typography.labelCaps, { color: sStyle.text, fontSize: 9 }]}>{sStyle.label}</Text>
+          </View>
+          
+          <Text style={[typography.labelCaps, { color: item.priority === 'urgent' ? colors.error : colors.secondary, fontSize: 10 }]}>
+            {(item.priority || 'MEDIUM').toUpperCase()}
+          </Text>
+        </View>
+      </TouchableOpacity>
     );
-  }
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerSection}>
-        <Text style={styles.heroTitle}>KANBAN</Text>
-        <Text style={styles.heroSubtitle}>YOUR TASK OVERVIEW</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+      {/* TopAppBar */}
+      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity>
+            <MaterialIcons name="filter-list" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+        <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>BACKLOG</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity>
+            <MaterialIcons name="search" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.columnsContainer}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchTodos(); }} tintColor={colors.primary} />
+      <View style={styles.subHeader}>
+        <Text style={[typography.labelCaps, { color: colors.secondary }]}>CORE DATABASE / V.24</Text>
+        <View style={styles.activeCount}>
+          <View style={[styles.activeDot, { backgroundColor: colors.primary }]} />
+          <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 9 }]}>
+            {tasks.filter(t => t.status !== 'completed').length} ACTIVE ENTITIES
+          </Text>
+        </View>
+      </View>
+
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => item._id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        ListEmptyComponent={
+          <Text style={[typography.labelCaps, { color: colors.secondary, textAlign: 'center', marginTop: 40 }]}>NO ENTITIES FOUND</Text>
         }
-      >
-        {COLUMNS.map((col) => {
-          const columnTodos = todos.filter((t) => t.status === col.key);
-          return (
-            <View key={col.key} style={styles.column}>
-              <View style={styles.columnHeader}>
-                <Text style={styles.columnTitle}>{col.label}</Text>
-                <View style={styles.countBadge}>
-                  <Text style={styles.countText}>{columnTodos.length}</Text>
-                </View>
-              </View>
-
-              <FlatList
-                data={columnTodos}
-                keyExtractor={(item) => item._id}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.kanbanCard}
-                    onPress={() => { setEditingTodo(item); setModalVisible(true); }}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.cardHeader}>
-                      <View style={[styles.priorityDot, { backgroundColor: PRIORITY_COLORS[item.priority] || colors.textMuted }]} />
-                      <Text style={styles.priorityLabel}>{item.priority?.toUpperCase()}</Text>
-                    </View>
-                    <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
-                    {item.dueDate && (
-                      <Text style={styles.cardDate}>{new Date(item.dueDate).toLocaleDateString()}</Text>
-                    )}
-                    {col.key !== "completed" && (
-                      <TouchableOpacity
-                        style={styles.moveButton}
-                        onPress={() => handleStatusChange(item._id, col.key === "pending" ? "in-progress" : "completed")}
-                      >
-                        <Text style={styles.moveButtonText}>
-                          {col.key === "pending" ? "START →" : "COMPLETE ✓"}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </TouchableOpacity>
-                )}
-                ListEmptyComponent={
-                  <View style={styles.emptyColumn}>
-                    <Text style={styles.emptyText}>No tasks</Text>
-                  </View>
-                }
-                showsVerticalScrollIndicator={false}
-              />
-            </View>
-          );
-        })}
-      </ScrollView>
-
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => { setEditingTodo(null); setModalVisible(true); }}
+      />
+      
+      {/* Floating Action Button */}
+      <TouchableOpacity 
+        style={[styles.fab, { backgroundColor: colors.primary, borderRadius: borderRadius.full }]}
         activeOpacity={0.8}
       >
-        <Text style={styles.fabIcon}>+</Text>
+        <MaterialIcons name="add" size={24} color={colors.onPrimary} />
       </TouchableOpacity>
-
-      <TaskModal
-        visible={modalVisible}
-        onClose={() => { setModalVisible(false); setEditingTodo(null); }}
-        onSave={handleSave}
-        initialData={editingTodo}
-        projects={user?.projects || []}
-      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  headerSection: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.md },
-  heroTitle: { fontSize: 48, fontWeight: "900", color: colors.primary, letterSpacing: -2 },
-  heroSubtitle: { ...fonts.tiny, marginTop: spacing.xs },
-  columnsContainer: { paddingHorizontal: spacing.md, paddingBottom: 100, gap: spacing.md },
-  column: { width: 280, backgroundColor: colors.background, borderRadius: borderRadius.md, padding: spacing.md },
-  columnHeader: {
+  container: {
+    flex: 1,
+  },
+  header: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing.md,
-    paddingBottom: spacing.sm,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
   },
-  columnTitle: { ...fonts.tiny },
-  countBadge: {
-    backgroundColor: colors.primary,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    justifyContent: "center",
-    alignItems: "center",
+  headerLeft: {
+    flex: 1,
+    alignItems: 'flex-start',
   },
-  countText: { color: colors.white, fontSize: 10, fontWeight: "700" },
-  kanbanCard: {
-    backgroundColor: colors.white,
-    borderRadius: borderRadius.sm,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+  headerRight: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
-  cardHeader: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginBottom: spacing.xs },
-  priorityDot: { width: 6, height: 6, borderRadius: 3 },
-  priorityLabel: { fontSize: 9, fontWeight: "700", letterSpacing: 1, color: colors.textMuted },
-  cardTitle: { fontSize: 13, fontWeight: "600", color: colors.textPrimary, marginBottom: spacing.xs },
-  cardDate: { ...fonts.tiny, marginBottom: spacing.sm },
-  moveButton: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignSelf: "flex-start",
-    marginTop: spacing.xs,
+  subHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  moveButtonText: { fontSize: 9, fontWeight: "700", letterSpacing: 1, color: colors.textSecondary },
-  emptyColumn: { paddingVertical: spacing.xl, alignItems: "center" },
-  emptyText: { ...fonts.small, fontWeight: "600" },
+  activeCount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  activeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  listContent: {
+    paddingBottom: 80,
+  },
+  taskCard: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  taskHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  taskBody: {
+    marginBottom: 12,
+  },
+  taskFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statusChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+    gap: 4,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
   fab: {
-    position: "absolute",
-    bottom: spacing.lg,
-    right: spacing.lg,
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
     width: 56,
     height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  fabIcon: { color: colors.white, fontSize: 28, fontWeight: "300", marginTop: -2 },
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  }
 });
 
 export default KanbanScreen;

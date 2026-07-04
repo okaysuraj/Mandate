@@ -1,52 +1,67 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet, SafeAreaView } from "react-native";
-import { colors, fonts, spacing, borderRadius } from "../theme";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 
 const LandingScreen = ({ navigation }) => {
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        {/* Hero */}
-        <Text style={styles.heroTitle}>MANDATE</Text>
-        <Text style={styles.heroSubtitle}>
-          Precision productivity for the focused mind.
-        </Text>
+  const { colors, typography, spacing, borderRadius } = useTheme();
 
-        {/* Logo Card */}
-        <View style={styles.logoCard}>
-          <Image
-            source={require("../../assets/logo.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+      {/* Top Header */}
+      <View style={[styles.header, { borderBottomColor: colors.outlineVariant }]}>
+        <View style={styles.headerLeft}>
+          <MaterialIcons name="menu" size={24} color={colors.primary} />
+        </View>
+        <Text style={[typography.headlineLgMobile, { color: colors.primary, textAlign: 'center' }]}>MANDATE</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+            <MaterialIcons name="account-circle" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Main Content */}
+      <View style={styles.content}>
+        <View style={styles.heroSection}>
+          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>
+            SYSTEM DEPLOYMENT // PHASE 4
+          </Text>
+          <Text style={[typography.displayLg, { color: colors.primary, marginBottom: spacing.md }]}>
+            FOCUS.{"\n"}EXECUTE.{"\n"}MANDATE.
+          </Text>
+          <Text style={[typography.bodyMd, { color: colors.onSurfaceVariant, marginBottom: spacing.xl }]}>
+            Industrial-grade task synthesis and workspace tracking for the modern enterprise.
+          </Text>
         </View>
 
-        {/* Tagline */}
-        <Text style={styles.tagline}>
-          Helping you reach your goal faster.
-        </Text>
-        <View style={styles.divider} />
-        <Text style={styles.description}>
-          Streamline your workflow with tools that adapt to your speed, giving
-          you the clarity needed to execute flawlessly.
-        </Text>
-
-        {/* CTA Buttons */}
-        <View style={styles.buttonGroup}>
-          <TouchableOpacity
-            style={styles.primaryButton}
+        {/* Action Grid */}
+        <View style={styles.actionGrid}>
+          <TouchableOpacity 
+            style={[styles.primaryAction, { backgroundColor: colors.primary, borderRadius: borderRadius.DEFAULT }]}
             onPress={() => navigation.navigate("Register")}
-            activeOpacity={0.8}
           >
-            <Text style={styles.primaryButtonText}>START YOUR MANDATE</Text>
+            <View>
+              <Text style={[typography.labelCaps, { color: colors.onPrimary, opacity: 0.8 }]}>INITIALIZE</Text>
+              <Text style={[typography.headlineLgMobile, { color: colors.onPrimary, marginTop: spacing.xs }]}>
+                New Node
+              </Text>
+            </View>
+            <MaterialIcons name="arrow-forward" size={24} color={colors.onPrimary} />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
+          <TouchableOpacity 
+            style={[styles.secondaryAction, { backgroundColor: colors.surfaceContainerLow, borderRadius: borderRadius.DEFAULT, borderColor: colors.outlineVariant }]}
             onPress={() => navigation.navigate("Login")}
-            activeOpacity={0.8}
           >
-            <Text style={styles.secondaryButtonText}>LOG IN</Text>
+            <View>
+              <Text style={[typography.labelCaps, { color: colors.secondary }]}>RETURN</Text>
+              <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: spacing.xs }]}>
+                Login
+              </Text>
+            </View>
+            <MaterialIcons name="login" size={24} color={colors.primary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -57,96 +72,49 @@ const LandingScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  headerLeft: {
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  headerRight: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
   content: {
     flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 48,
+    justifyContent: "space-between",
+    paddingBottom: 48,
+  },
+  heroSection: {
+    flex: 1,
+  },
+  actionGrid: {
+    gap: 16,
+  },
+  primaryAction: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: spacing.lg,
+    padding: 24,
   },
-  heroTitle: {
-    fontSize: 64,
-    fontWeight: "900",
-    color: colors.primary,
-    letterSpacing: -3,
-    textAlign: "center",
-  },
-  heroSubtitle: {
-    ...fonts.small,
-    letterSpacing: 1,
-    marginTop: spacing.sm,
-    textAlign: "center",
-  },
-  logoCard: {
-    backgroundColor: colors.white,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    marginTop: spacing.xl,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-  },
-  tagline: {
-    ...fonts.sectionHeading,
-    textAlign: "center",
-    marginTop: spacing.xl,
-    paddingHorizontal: spacing.md,
-  },
-  divider: {
-    width: 48,
-    height: 3,
-    backgroundColor: colors.primary,
-    marginTop: spacing.md,
-    marginBottom: spacing.md,
-    borderRadius: 2,
-  },
-  description: {
-    ...fonts.small,
-    textAlign: "center",
-    lineHeight: 20,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  buttonGroup: {
-    width: "100%",
-    gap: spacing.md,
-    marginTop: spacing.md,
-  },
-  primaryButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.full,
+  secondaryAction: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-  },
-  primaryButtonText: {
-    color: colors.white,
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-  },
-  secondaryButton: {
-    backgroundColor: "transparent",
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.full,
-    alignItems: "center",
+    padding: 24,
     borderWidth: 1,
-    borderColor: colors.border,
-  },
-  secondaryButtonText: {
-    color: colors.primary,
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-  },
+  }
 });
 
 export default LandingScreen;

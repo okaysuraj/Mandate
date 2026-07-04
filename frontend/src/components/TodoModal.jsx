@@ -57,7 +57,7 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
   const fetchComments = async () => {
     if (!initialData?._id) return;
     try {
-      const { data } = await axios.get(`/api/comments/todo/${initialData._id}`);
+      const { data } = await axios.get(`/api/comments/task/${initialData._id}`);
       setComments(data);
     } catch (error) {
       console.error("Failed to fetch comments", error);
@@ -92,7 +92,7 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
     e.preventDefault();
     if (!newComment.trim() || !initialData) return;
     try {
-      const { data } = await axios.post(`/api/comments/todo/${initialData._id}`, { content: newComment });
+      const { data } = await axios.post(`/api/comments/task/${initialData._id}`, { content: newComment });
       setComments([data, ...comments]);
       setNewComment("");
     } catch (error) {

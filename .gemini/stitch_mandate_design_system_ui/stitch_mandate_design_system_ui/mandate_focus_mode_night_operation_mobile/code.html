@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mandate | Focus Mode (Night Operation - Mobile)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#00e639",
+                    "surface-variant": "#353434",
+                    "on-error": "#690005",
+                    "surface-container-low": "#1c1b1b",
+                    "on-secondary-fixed": "#1b1c1c",
+                    "error": "#ffb4ab",
+                    "primary-container": "#e2e2e2",
+                    "surface-tint": "#c6c6c7",
+                    "outline": "#8e9192",
+                    "on-surface": "#e5e2e1",
+                    "on-secondary-fixed-variant": "#464747",
+                    "surface-dim": "#141313",
+                    "primary-fixed-dim": "#c6c6c7",
+                    "primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#00530e",
+                    "on-secondary": "#303031",
+                    "error-container": "#93000a",
+                    "secondary-fixed-dim": "#c7c6c6",
+                    "on-primary-container": "#636565",
+                    "tertiary-container": "#72ff70",
+                    "surface-bright": "#3a3939",
+                    "background": "#0f0f0f",
+                    "on-primary-fixed": "#1a1c1c",
+                    "inverse-on-surface": "#313030",
+                    "on-background": "#e5e2e1",
+                    "on-error-container": "#ffdad6",
+                    "surface-container-highest": "#353434",
+                    "surface-container": "#201f1f",
+                    "on-tertiary": "#003907",
+                    "secondary-fixed": "#e3e2e2",
+                    "on-surface-variant": "#c4c7c8",
+                    "on-primary": "#2f3131",
+                    "inverse-primary": "#5d5f5f",
+                    "on-secondary-container": "#b5b5b5",
+                    "tertiary": "#ffffff",
+                    "secondary": "#c7c6c6",
+                    "on-tertiary-fixed": "#002203",
+                    "on-tertiary-container": "#007518",
+                    "surface-container-lowest": "#0e0e0e",
+                    "surface": "#141313",
+                    "on-primary-fixed-variant": "#454747",
+                    "tertiary-fixed": "#72ff70",
+                    "secondary-container": "#464747",
+                    "surface-container-high": "#2a2a2a",
+                    "outline-variant": "#444748",
+                    "inverse-surface": "#e5e2e1",
+                    "primary-fixed": "#e2e2e2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "margin-desktop": "32px",
+                    "container-max-width": "1280px",
+                    "margin-mobile": "16px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-md": ["Hanken Grotesk"],
+                    "label-md": ["Hanken Grotesk"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "body-lg": ["Hanken Grotesk"],
+                    "headline-xl": ["Hanken Grotesk"],
+                    "title-md": ["Hanken Grotesk"],
+                    "label-sm": ["Hanken Grotesk"],
+                    "headline-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+body {
+    background-color: #0f0f0f;
+    color: #e5e2e1;
+    font-family: "Hanken Grotesk", sans-serif;
+    overflow-x: hidden
+    }
+.timer-circle {
+    transition: stroke-dashoffset 1s linear;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%
+    }
+.scan-line {
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05), transparent);
+    height: 100px;
+    width: 100%;
+    position: absolute;
+    top: -100px;
+    animation: scan 4s linear infinite
+    }
+@keyframes scan {
+    0% {
+        top: -100px;
+        } 100% {
+        top: 100vh;
+        }
+    }
+.noise-overlay {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAa1Ms_jvNlGzLdCcB3rPvcrYpjP1xOQ5m6m0T0x4Qk8lZA0_-K5nLJ3PAlFuaDYr5rBiABYhb6OevV8MkORX8u6x_afNX9qH2MmOlIT0Zk2LfWEZQENyWvrSxbcZoeiT7jJ69Bi7QVwERJ8_yGugxmE6fVcQ5eOrTX5XtXk3_rIX7ZWju47Hd4eLm21KVyNBIC-nDvhSJx7ICIY12ISP4CKMRQ7urUJqKgZPulWIOar_GC7K0_PIjGUg);
+    opacity: 0.02;
+    pointer-events: none
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="dark selection:bg-primary selection:text-background h-screen flex flex-col">
+<div class="noise-overlay absolute inset-0 z-[100]"></div>
+<div class="scan-line z-[99]"></div>
+<!-- Top App Bar -->
+<header class="w-full sticky top-0 z-50 flex items-center justify-between px-gutter py-4 border-b border-outline-variant bg-surface/80 backdrop-blur-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">menu</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold tracking-tighter text-primary">MANDATE</h1>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 px-3 py-1 bg-surface-container-high rounded-full border border-outline-variant">
+<div class="w-2 h-2 rounded-full bg-tertiary-fixed-dim animate-pulse"></div>
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-widest">Live</span>
+</div>
+<span class="material-symbols-outlined text-primary">account_circle</span>
+</div>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center px-gutter relative">
+<!-- Visual Atmosphere -->
+<div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+<div class="w-[500px] h-[500px] bg-white rounded-full blur-[120px]"></div>
+</div>
+<!-- Timer Section -->
+<div class="relative z-10 flex flex-col items-center gap-8">
+<div class="flex flex-col items-center text-center">
+<span class="font-label-md text-label-md text-outline uppercase tracking-[0.3em] mb-2">Operation</span>
+<h2 class="font-title-md text-title-md font-bold text-primary tracking-tight">Core Synthesis</h2>
+</div>
+<!-- Countdown Timer -->
+<div class="relative w-72 h-72 flex items-center justify-center">
+<svg class="absolute inset-0 w-full h-full" viewbox="0 0 100 100">
+<!-- Background Circle -->
+<circle cx="50" cy="50" fill="none" r="48" stroke="#1a1a1a" stroke-width="0.5"></circle>
+<!-- Progress Circle -->
+<circle class="timer-circle" cx="50" cy="50" fill="none" r="48" stroke="#ffffff" stroke-dasharray="301.59" stroke-dashoffset="60" stroke-width="1"></circle>
+</svg>
+<div class="text-center">
+<div class="font-headline-xl text-headline-xl text-primary tracking-tighter tabular-nums leading-none">
+                        24:57
+                    </div>
+<div class="font-label-sm text-label-sm text-outline mt-2 tracking-widest uppercase">Remaining</div>
+</div>
+</div>
+<!-- Status Bit -->
+<div class="flex flex-col items-center gap-1">
+<span class="font-label-sm text-label-sm text-tertiary-fixed-dim uppercase font-bold tracking-widest">Protocol Active</span>
+<div class="flex gap-1">
+<div class="w-1 h-3 bg-tertiary-fixed-dim"></div>
+<div class="w-1 h-3 bg-tertiary-fixed-dim"></div>
+<div class="w-1 h-3 bg-tertiary-fixed-dim"></div>
+<div class="w-1 h-3 bg-surface-variant"></div>
+<div class="w-1 h-3 bg-surface-variant"></div>
+</div>
+</div>
+</div>
+<!-- Metrics Grid -->
+<div class="w-full grid grid-cols-3 gap-1 mt-16 max-w-sm">
+<div class="bg-[#1a1a1a] p-4 flex flex-col gap-1 border border-outline-variant">
+<span class="font-label-sm text-label-sm text-outline uppercase">CPU Load</span>
+<span class="font-title-md text-title-md text-primary font-bold">14%</span>
+</div>
+<div class="bg-[#1a1a1a] p-4 flex flex-col gap-1 border border-outline-variant">
+<span class="font-label-sm text-label-sm text-outline uppercase">Sessions</span>
+<span class="font-title-md text-title-md text-primary font-bold">08</span>
+</div>
+<div class="bg-[#1a1a1a] p-4 flex flex-col gap-1 border border-outline-variant">
+<span class="font-label-sm text-label-sm text-outline uppercase">Streak</span>
+<span class="font-title-md text-title-md text-primary font-bold">12d</span>
+</div>
+</div>
+</main>
+<!-- Call to Action Footer -->
+<footer class="w-full px-gutter py-8 flex flex-col items-center gap-6 z-50">
+<button class="w-full py-4 bg-primary text-background font-label-md text-label-md font-extrabold rounded-full transition-transform active:scale-95 uppercase tracking-widest">
+            Commit Action
+        </button>
+<!-- Bottom Nav Simulation (Mobile Navigation Anchors) -->
+<nav class="flex justify-around items-center w-full bg-surface h-16 border-t border-outline-variant">
+<div class="flex flex-col items-center justify-center text-primary border-t-2 border-primary pt-2">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-label-sm text-label-sm">DASHBOARD</span>
+</div>
+<div class="flex flex-col items-center justify-center text-secondary pt-2">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+<span class="font-label-sm text-label-sm">ASSETS</span>
+</div>
+<div class="flex flex-col items-center justify-center text-secondary pt-2">
+<span class="material-symbols-outlined">error_med</span>
+<span class="font-label-sm text-label-sm">ALERTS</span>
+</div>
+<div class="flex flex-col items-center justify-center text-secondary pt-2">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm">SYSTEM</span>
+</div>
+</nav>
+</footer>
+<script>
+        // Micro-interaction for timer circle
+        const circle = document.querySelector('.timer-circle');
+        const radius = 48;
+        const circumference = 2 * Math.PI * radius;
+        let progress = 80; // Starting percentage
+
+        function setProgress(percent) {
+            const offset = circumference - (percent / 100 * circumference);
+            circle.style.strokeDashoffset = offset;
+        }
+
+        // Initialize progress
+        setProgress(progress);
+
+        // Simple timer logic
+        let timeLeft = 24 * 60 + 57;
+        const timerDisplay = document.querySelector('.font-headline-xl');
+
+        setInterval(() => {
+            if (timeLeft > 0) {
+                timeLeft--;
+                const mins = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                // Slowly decrease progress bar
+                progress -= 0.001; 
+                setProgress(progress);
+            }
+        }, 1000);
+    </script>
+</body></html>

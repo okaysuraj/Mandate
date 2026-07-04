@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 
 const commentSchema = new mongoose.Schema(
   {
-    todoId: {
+    taskId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "Todo",
+      ref: "Task",
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -21,7 +21,7 @@ const commentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-commentSchema.index({ todoId: 1, createdAt: -1 });
+commentSchema.index({ taskId: 1, createdAt: -1 });
 
 const Comment = mongoose.model("Comment", commentSchema);
 

@@ -7,6 +7,11 @@ const workspaceSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    type: {
+      type: String,
+      enum: ["personal", "team"],
+      default: "personal"
+    },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
