@@ -85,3 +85,47 @@ export const parseSmartInput = async (req, res) => {
     res.status(500).json({ message: "AI parsing failed: " + error.message });
   }
 };
+
+export const detectBurnout = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const tasksToday = await Task.find({
+      creatorId: req.user.id,
+      dueDate: { $gte: today, $lt: tomorrow }
+    });
+
+    let totalEstimate = 0;
+    let completedCount = 0;
+    
+    tasksToday.forEach(task => {
+      totalEstimate += (task.timeEstimate || 30); // assume 30 mins if not set
+      if (task.status === "completed") completedCount++;
+    });
+
+    let burnoutRisk = "Low";
+    let advice = "You have a manageable workload today.";
+
+    if (totalEstimate > 480) { // More than 8 hours of estimated work
+      burnoutRisk = "High";
+      advice = "You have scheduled more than 8 hours of work today. Consider rescheduling lower priority tasks to tomorrow to avoid burnout.";
+    } else if (totalEstimate > 360) {
+      burnoutRisk = "Medium";
+      advice = "Your schedule is quite full. Make sure to take breaks and use the Focus timer.";
+    }
+
+    res.json({
+      tasksCount: tasksToday.length,
+      completedCount,
+      estimatedMinutes: totalEstimate,
+      burnoutRisk,
+      advice
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: "Burnout detection failed: " + error.message });
+  }
+};

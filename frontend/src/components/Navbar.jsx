@@ -127,59 +127,39 @@ const Navbar = ({ variant = "app" }) => {
 
   // App variant — top bar for pages with sidebar or top+sidebar layout
   return (
-    <header className="flex justify-between items-center px-lg h-xl w-full bg-surface border-b border-outline-variant sticky top-0 z-40">
-      <div className="flex items-center gap-md flex-1">
-        <div className="relative w-full max-w-md">
-          <span className="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
-          <input
-            className="w-full bg-surface-container-low border-none rounded-full py-sm pl-[44px] pr-md font-label-sm text-label-sm focus:ring-2 focus:ring-primary placeholder:text-outline"
-            placeholder="CMD+K TO SEARCH SYSTEM..."
-            type="text"
-          />
+    <header className="flex justify-between items-center px-lg w-full h-16 sticky top-0 z-50 bg-background border-b border-surface-variant">
+      <div className="flex items-center gap-md">
+        <span className="font-display-lg text-headline-lg font-black tracking-tighter text-primary">MANDATE</span>
+        <div className="hidden md:flex gap-md ml-lg">
+          <nav className="flex gap-gutter">
+            <Link to="/dashboard" className="text-primary font-bold border-b-2 border-primary py-4 cursor-pointer transition-all duration-150">Command</Link>
+            <Link to="/projects" className="text-on-surface-variant font-medium hover:text-primary py-4 transition-all duration-150">Fleet</Link>
+            <Link to="/goals" className="text-on-surface-variant font-medium hover:text-primary py-4 transition-all duration-150">Resources</Link>
+            <Link to="/settings" className="text-on-surface-variant font-medium hover:text-primary py-4 transition-all duration-150">Safety</Link>
+          </nav>
         </div>
       </div>
-      <div className="flex items-center gap-lg">
-        <div className="flex items-center gap-md">
+      <div className="flex items-center gap-md">
+        <div className="hidden md:flex items-center bg-surface-container-low px-md py-sm rounded-full">
+          <span className="material-symbols-outlined text-outline text-[18px]">search</span>
+          <input className="bg-transparent border-none focus:ring-0 font-label-sm text-sm ml-sm w-48 outline-none placeholder:text-outline" placeholder="Global Search" type="text" />
+        </div>
+        <div className="flex items-center gap-sm">
           <button 
             onClick={toggleDarkMode}
-            className="material-symbols-outlined text-secondary hover:text-primary transition-colors"
+            className="p-sm rounded-full hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80"
           >
-            {isDarkMode ? 'light_mode' : 'dark_mode'}
+            <span className="material-symbols-outlined text-primary">{isDarkMode ? 'light_mode' : 'dark_mode'}</span>
           </button>
-          <button className="material-symbols-outlined text-secondary hover:text-primary transition-colors">
-            notifications
+          <button className="p-sm rounded-full hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80">
+            <span className="material-symbols-outlined text-primary">terminal</span>
           </button>
-          <button className="material-symbols-outlined text-secondary hover:text-primary transition-colors">
-            settings
+          <button className="p-sm rounded-full hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80">
+            <span className="material-symbols-outlined text-primary">settings</span>
           </button>
-        </div>
-        <div className="h-sm w-[1px] bg-outline-variant"></div>
-        <div className="relative" ref={dropdownRef}>
-          <button 
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-sm"
-          >
-            <div className="w-xl h-xl rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant flex items-center justify-center">
-              <span className="material-symbols-outlined text-on-surface-variant text-[20px]">person</span>
-            </div>
+          <button className="p-sm rounded-full hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80">
+            <span className="material-symbols-outlined text-primary">notifications</span>
           </button>
-          {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-52 bg-surface border border-outline-variant shadow-lg z-50">
-              <div className="px-md py-sm border-b border-outline-variant">
-                <p className="font-label-caps text-label-caps text-primary">{user?.name}</p>
-                <p className="font-label-sm text-[10px] text-on-surface-variant">{user?.email}</p>
-              </div>
-              <Link to="/settings" className="block px-md py-sm font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-low transition-colors">
-                SETTINGS
-              </Link>
-              <button 
-                onClick={() => { setDropdownOpen(false); logout(); }}
-                className="w-full text-left px-md py-sm font-label-caps text-label-caps text-error hover:bg-error-container transition-colors border-t border-outline-variant"
-              >
-                SIGN OUT
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </header>

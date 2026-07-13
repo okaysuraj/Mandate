@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 const navItems = [
   { path: "/dashboard", icon: "dashboard", label: "Dashboard" },
   { path: "/today", icon: "event_upcoming", label: "Today" },
+  { path: "/kanban", icon: "view_kanban", label: "Kanban" },
   { path: "/backlog", icon: "inventory_2", label: "Backlog" },
   { path: "/projects", icon: "account_tree", label: "Projects" },
   { path: "/calendar", icon: "calendar_today", label: "Calendar" },
@@ -12,75 +13,72 @@ const navItems = [
 
 const Sidebar = ({ onNewTask }) => {
   const location = useLocation();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const isActive = (path) => location.pathname === path;
 
   return (
-    <aside className="hidden md:flex flex-col h-full py-lg px-md gap-md bg-surface border-r border-outline-variant w-64 shrink-0 transition-all duration-150">
-      {/* Brand */}
-      <div className="mb-xl px-sm">
-        <Link to="/dashboard">
-          <h1 className="font-headline-lg text-headline-lg font-black tracking-tighter text-primary">MANDATE</h1>
-        </Link>
-        <p className="font-label-caps text-label-caps text-secondary opacity-60">Industrial OS</p>
+    <aside className="hidden md:flex flex-col h-screen w-64 fixed left-0 top-16 bg-surface-container-lowest border-r border-surface-variant py-lg gap-md z-40">
+      <div className="px-lg mb-md">
+        <div className="flex items-center gap-sm">
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary">
+            <span className="material-symbols-outlined">person</span>
+          </div>
+          <div>
+            <p className="font-label-caps text-on-surface font-bold uppercase">{user?.name || "OP-942"}</p>
+            <p className="text-[10px] text-on-surface-variant uppercase tracking-widest overflow-hidden whitespace-nowrap overflow-ellipsis w-32">{user?.email || "Infrastructure Lead"}</p>
+          </div>
+        </div>
       </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 flex flex-col gap-xs">
+      
+      <nav className="flex flex-col px-md gap-xs">
         {navItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
-            className={`flex items-center gap-md px-md py-sm font-label-caps text-label-caps transition-all duration-150 rounded-full ${
+            className={`flex items-center gap-md px-md py-sm transition-all duration-200 ${
               isActive(item.path)
-                ? "bg-primary text-on-primary shadow-sm"
-                : "text-secondary hover:bg-surface-container"
+                ? "bg-primary text-on-primary rounded-none font-bold border-l-4 border-primary"
+                : "text-on-surface-variant font-medium hover:bg-surface-container-low"
             }`}
           >
-            <span
-              className="material-symbols-outlined text-[20px]"
-              style={isActive(item.path) ? { fontVariationSettings: "'FILL' 1" } : {}}
-            >
-              {item.icon}
-            </span>
-            <span>{item.label}</span>
+            <span className="material-symbols-outlined">{item.icon}</span>
+            <span className="font-label-caps uppercase">{item.label}</span>
           </Link>
         ))}
       </nav>
 
-      {/* New Task Button */}
-      <button
-        onClick={onNewTask}
-        className="bg-primary text-on-primary font-label-caps text-label-caps py-md rounded-full mb-md hover:opacity-90 transition-opacity flex items-center justify-center gap-sm"
-      >
-        <span className="material-symbols-outlined text-[18px]">add</span>
-        New Task
-      </button>
-
-      {/* Footer Links */}
-      <div className="flex flex-col gap-xs pt-md border-t border-outline-variant">
-        <Link
-          to="/settings"
-          className="flex items-center gap-md px-md py-sm font-label-caps text-label-caps text-secondary hover:bg-surface-container transition-all duration-150 rounded-full"
-        >
-          <span className="material-symbols-outlined text-[20px]">settings</span>
-          <span>Settings</span>
-        </Link>
-        <a
-          href="#"
-          className="flex items-center gap-md px-md py-sm font-label-caps text-label-caps text-secondary hover:bg-surface-container transition-all duration-150 rounded-full"
-        >
-          <span className="material-symbols-outlined text-[20px]">help_outline</span>
-          <span>Support</span>
-        </a>
+      <div className="mt-auto px-md">
         <button
-          onClick={logout}
-          className="flex items-center gap-md px-md py-sm font-label-caps text-label-caps text-secondary hover:bg-surface-container transition-all duration-150 rounded-full w-full text-left"
+          onClick={onNewTask}
+          className="w-full py-md bg-primary text-on-primary rounded-full font-label-caps text-center hover:opacity-90 transition-all uppercase mb-lg"
         >
-          <span className="material-symbols-outlined text-[20px]">logout</span>
-          <span>Sign Out</span>
+          New Entry
         </button>
+        
+        <div className="flex flex-col gap-xs pt-md border-t border-surface-variant">
+          <Link
+            to="/settings"
+            className="flex items-center gap-md px-md py-sm text-on-surface-variant font-medium hover:bg-surface-container-low transition-all"
+          >
+            <span className="material-symbols-outlined">settings</span>
+            <span className="font-label-caps uppercase">Settings</span>
+          </Link>
+          <a
+            href="#"
+            className="flex items-center gap-md px-md py-sm text-on-surface-variant font-medium hover:bg-surface-container-low transition-all"
+          >
+            <span className="material-symbols-outlined">help</span>
+            <span className="font-label-caps uppercase">Support</span>
+          </a>
+          <button
+            onClick={logout}
+            className="flex items-center gap-md px-md py-sm text-on-surface-variant font-medium hover:bg-surface-container-low transition-all w-full text-left"
+          >
+            <span className="material-symbols-outlined text-error">logout</span>
+            <span className="font-label-caps uppercase text-error">Sign Out</span>
+          </button>
+        </div>
       </div>
     </aside>
   );

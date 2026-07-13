@@ -17,9 +17,12 @@ import aiRoutes from "./routes/aiRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
 import goalRoutes from "./routes/goalRoutes.js";
 import automationRoutes from "./routes/automationRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
+import stripeRoutes from "./routes/stripeRoutes.js";
 import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import { initReminderService } from "./services/reminderService.js";
+import "./scripts/cronJobs.js";
 
 dotenv.config();
 
@@ -60,14 +63,14 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 5001;
 const __dirname = path.resolve();
 
-// middleware
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || (process.env.NODE_ENV !== "production" ? "http://localhost:5173" : "*"),
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-};
+// We need to mount the stripe webhook BEFORE express.json() because it needs the raw body
+app.use("/api/stripe/webhook", express.raw({ type: "application/json" }));
 
-app.use(cors(corsOptions));
+// middleware
+app.use(cors({
+  origin: "*", 
+  credentials: true,
+}));
 app.use(express.json()); // this middleware will parse JSON bodies: req.body
 app.use(rateLimiter);
 
@@ -89,6 +92,8 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/goals", goalRoutes);
 app.use("/api/automations", automationRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/stripe", stripeRoutes);
 
 app.get("/", (req, res) => {
   res.send("Mandate API is running...");

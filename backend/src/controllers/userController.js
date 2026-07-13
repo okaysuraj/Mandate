@@ -77,3 +77,25 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// @desc    Register Expo Push Token
+// @route   POST /api/users/push-token
+// @access  Private
+export const registerPushToken = async (req, res) => {
+  try {
+    const { expoPushToken } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.expoPushToken = expoPushToken;
+      await user.save();
+      res.status(200).json({ message: "Push token registered successfully" });
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error in registerPushToken controller", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

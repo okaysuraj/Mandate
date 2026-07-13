@@ -1,252 +1,277 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router';
-import { ArrowRight, CheckCircle2, Target, Zap, Clock } from 'lucide-react';
+import { useNavigate, Link } from 'react-router';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const WelcomePage = () => {
-  const [step, setStep] = useState(1);
   const navigate = useNavigate();
 
   // Preferences state
-  const [useCase, setUseCase] = useState('personal');
-  const [notifications, setNotifications] = useState('normal');
-
-  // First mandate state
-  const [taskTitle, setTaskTitle] = useState('');
-  const [taskIntent, setTaskIntent] = useState('');
-
-  const nextStep = () => setStep(s => Math.min(s + 1, 4));
+  const [startTime, setStartTime] = useState('09:00');
+  const [endTime, setEndTime] = useState('18:00');
   
-  const handleComplete = async () => {
+  const [criticalAlerts, setCriticalAlerts] = useState(true);
+  const [reports, setReports] = useState(true);
+  const [teamActivity, setTeamActivity] = useState(false);
+  
+  const [workspaceType, setWorkspaceType] = useState('personal');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
     try {
-      // 1. Update user preferences
       await axios.put('/api/users/profile', {
         preferences: {
-          notifications
+          operationalWindow: { start: startTime, end: endTime },
+          notifications: { criticalAlerts, reports, teamActivity },
+          workspaceType
         }
-        // In a real app we might also update workspace to team/personal based on useCase
       });
 
-      // 2. Create the first task
-      const res = await axios.post('/api/tasks', {
-        title: taskTitle,
-        intent: taskIntent,
-        priority: 'high',
-        dueDate: new Date().toISOString()
-      });
-
-      toast.success("Mandate created!");
-      nextStep(); // Go to success screen
-
-      // Wait a moment then redirect
+      toast.success("Configuration Saved.");
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
+        navigate('/first-mandate'); // Navigate to the next onboarding step
+      }, 1000);
 
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong. Let's skip to dashboard.");
+      toast.error("Error saving preferences. Skipping...");
       navigate('/dashboard');
+    } finally {
+      // In a real app we wait for the navigation, but we'll reset loading just in case
     }
   };
 
-  const slideVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
-    exit: { opacity: 0, y: -20, transition: { duration: 0.3 } }
-  };
-
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-[#050505] text-black dark:text-white flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden transition-colors duration-300">
-      
-      {/* Background gradients for premium feel */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
+    <div className="font-body-md text-body-md overflow-x-hidden min-h-screen flex flex-col bg-background text-on-surface scanline-effect">
+      {/* Hero Background Animation Shell */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-30"></div>
 
-      <div className="w-full max-w-lg z-10">
-        <AnimatePresence mode="wait">
+      {/* Main Navigation */}
+      <header className="relative z-50 w-full px-lg py-md flex justify-between items-center bg-surface border-b border-outline-variant">
+        <div className="text-headline-lg font-headline-lg font-black tracking-tighter text-primary">
+          MANDATE
+        </div>
+        <div className="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-sm">
+          SYSTEMS ONBOARDING <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        </div>
+      </header>
+
+      <main className="relative z-10 max-w-screen-xl mx-auto px-gutter py-xl flex-grow flex flex-col justify-center w-full">
+        {/* Onboarding Header */}
+        <div className="mb-xl max-w-2xl">
+          <h1 className="font-display-lg text-display-lg mb-md">System Calibration</h1>
+          <p className="text-on-surface-variant max-w-md">Configure your operational environment. These settings define how MANDATE optimizes your workflow density and alert priority.</p>
+        </div>
+
+        {/* Progress Indicator */}
+        <div className="flex items-center gap-xs mb-lg">
+          <div className="h-1 w-12 bg-primary"></div>
+          <div className="h-1 w-12 bg-outline-variant"></div>
+          <div className="h-1 w-12 bg-outline-variant"></div>
+          <span className="ml-md font-label-caps text-label-caps text-primary">STEP 01 / 03</span>
+        </div>
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-12 gap-gutter items-start">
           
-          {/* Step 1: Value Prop */}
-          {step === 1 && (
-            <motion.div 
-              key="step1"
-              variants={slideVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="text-center space-y-8"
-            >
-              <div className="mx-auto w-16 h-16 bg-white dark:bg-white/10 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-md border border-zinc-200 dark:border-white/10 shadow-sm dark:shadow-none">
-                <Target className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          {/* SECTION 1: WORK HOURS (Left Column) */}
+          <section className="md:col-span-4 bento-card p-lg rounded-none h-full flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-sm mb-md">
+                <span className="material-symbols-outlined text-primary">schedule</span>
+                <h2 className="font-label-caps text-label-caps text-primary">01. OPERATIONAL WINDOW</h2>
               </div>
-              <h1 className="text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-black to-black/60 dark:from-white dark:to-white/60">
-                Welcome to Mandate
-              </h1>
-              <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium">
-                Mandate helps you commit to what truly matters. No endless backlogs. Just intentional focus.
-              </p>
+              <p className="text-on-surface-variant font-label-sm text-label-sm mb-lg">Define your start and end times for synchronized reporting and workspace updates.</p>
               
-              <button 
-                onClick={nextStep}
-                className="mt-8 group relative inline-flex items-center justify-center px-8 py-4 bg-black text-white dark:bg-white dark:text-black font-semibold rounded-full text-lg hover:scale-105 transition-transform duration-300 shadow-lg dark:shadow-[0_0_40px_rgba(255,255,255,0.3)]"
-              >
-                Let's set you up
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </motion.div>
-          )}
-
-          {/* Step 2: Preferences */}
-          {step === 2 && (
-            <motion.div 
-              key="step2"
-              variants={slideVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="space-y-8"
-            >
-              <h2 className="text-3xl font-bold tracking-tight">How will you use Mandate?</h2>
-              
-              <div className="space-y-4">
-                <label className="text-sm text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-semibold">Primary Use Case</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button 
-                    onClick={() => setUseCase('personal')}
-                    className={`p-4 rounded-2xl border transition-all ${useCase === 'personal' ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-500/10 dark:text-white shadow-sm dark:shadow-none' : 'bg-white border-zinc-200 text-zinc-500 hover:bg-zinc-50 dark:bg-white/5 dark:border-white/10 dark:text-zinc-400 dark:hover:bg-white/10'}`}
-                  >
-                    Personal Focus
-                  </button>
-                  <button 
-                    onClick={() => setUseCase('team')}
-                    className={`p-4 rounded-2xl border transition-all ${useCase === 'team' ? 'bg-purple-50 border-purple-500 text-purple-700 dark:bg-purple-500/10 dark:text-white shadow-sm dark:shadow-none' : 'bg-white border-zinc-200 text-zinc-500 hover:bg-zinc-50 dark:bg-white/5 dark:border-white/10 dark:text-zinc-400 dark:hover:bg-white/10'}`}
-                  >
-                    Team Collaboration
-                  </button>
+              <div className="space-y-md">
+                <div className="group">
+                  <label className="font-label-caps text-[10px] text-on-surface-variant block mb-xs">START_TIME</label>
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none py-sm px-2 font-label-caps text-label-caps transition-all"
+                  />
+                </div>
+                <div className="group">
+                  <label className="font-label-caps text-[10px] text-on-surface-variant block mb-xs">END_TIME</label>
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary outline-none py-sm px-2 font-label-caps text-label-caps transition-all"
+                  />
                 </div>
               </div>
+            </div>
+            <div className="mt-xl pt-md border-t border-surface-dim">
+              <p className="font-label-sm text-label-sm text-on-surface-variant italic">System will suppress non-critical telemetry outside these hours.</p>
+            </div>
+          </section>
 
-              <div className="space-y-4">
-                <label className="text-sm text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-semibold">Notifications</label>
-                <div className="space-y-2">
-                  {[
-                    { id: 'light', label: 'Light', desc: 'Only critical mentions' },
-                    { id: 'normal', label: 'Normal', desc: 'Standard updates and reminders' },
-                    { id: 'strict', label: 'Strict', desc: 'Hold me accountable aggressively' }
-                  ].map(opt => (
-                    <div 
-                      key={opt.id}
-                      onClick={() => setNotifications(opt.id)}
-                      className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${notifications === opt.id ? 'bg-white border-zinc-300 shadow-sm dark:bg-white/10 dark:border-white/30 dark:shadow-none' : 'bg-transparent border-zinc-200 hover:bg-white dark:border-white/5 dark:hover:bg-white/5'}`}
-                    >
-                      <div>
-                        <div className={`font-medium ${notifications === opt.id ? 'text-black dark:text-white' : 'text-zinc-700 dark:text-white'}`}>{opt.label}</div>
-                        <div className="text-sm text-zinc-500">{opt.desc}</div>
-                      </div>
-                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${notifications === opt.id ? 'border-blue-600 dark:border-white' : 'border-zinc-300 dark:border-zinc-700'}`}>
-                        {notifications === opt.id && <div className="w-2.5 h-2.5 bg-blue-600 dark:bg-white rounded-full" />}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex justify-between pt-4">
-                <button onClick={() => setStep(1)} className="px-6 py-3 text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white transition">Back</button>
-                <button 
-                  onClick={nextStep}
-                  className="px-8 py-3 bg-black text-white dark:bg-white dark:text-black font-semibold rounded-full hover:bg-zinc-800 dark:hover:bg-gray-200 transition"
-                >
-                  Continue
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 3: First Task */}
-          {step === 3 && (
-            <motion.div 
-              key="step3"
-              variants={slideVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="space-y-8"
-            >
-              <h2 className="text-3xl font-bold tracking-tight">Create your first Mandate</h2>
-              <p className="text-zinc-500 dark:text-zinc-400">What is the one thing you must accomplish today?</p>
-              
-              <div className="space-y-6">
+          {/* SECTION 2: NOTIFICATIONS (Center Column) */}
+          <section className="md:col-span-4 bento-card p-lg rounded-none h-full">
+            <div className="flex items-center gap-sm mb-md">
+              <span className="material-symbols-outlined text-primary">notifications_active</span>
+              <h2 className="font-label-caps text-label-caps text-primary">02. ALERT PROTOCOLS</h2>
+            </div>
+            <p className="text-on-surface-variant font-label-sm text-label-sm mb-lg">Manage notification density to maintain high-focus operational states.</p>
+            
+            <div className="space-y-gutter">
+              {/* Critical Alerts */}
+              <div className="flex justify-between items-start gap-md">
                 <div>
-                  <input 
-                    type="text" 
-                    placeholder="E.g., Finalize the Q3 marketing strategy"
-                    value={taskTitle}
-                    onChange={e => setTaskTitle(e.target.value)}
-                    className="w-full bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl p-4 text-xl text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all shadow-sm dark:shadow-none"
-                    autoFocus
-                  />
+                  <h3 className="font-body-md text-body-md font-bold mb-xs">Critical Alerts</h3>
+                  <p className="text-on-surface-variant text-[13px] leading-snug">Immediate system interruptions for hardware/software failures.</p>
                 </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={criticalAlerts}
+                    onChange={(e) => setCriticalAlerts(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-outline-variant peer-checked:bg-primary rounded-full p-1 transition-colors">
+                    <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${criticalAlerts ? 'translate-x-5' : ''}`}></div>
+                  </div>
+                </label>
+              </div>
+              
+              {/* Reports */}
+              <div className="flex justify-between items-start gap-md">
+                <div>
+                  <h3 className="font-body-md text-body-md font-bold mb-xs">Reports</h3>
+                  <p className="text-on-surface-variant text-[13px] leading-snug">Daily and weekly digest summaries of workspace metrics.</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={reports}
+                    onChange={(e) => setReports(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-outline-variant peer-checked:bg-primary rounded-full p-1 transition-colors">
+                    <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${reports ? 'translate-x-5' : ''}`}></div>
+                  </div>
+                </label>
+              </div>
+
+              {/* Team Activity */}
+              <div className="flex justify-between items-start gap-md">
+                <div>
+                  <h3 className="font-body-md text-body-md font-bold mb-xs">Team Activity</h3>
+                  <p className="text-on-surface-variant text-[13px] leading-snug">Real-time pings for collaboration and shared workspace edits.</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={teamActivity}
+                    onChange={(e) => setTeamActivity(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-outline-variant peer-checked:bg-primary rounded-full p-1 transition-colors">
+                    <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${teamActivity ? 'translate-x-5' : ''}`}></div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION 3: WORKSPACE TYPE (Right Column) */}
+          <section className="md:col-span-4 flex flex-col gap-gutter">
+            <div className="bento-card p-lg rounded-none">
+              <div className="flex items-center gap-sm mb-md">
+                <span className="material-symbols-outlined text-primary">hub</span>
+                <h2 className="font-label-caps text-label-caps text-primary">03. WORKSPACE TYPE</h2>
+              </div>
+              <div className="space-y-sm">
+                <label className="block cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="workspace"
+                    value="personal"
+                    checked={workspaceType === 'personal'}
+                    onChange={() => setWorkspaceType('personal')}
+                    className="sr-only peer"
+                  />
+                  <div className="p-md border border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container peer-checked:text-on-primary transition-all flex items-center justify-between">
+                    <div>
+                      <span className="font-label-caps text-label-caps block">PERSONAL</span>
+                      <span className="text-[12px] opacity-70">Dedicated single-user environment.</span>
+                    </div>
+                    <span className={`material-symbols-outlined text-sm ${workspaceType === 'personal' ? 'block' : 'hidden'}`}>check_circle</span>
+                  </div>
+                </label>
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold flex items-center text-blue-600 dark:text-blue-400">
-                    <Zap className="w-4 h-4 mr-2" />
-                    Why is this important? (The Intent)
-                  </label>
-                  <textarea 
-                    placeholder="If I complete this, we unlock the next phase of growth..."
-                    value={taskIntent}
-                    onChange={e => setTaskIntent(e.target.value)}
-                    className="w-full bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-2xl p-4 text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all min-h-[100px] shadow-sm dark:shadow-none"
+                <label className="block cursor-pointer group">
+                  <input
+                    type="radio"
+                    name="workspace"
+                    value="team"
+                    checked={workspaceType === 'team'}
+                    onChange={() => setWorkspaceType('team')}
+                    className="sr-only peer"
                   />
-                </div>
-
-                <div className="flex items-center text-sm text-zinc-500 dark:text-zinc-400 bg-white dark:bg-white/5 p-4 rounded-xl border border-zinc-100 dark:border-transparent">
-                  <Clock className="w-4 h-4 mr-2" />
-                  Due date automatically set to Today.
-                </div>
+                  <div className="p-md border border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container peer-checked:text-on-primary transition-all flex items-center justify-between">
+                    <div>
+                      <span className="font-label-caps text-label-caps block">TEAM</span>
+                      <span className="text-[12px] opacity-70">Collaborative multi-user environment.</span>
+                    </div>
+                    <span className={`material-symbols-outlined text-sm ${workspaceType === 'team' ? 'block' : 'hidden'}`}>check_circle</span>
+                  </div>
+                </label>
               </div>
-
-              <div className="flex justify-between pt-4">
-                <button onClick={() => setStep(2)} className="px-6 py-3 text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white transition">Back</button>
-                <button 
-                  onClick={handleComplete}
-                  disabled={!taskTitle.trim()}
-                  className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Commit to Mandate
-                </button>
+            </div>
+            
+            <div className="relative overflow-hidden h-40 bento-card border-none rounded-none">
+              <img
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAa3WzOyvC24ZSfQXSZpCQAHwOIwNOXi1JSPkobB1HEI7p_9gRvlJX3iFxKRg6RKn3kePJ7wr9w_y-YlfRv5LJ33nvPfZV44EIOTHwDJHKwoaLJpxYwYYsnNGhfi7USmXMNnHXZx5NU4ZbczgYBNfqJe6xI0cNnoZqH7AIF55Q4wk5Z87M4lcrqU_5CRgsCsqilw_MFNcuK3UIc_J_F1q4_s3zQFEJDzRvfWI8WAfzg7Bmxw6DhHIusjQ"
+                alt="System Preview"
+                className="w-full h-full object-cover grayscale brightness-75 hover:grayscale-0 transition-all duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-md flex items-end">
+                <p className="font-label-caps text-[10px] text-white">SYSTEM_PREVIEW_01</p>
               </div>
-            </motion.div>
-          )}
-
-          {/* Step 4: Success */}
-          {step === 4 && (
-            <motion.div 
-              key="step4"
-              variants={slideVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="text-center space-y-6"
+            </div>
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full py-lg font-label-caps text-label-caps rounded-full flex items-center justify-center gap-md transition-all active:scale-[0.98] ${loading ? 'bg-on-tertiary-container text-white cursor-not-allowed' : 'bg-primary text-on-primary hover:opacity-90'}`}
             >
-              <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", bounce: 0.5 }}
-                className="mx-auto w-24 h-24 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mb-4"
-              >
-                <CheckCircle2 className="w-12 h-12 text-green-600 dark:text-green-400" />
-              </motion.div>
-              <h2 className="text-4xl font-bold tracking-tight text-black dark:text-white">This task is now a mandate.</h2>
-              <p className="text-xl text-zinc-500 dark:text-zinc-400">Redirecting to your dashboard...</p>
-            </motion.div>
-          )}
+              {loading ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin-slow">progress_activity</span>
+                  CONFIGURING...
+                </>
+              ) : (
+                <>
+                  SAVE CONFIGURATION
+                  <span className="material-symbols-outlined">arrow_forward</span>
+                </>
+              )}
+            </button>
+          </section>
+        </form>
+      </main>
 
-        </AnimatePresence>
-      </div>
+      {/* Footer */}
+      <footer className="w-full py-xl px-lg mt-auto flex flex-col md:flex-row justify-between items-center gap-md border-t border-outline-variant bg-surface-container-low relative z-10">
+        <div className="font-label-caps text-label-caps font-bold text-primary">
+          MANDATE
+        </div>
+        <div className="flex gap-lg">
+          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Privacy Policy</Link>
+          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Terms of Service</Link>
+          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Legal</Link>
+          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Security</Link>
+        </div>
+        <p className="font-label-caps text-label-caps text-on-surface-variant">
+          © 2024 MANDATE INDUSTRIAL SYSTEMS. ALL RIGHTS RESERVED.
+        </p>
+      </footer>
     </div>
   );
 };

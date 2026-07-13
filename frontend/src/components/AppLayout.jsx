@@ -8,25 +8,21 @@ const AppLayout = ({ children }) => {
   const [isComposerOpen, setIsComposerOpen] = useState(false);
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden">
-      {/* Desktop Sidebar */}
-      <Sidebar onNewTask={() => setIsComposerOpen(true)} />
+    <div className="bg-background text-on-background font-body-md overflow-x-hidden selection:bg-primary-fixed-dim">
+      <Navbar variant="app" onNewTask={() => setIsComposerOpen(true)} />
 
-      {/* Main Content Area */}
-      <main className="flex-grow flex flex-col min-w-0">
-        {/* Top Bar */}
-        <Navbar variant="app" />
+      <div className="flex min-h-screen">
+        <Sidebar onNewTask={() => setIsComposerOpen(true)} />
 
-        {/* Page Content */}
-        <div className="flex-grow overflow-y-auto">
-          {children}
-        </div>
-      </main>
+        <main className="flex-1 md:ml-64 p-lg md:p-xl mt-4">
+          <div className="max-w-container-max mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
 
-      {/* Mobile Bottom Nav */}
       <BottomNav onNewTask={() => setIsComposerOpen(true)} />
 
-      {/* Task Composer Modal */}
       {isComposerOpen && (
         <TaskComposer
           isOpen={isComposerOpen}

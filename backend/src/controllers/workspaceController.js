@@ -112,3 +112,30 @@ export const updateMemberRole = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Toggle integration
+// @route   PUT /api/workspaces/:id/integrations
+// @access  Private
+export const toggleIntegration = async (req, res) => {
+  try {
+    const { integration, state } = req.body;
+    const workspace = await Workspace.findById(req.params.id);
+    
+    if (!workspace) return res.status(404).json({ message: "Workspace not found" });
+    
+    // Check if requester is Admin
+    const requester = workspace.members.find(m => m.user.toString() === req.user.id.toString());
+    if (!requester || requester.role !== 'Admin') {
+      return res.status(403).json({ message: "Only Admins can configure integrations" });
+    }
+    
+    if (integration === "slack") workspace.integrations.slack = state;
+    if (integration === "googleCalendar") workspace.integrations.googleCalendar = state;
+    
+    await workspace.save();
+    
+    res.json(workspace.integrations);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

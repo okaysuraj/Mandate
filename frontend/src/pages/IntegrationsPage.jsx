@@ -1,97 +1,109 @@
 import React, { useState, useEffect } from 'react';
+import AppLayout from '../components/AppLayout';
+import { useWorkspace } from '../context/WorkspaceContext';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
-import { Blocks, ArrowLeft, Loader2, CheckCircle, ExternalLink } from 'lucide-react';
-import { useNavigate } from 'react-router';
 import toast from 'react-hot-toast';
 
 const IntegrationsPage = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { activeWorkspace } = useWorkspace();
   const [integrations, setIntegrations] = useState({
     slack: false,
-    google_calendar: false,
+    googleCalendar: false,
     github: false,
   });
   const [loading, setLoading] = useState(false);
 
-  // In a real app, this would fetch from /api/integrations
-  // For MVP, we use local state or a mock endpoint
+  useEffect(() => {
+    if (activeWorkspace?.integrations) {
+      setIntegrations({
+        ...integrations,
+        slack: !!activeWorkspace.integrations.slack,
+        googleCalendar: !!activeWorkspace.integrations.googleCalendar,
+      });
+    }
+  }, [activeWorkspace]);
   
   const handleConnect = async (service) => {
+    if (!activeWorkspace) return;
+    
     setLoading(true);
-    // Mocking OAuth latency
-    setTimeout(() => {
-      setIntegrations({ ...integrations, [service]: !integrations[service] });
+    try {
+      const newState = !integrations[service];
+      const { data } = await axios.put(`/api/workspaces/${activeWorkspace._id}/integrations`, {
+        integration: service,
+        state: newState
+      });
+      setIntegrations(prev => ({ ...prev, [service]: newState }));
+      toast.success(newState ? `MANDATE_OS: ${service.toUpperCase()} LINK ESTABLISHED` : `MANDATE_OS: ${service.toUpperCase()} LINK SEVERED`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || `MANDATE_OS: FAILED TO CONFIGURE ${service.toUpperCase()}`);
+    } finally {
       setLoading(false);
-      toast.success(integrations[service] ? `${service} disconnected` : `Connected to ${service}!`);
-    }, 1500);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-[#050505] text-black dark:text-white transition-colors duration-300">
-      <div className="max-w-5xl mx-auto p-8">
-        <button onClick={() => navigate(-1)} className="flex items-center text-sm font-semibold text-zinc-500 hover:text-black dark:hover:text-white transition mb-8">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to Home
-        </button>
-
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold mb-2 flex items-center">
-            <Blocks className="w-8 h-8 mr-3 text-orange-500" /> 
-            Integrations
-          </h1>
-          <p className="text-zinc-500 dark:text-zinc-400">Connect Mandate to your favorite tools.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Slack */}
-          <div className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-6 rounded-2xl flex flex-col">
-            <div className="flex justify-between items-start mb-6">
-              <div className="w-12 h-12 bg-[#4A154B] rounded-xl flex items-center justify-center font-bold text-white text-xl">#</div>
-              {integrations.slack && <CheckCircle className="text-green-500 w-5 h-5" />}
+    <AppLayout>
+      <div className="bg-surface min-h-full pb-xl">
+        <div className="max-w-5xl mx-auto">
+          {/* Header Section */}
+          <div className="mb-xl flex flex-col md:flex-row md:items-end justify-between gap-md">
+            <div>
+              <h1 className="font-headline-lg text-headline-lg text-primary uppercase tracking-tight mb-xs">External Linkages</h1>
+              <p className="font-body-md text-on-surface-variant max-w-xl">Configure APIs, webhooks, and third-party data synchronization protocols.</p>
             </div>
-            <h3 className="text-xl font-bold mb-2">Slack</h3>
-            <p className="text-sm text-zinc-500 mb-6 flex-1">Receive mandate updates and @mentions directly in your Slack channels.</p>
-            <button 
-              onClick={() => handleConnect('slack')}
-              disabled={loading}
-              className={`w-full py-2 rounded-xl font-bold text-sm transition ${integrations.slack ? 'bg-red-50 text-red-600 dark:bg-red-500/10' : 'bg-black text-white dark:bg-white dark:text-black'}`}
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : integrations.slack ? 'Disconnect' : 'Connect'}
-            </button>
           </div>
 
-          {/* Google Calendar */}
-          <div className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-6 rounded-2xl flex flex-col">
-            <div className="flex justify-between items-start mb-6">
-              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center font-bold text-white text-xl">31</div>
-              {integrations.google_calendar && <CheckCircle className="text-green-500 w-5 h-5" />}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-lg">
+            {/* Slack */}
+            <div className="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg rounded-none flex flex-col h-full">
+              <div className="flex justify-between items-start mb-lg">
+                <div className="w-12 h-12 bg-primary flex items-center justify-center font-bold text-on-primary text-xl border border-outline-variant">#</div>
+                {integrations.slack && <span className="material-symbols-outlined text-tertiary-fixed-dim" style={{fontVariationSettings: "'FILL' 1"}}>check_circle</span>}
+              </div>
+              <h3 className="font-headline-lg text-headline-lg-mobile text-primary uppercase mb-xs">Slack</h3>
+              <p className="font-body-md text-label-sm text-on-surface-variant mb-xl flex-1">Receive mandate updates and @mentions directly in your Slack channels.</p>
+              <button 
+                onClick={() => handleConnect('slack')}
+                disabled={loading}
+                className={`w-full py-md font-label-caps text-label-caps tracking-widest border transition-colors ${integrations.slack ? 'bg-error-container border-error-container text-on-error-container hover:bg-error hover:text-on-error' : 'bg-primary border-primary text-on-primary hover:opacity-90'}`}
+              >
+                {loading ? "PROCESSING..." : integrations.slack ? 'SEVER_LINK' : 'ESTABLISH_LINK'}
+              </button>
             </div>
-            <h3 className="text-xl font-bold mb-2">Google Calendar</h3>
-            <p className="text-sm text-zinc-500 mb-6 flex-1">Sync your mandates with your calendar. Auto-schedule focus blocks.</p>
-            <button 
-              onClick={() => handleConnect('google_calendar')}
-              disabled={loading}
-              className={`w-full py-2 rounded-xl font-bold text-sm transition ${integrations.google_calendar ? 'bg-red-50 text-red-600 dark:bg-red-500/10' : 'bg-black text-white dark:bg-white dark:text-black'}`}
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : integrations.google_calendar ? 'Disconnect' : 'Connect'}
-            </button>
-          </div>
 
-          {/* Developer API */}
-          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl flex flex-col text-white">
-            <div className="flex justify-between items-start mb-6">
-              <div className="w-12 h-12 bg-zinc-800 rounded-xl flex items-center justify-center font-mono text-xl">{`{ }`}</div>
+            {/* Google Calendar */}
+            <div className="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg rounded-none flex flex-col h-full">
+              <div className="flex justify-between items-start mb-lg">
+                <div className="w-12 h-12 bg-surface-container-high border border-outline-variant flex items-center justify-center font-label-caps text-label-caps text-primary">31</div>
+                {integrations.googleCalendar && <span className="material-symbols-outlined text-tertiary-fixed-dim" style={{fontVariationSettings: "'FILL' 1"}}>check_circle</span>}
+              </div>
+              <h3 className="font-headline-lg text-headline-lg-mobile text-primary uppercase mb-xs">G_Calendar</h3>
+              <p className="font-body-md text-label-sm text-on-surface-variant mb-xl flex-1">Sync your mandates with your calendar. Auto-schedule focus blocks.</p>
+              <button 
+                onClick={() => handleConnect('googleCalendar')}
+                disabled={loading}
+                className={`w-full py-md font-label-caps text-label-caps tracking-widest border transition-colors ${integrations.googleCalendar ? 'bg-error-container border-error-container text-on-error-container hover:bg-error hover:text-on-error' : 'bg-primary border-primary text-on-primary hover:opacity-90'}`}
+              >
+                {loading ? "PROCESSING..." : integrations.googleCalendar ? 'SEVER_LINK' : 'ESTABLISH_LINK'}
+              </button>
             </div>
-            <h3 className="text-xl font-bold mb-2">Developer API</h3>
-            <p className="text-sm text-zinc-400 mb-6 flex-1">Build custom integrations with the Mandate REST API and Webhooks.</p>
-            <button className="w-full py-2 bg-zinc-800 rounded-xl font-bold text-sm hover:bg-zinc-700 transition flex items-center justify-center">
-              View Docs <ExternalLink className="w-4 h-4 ml-2" />
-            </button>
+
+            {/* Developer API */}
+            <div className="col-span-12 md:col-span-4 bg-primary text-on-primary border border-on-primary p-lg rounded-none flex flex-col h-full">
+              <div className="flex justify-between items-start mb-lg">
+                <div className="w-12 h-12 border border-outline-variant flex items-center justify-center font-label-caps text-label-caps">{`{ }`}</div>
+              </div>
+              <h3 className="font-headline-lg text-headline-lg-mobile uppercase mb-xs">API_Access</h3>
+              <p className="font-body-md text-label-sm opacity-70 mb-xl flex-1">Build custom integrations with the Mandate REST API and Webhooks.</p>
+              <button className="w-full py-md font-label-caps text-label-caps tracking-widest border border-outline-variant hover:bg-on-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
+                VIEW_DOCUMENTATION <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

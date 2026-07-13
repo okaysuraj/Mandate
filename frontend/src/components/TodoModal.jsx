@@ -23,6 +23,10 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
   const [newSubtask, setNewSubtask] = useState("");
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [attachments, setAttachments] = useState([]);
+  const [recurrenceRule, setRecurrenceRule] = useState("");
+  const [snoozedUntil, setSnoozedUntil] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
@@ -39,6 +43,9 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
       setTags(initialData.tags || []);
       setAssignees(initialData.assignees || []);
       setSubtasks(initialData.subtasks || []);
+      setAttachments(initialData.attachments || []);
+      setRecurrenceRule(initialData.recurrenceRule || "");
+      setSnoozedUntil(initialData.snoozedUntil ? new Date(initialData.snoozedUntil).toISOString().split('T')[0] : "");
       fetchComments();
     } else {
       setTitle("");
@@ -51,6 +58,9 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
       setAssignees([]);
       setSubtasks([]);
       setComments([]);
+      setAttachments([]);
+      setRecurrenceRule("");
+      setSnoozedUntil("");
     }
   }, [initialData, isOpen]);
 
@@ -130,7 +140,27 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({ title, content, priority, status, dueDate, project, tags, assignees, subtasks });
+    onSave({ title, content, priority, status, dueDate, project, tags, assignees, subtasks, attachments, recurrenceRule, snoozedUntil });
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    setUploading(true);
+    try {
+      // requires user authentication token in a real scenario
+      const { data } = await axios.post("/api/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      setAttachments([...attachments, data]);
+      toast.success("File uploaded");
+    } catch (error) {
+      toast.error("Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -225,6 +255,30 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                   ))}
                 </select>
               </div>
+
+              <div className="flex flex-col gap-2 col-span-2 md:col-span-1">
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Recurrence</label>
+                <select 
+                  className="w-full bg-[#F9F9FB] dark:bg-[#111] border border-[#EDEDF0] dark:border-gray-800 rounded-lg p-3 text-sm focus:outline-none dark:text-white"
+                  value={recurrenceRule}
+                  onChange={(e) => setRecurrenceRule(e.target.value)}
+                >
+                  <option value="">None</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2 col-span-2 md:col-span-1">
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Snooze Until</label>
+                <input 
+                  type="date"
+                  className="w-full bg-[#F9F9FB] dark:bg-[#111] border border-[#EDEDF0] dark:border-gray-800 rounded-lg p-3 text-sm focus:outline-none dark:text-white"
+                  value={snoozedUntil}
+                  onChange={(e) => setSnoozedUntil(e.target.value)}
+                />
+              </div>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -245,6 +299,27 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={handleAddTag}
               />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Attachments</label>
+              <div className="border border-dashed border-[#EDEDF0] dark:border-gray-800 rounded-lg p-4 flex flex-col items-center justify-center gap-2">
+                <Paperclip size={24} className="text-gray-400" />
+                <label className="cursor-pointer text-sm text-primary hover:underline">
+                  {uploading ? "Uploading..." : "Click to upload file"}
+                  <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} />
+                </label>
+              </div>
+              {attachments.length > 0 && (
+                <div className="flex flex-col gap-1 mt-2">
+                  {attachments.map((att, i) => (
+                    <div key={i} className="text-xs flex justify-between bg-gray-100 dark:bg-gray-800 p-2 rounded">
+                      <a href={`http://localhost:5001${att.url}`} target="_blank" rel="noreferrer" className="text-blue-500 underline truncate">{att.name}</a>
+                      <button type="button" onClick={() => setAttachments(attachments.filter((_, idx) => idx !== i))}><X size={12}/></button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-4 mt-4">

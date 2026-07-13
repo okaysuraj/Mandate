@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, Switch
+  SafeAreaView, ScrollView, Switch, Image
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
@@ -11,139 +11,208 @@ const SettingsScreen = ({ navigation }) => {
   const { user, logout } = useAuth();
   const { colors, typography, spacing, borderRadius, isDark, toggleTheme } = useTheme();
 
-  const [criticalAlerts, setCriticalAlerts] = useState(true);
-  const [weeklyReports, setWeeklyReports] = useState(false);
+  const [biometric, setBiometric] = useState(true);
+  const [encrypted, setEncrypted] = useState(true);
+  const [killswitch, setKillswitch] = useState(false);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* TopAppBar */}
       <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
+          <TouchableOpacity style={styles.iconButton}>
+            <MaterialIcons name="menu" size={24} color={colors.primary} />
           </TouchableOpacity>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 8 }]}>
+            MANDATE
+          </Text>
         </View>
-        <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>SYSTEM</Text>
-        <View style={styles.headerRight} />
+        <TouchableOpacity style={styles.iconButton}>
+          <MaterialIcons name="account-circle" size={24} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Profile Section */}
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        
+        {/* Profile Header Module */}
         <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.md }]}>PROFILE IDENTITY</Text>
-          
-          <View style={[styles.profileCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
-            <View style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialIcons name="person" size={32} color={colors.secondary} />
+          <View style={styles.profileHeaderRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>OPERATOR SETTINGS</Text>
+              <Text style={[typography.labelSm, { color: colors.secondary, letterSpacing: 2, marginTop: 4 }]}>
+                ID: MN-0982-X
+              </Text>
+              <Text style={[typography.labelSm, { color: colors.primary, marginTop: 4 }]}>
+                {user?.name || "Operator"}
+              </Text>
             </View>
-            <View style={styles.profileInfo}>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 20 }]}>{user?.name || "Operator"}</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary }]}>{user?.email || "operator@mandate.systems"}</Text>
-            </View>
-            <TouchableOpacity style={[styles.editBtn, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialIcons name="edit" size={20} color={colors.primary} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Display Preferences */}
-        <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.md }]}>DISPLAY PREFERENCES</Text>
-          
-          <View style={[styles.settingItem, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
-            <View style={styles.settingText}>
-              <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Dark Mode</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary }]}>Toggle industrial high-contrast theme</Text>
-            </View>
-            <Switch
-              value={isDark}
-              onValueChange={toggleTheme}
-              trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
-              thumbColor={colors.onPrimary}
-            />
-          </View>
-        </View>
-
-        {/* Notifications */}
-        <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.md }]}>SYSTEM NOTIFICATIONS</Text>
-          
-          <View style={[styles.settingGroup, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
-            <View style={[styles.settingRow, { borderBottomColor: colors.outlineVariant, borderBottomWidth: 1 }]}>
-              <View style={styles.settingText}>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Critical Alerts</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>Immediate notification for system failures</Text>
-              </View>
-              <Switch
-                value={criticalAlerts}
-                onValueChange={setCriticalAlerts}
-                trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
-                thumbColor={colors.onPrimary}
-              />
-            </View>
-
-            <View style={styles.settingRow}>
-              <View style={styles.settingText}>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Weekly Reports</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>Digest of workspace activity every Monday</Text>
-              </View>
-              <Switch
-                value={weeklyReports}
-                onValueChange={setWeeklyReports}
-                trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
-                thumbColor={colors.onPrimary}
+            <View style={[styles.avatarContainer, { borderColor: colors.primary }]}>
+              <Image 
+                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAulB7hV3bWJOfIOtbCPQWodgUNAIfn20bVSJrKQboUelKevzDSQiuNtzRpzoiwhkewERqpe8hogOO4ozTxxDpYLePAsys-gHZDBCoSkPtQ1hseAea1rzKzsZa8RkMoY00SA7L_a3BWPGsbTRoPdFknZ3rC__zvrJEO8IrXbhsNBWUmtatljhQbYetqD895qHBCWIKpafFbakp2s2-ZtxZJX5V524MDx5BpubGH454sr2A6hN-WosRNhQ' }}
+                style={styles.avatarImg}
               />
             </View>
           </View>
+          <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
         </View>
 
-        {/* Navigation Links */}
+        {/* System Credentials */}
         <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.md }]}>WORKSPACE CONFIGURATION</Text>
-          
-          <View style={[styles.settingGroup, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
-            <TouchableOpacity 
-              style={[styles.linkRow, { borderBottomColor: colors.outlineVariant, borderBottomWidth: 1 }]}
-              onPress={() => navigation.navigate("TeamSettings")}
-            >
-              <View style={styles.linkLeft}>
-                <MaterialIcons name="group" size={20} color={colors.secondary} />
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Team Settings</Text>
+          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>SYSTEM CREDENTIALS</Text>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <View style={{ marginBottom: 16 }}>
+              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', marginBottom: 4 }]}>Access Key</Text>
+              <View style={[styles.credBox, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.primary }]}>
+                <Text style={[typography.labelSm, { color: colors.primary }]}>********************</Text>
+                <MaterialIcons name="visibility" size={20} color={colors.primary} />
               </View>
-              <MaterialIcons name="chevron-right" size={24} color={colors.secondary} />
-            </TouchableOpacity>
+            </View>
 
-            <TouchableOpacity 
-              style={[styles.linkRow, { borderBottomColor: colors.outlineVariant, borderBottomWidth: 1 }]}
-              onPress={() => navigation.navigate("Admin")}
-            >
-              <View style={styles.linkLeft}>
-                <MaterialIcons name="admin-panel-settings" size={20} color={colors.secondary} />
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Admin Operations</Text>
+            <View style={{ marginBottom: 24 }}>
+              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', marginBottom: 4 }]}>Signature Hash</Text>
+              <View style={[styles.credBox, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant }]}>
+                <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]} numberOfLines={1}>sha256:8f4e2...f3a9</Text>
               </View>
-              <MaterialIcons name="chevron-right" size={24} color={colors.secondary} />
+            </View>
+
+            <TouchableOpacity style={[styles.rotateBtn, { backgroundColor: colors.primary }]} activeOpacity={0.8}>
+              <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>ROTATE CREDENTIALS</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Security Matrix */}
+        <View style={styles.section}>
+          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>SECURITY MATRIX</Text>
+          <View style={[styles.bentoCard, { padding: 0, overflow: 'hidden', backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <View style={[styles.matrixHeader, { backgroundColor: colors.primaryContainer }]}>
+              <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer }]}>AUTH LEVEL 4</Text>
+              <MaterialIcons name="lock" size={20} color={colors.onPrimaryContainer} />
+            </View>
+            
+            <View style={{ padding: 24, gap: 16 }}>
+              <View style={styles.switchRow}>
+                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Dark Interface</Text>
+                <Switch
+                  value={isDark}
+                  onValueChange={toggleTheme}
+                  trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
+                  thumbColor={isDark ? colors.onPrimary : colors.onSurfaceVariant}
+                />
+              </View>
+              <View style={[styles.divider, { backgroundColor: colors.outlineVariant, opacity: 0.5 }]} />
+              
+              <View style={styles.switchRow}>
+                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Biometric Bypass</Text>
+                <Switch
+                  value={biometric}
+                  onValueChange={setBiometric}
+                  trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
+                  thumbColor={biometric ? colors.onPrimary : colors.onSurfaceVariant}
+                />
+              </View>
+              <View style={[styles.divider, { backgroundColor: colors.outlineVariant, opacity: 0.5 }]} />
+              
+              <View style={styles.switchRow}>
+                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Encrypted Comms</Text>
+                <Switch
+                  value={encrypted}
+                  onValueChange={setEncrypted}
+                  trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
+                  thumbColor={encrypted ? colors.onPrimary : colors.onSurfaceVariant}
+                />
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Workspace Configuration (From old settings) */}
+        <View style={styles.section}>
+          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>WORKSPACE LINKS</Text>
+          <View style={[styles.bentoCard, { padding: 0, overflow: 'hidden', backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
             
             <TouchableOpacity 
-              style={styles.linkRow}
-              onPress={() => navigation.navigate("Pricing")}
+              style={[styles.logRow, { borderBottomColor: colors.surfaceContainerLow }]}
+              onPress={() => navigation.navigate("TeamSettings")}
             >
-              <View style={styles.linkLeft}>
-                <MaterialIcons name="credit-card" size={20} color={colors.secondary} />
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Billing & Allocation</Text>
+              <View>
+                <Text style={[typography.labelSm, { color: colors.primary, fontSize: 14 }]}>Team Settings</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>Manage operators and invites</Text>
               </View>
               <MaterialIcons name="chevron-right" size={24} color={colors.secondary} />
             </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.logRow, { borderBottomColor: colors.surfaceContainerLow }]}
+              onPress={() => navigation.navigate("Admin")}
+            >
+              <View>
+                <Text style={[typography.labelSm, { color: colors.primary, fontSize: 14 }]}>Admin Operations</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>Workspace global config</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={colors.secondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.logRow}
+              onPress={() => navigation.navigate("Pricing")}
+            >
+              <View>
+                <Text style={[typography.labelSm, { color: colors.primary, fontSize: 14 }]}>Billing & Allocation</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>Subscription and limits</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={24} color={colors.secondary} />
+            </TouchableOpacity>
+
+          </View>
+        </View>
+
+        {/* Access Logs */}
+        <View style={styles.section}>
+          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>ACCESS LOGS</Text>
+          <View style={[styles.bentoCard, { padding: 0, overflow: 'hidden', backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+            
+            <View style={[styles.logRow, { borderBottomColor: colors.surfaceContainerLow }]}>
+              <View>
+                <Text style={[typography.labelSm, { color: colors.primary }]}>Login: Terminal-7</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>14:23:01 UTC — 10.0.0.45</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={20} color={colors.secondary} />
+            </View>
+
+            <View style={[styles.logRow, { borderBottomColor: colors.surfaceContainerLow }]}>
+              <View>
+                <Text style={[typography.labelSm, { color: colors.primary }]}>Update: Security Matrix</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>09:12:45 UTC — System Admin</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={20} color={colors.secondary} />
+            </View>
+
+            <View style={styles.logRow}>
+              <View>
+                <Text style={[typography.labelSm, { color: colors.primary }]}>Alert: Failed Auth Attempt</Text>
+                <Text style={[typography.labelSm, { color: colors.error, fontSize: 10, fontWeight: '700' }]}>04:55:22 UTC — 192.168.1.1</Text>
+              </View>
+              <MaterialIcons name="warning" size={20} color={colors.error} />
+            </View>
+            
           </View>
         </View>
 
         {/* Logout */}
         <TouchableOpacity 
-          style={[styles.logoutBtn, { borderColor: colors.error }]}
+          style={[styles.logoutBtn, { borderColor: colors.error, backgroundColor: colors.errorContainer }]}
           onPress={logout}
+          activeOpacity={0.8}
         >
-          <MaterialIcons name="logout" size={20} color={colors.error} />
-          <Text style={[typography.labelCaps, { color: colors.error }]}>TERMINATE SESSION</Text>
+          <MaterialIcons name="power-settings-new" size={20} color={colors.error} />
+          <Text style={[typography.labelCaps, { color: colors.error, letterSpacing: 2 }]}>TERMINATE SESSION</Text>
         </TouchableOpacity>
+
+        <View style={styles.footer}>
+          <Text style={[typography.labelCaps, { color: colors.primary }]}>MANDATE INDUSTRIAL</Text>
+          <Text style={[typography.labelSm, { color: colors.secondary, opacity: 0.8, marginTop: 8 }]}>© 2024 MANDATE INDUSTRIAL</Text>
+        </View>
 
       </ScrollView>
     </SafeAreaView>
@@ -159,78 +228,81 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    height: 64,
     borderBottomWidth: 1,
   },
   headerLeft: {
-    flex: 1,
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  headerRight: {
-    flex: 1,
-    alignItems: 'flex-end',
+  iconButton: {
+    padding: 8,
+    borderRadius: 16,
   },
   scrollContent: {
     padding: 16,
     paddingBottom: 40,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: 24,
   },
-  profileCard: {
+  profileHeaderRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    borderWidth: 1,
+    marginBottom: 16,
   },
-  avatar: {
+  avatarContainer: {
     width: 64,
     height: 64,
     borderRadius: 32,
+    borderWidth: 2,
+    overflow: 'hidden',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
+  },
+  divider: {
+    width: '100%',
+    height: 1,
+  },
+  bentoCard: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 24,
+  },
+  credBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+  },
+  rotateBtn: {
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
   },
-  profileInfo: {
-    flex: 1,
-  },
-  editBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  settingItem: {
+  matrixHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    borderWidth: 1,
-  },
-  settingGroup: {
-    borderWidth: 1,
-  },
-  settingRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 16,
   },
-  settingText: {
-    flex: 1,
-    paddingRight: 16,
-  },
-  linkRow: {
+  switchRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-  },
-  linkLeft: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+  },
+  logRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
   },
   logoutBtn: {
     flexDirection: 'row',
@@ -238,9 +310,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 32,
     gap: 8,
     marginTop: 16,
+  },
+  footer: {
+    alignItems: 'center',
+    marginTop: 40,
+    marginBottom: 40,
   }
 });
 

@@ -26,147 +26,178 @@ const TodayPage = () => {
   }, [user]);
 
   const today = new Date();
-  const dayStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  const dayStr = today.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.');
 
-  const completedCount = tasks.filter(t => t.status === "completed").length;
-  const totalCount = tasks.length;
-  const loadPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-
-  const focusTask = tasks.find(t => t.status !== "completed" && (t.priority === "high" || t.priority === "urgent"))
+  const focusTask = tasks.find(t => t.status !== "completed" && (t.priority === "urgent" || t.priority === "high"))
     || tasks.find(t => t.status !== "completed");
 
   const scheduledTasks = tasks
-    .filter(t => t.status !== "completed")
-    .sort((a, b) => new Date(a.dueDate || 0) - new Date(b.dueDate || 0));
+    .sort((a, b) => new Date(a.dueDate || 0) - new Date(b.dueDate || 0))
+    .slice(0, 10); // Show only top 10
+
+  const getPriorityClass = (priority) => {
+    switch (priority) {
+      case "urgent": return "bg-tertiary-container text-tertiary-fixed";
+      case "high": return "bg-secondary-container text-on-secondary-container";
+      default: return "bg-secondary-container text-on-secondary-container";
+    }
+  };
+
+  const getStatusDisplay = (task) => {
+    if (task.status === "completed") {
+      return (
+        <span className="text-xs bg-surface-container-highest text-on-surface-variant px-2 py-0.5 rounded-full font-label-caps flex items-center gap-1">
+          <span className="material-symbols-outlined text-[12px]">check</span> COMPLETED
+        </span>
+      );
+    }
+    if (task.status === "in-progress" || task._id === focusTask?._id) {
+      return (
+        <span className="text-xs bg-tertiary-container text-tertiary-fixed px-2 py-0.5 rounded-full font-label-caps flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-pulse"></span> ACTIVE
+        </span>
+      );
+    }
+    return (
+      <span className="text-xs bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-label-caps">
+        PENDING
+      </span>
+    );
+  };
 
   return (
     <AppLayout>
-      <div className="flex-1 max-w-[1440px] mx-auto px-lg md:px-xl py-xl overflow-y-auto">
-        {/* Header */}
-        <header className="mb-xl flex justify-between items-end">
-          <div>
-            <p className="font-label-caps text-label-caps text-secondary tracking-[0.2em] mb-sm uppercase">{dayStr}</p>
-            <h1 className="font-display-lg text-display-lg text-primary uppercase">TODAY</h1>
-          </div>
-        </header>
-
-        {/* Bento Grid */}
-        <div className="bento-grid">
-          {/* Focus Task Hero */}
-          <section className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between relative overflow-hidden group">
-            <div className="relative z-10">
-              <div className="flex items-center gap-sm mb-lg">
-                <span className="w-xs h-xs bg-error rounded-full"></span>
-                <span className="font-label-caps text-label-caps text-primary tracking-widest">ACTIVE FOCUS</span>
-              </div>
-              <h2 className="font-headline-lg text-headline-lg text-primary max-w-2xl mb-md">
-                {focusTask ? focusTask.title : "No active task — create one to begin"}
-              </h2>
-              <p className="font-body-md text-body-md text-secondary max-w-xl">
-                {focusTask?.description || "Prioritize your most important work and enter focus mode."}
+      <div className="flex-1 w-full space-y-xl pb-xl overflow-y-auto custom-scrollbar">
+        {/* ACTIVE FOCUS SECTION */}
+        <div className="relative overflow-hidden bg-primary p-lg lg:p-xl text-on-primary min-h-[400px] flex flex-col justify-end group transition-all duration-500">
+          <div className="absolute inset-0 opacity-10 pointer-events-none"></div>
+          <div className="relative z-10 space-y-lg">
+            <div className="flex items-center gap-sm">
+              <span className="px-2 py-1 bg-on-tertiary-container text-tertiary-fixed font-label-caps text-label-caps uppercase border border-on-tertiary-container">
+                Status: {focusTask ? "Ready" : "Idle"}
+              </span>
+              <span className="text-on-primary-container font-label-caps text-label-caps uppercase">
+                Ref: {focusTask ? `PROTO-SEC-${focusTask._id.substring(focusTask._id.length - 4)}` : "STANDBY"}
+              </span>
+            </div>
+            <div className="space-y-sm max-w-2xl">
+              <h1 className="font-display-lg text-display-lg leading-none uppercase">
+                {focusTask ? focusTask.title : "NO ACTIVE MANDATE"}
+              </h1>
+              <p className="text-on-primary-container font-body-md text-lg leading-relaxed">
+                {focusTask ? (focusTask.description || "Execute strategic directive across relevant subsystem components. Awaiting operator initialization.") : "System is currently idling. All core objectives have been satisfied for the current cycle."}
               </p>
             </div>
-            <div className="mt-xl flex items-center gap-lg relative z-10">
+            <div className="flex flex-wrap gap-md">
               {focusTask && (
-                <button
-                  onClick={() => navigate(`/focus/${focusTask._id}`)}
-                  className="bg-primary text-on-primary px-xl py-md rounded-full font-label-caps text-label-caps hover:scale-[1.02] transition-transform flex items-center gap-md"
-                >
-                  <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
-                  START SESSION
-                </button>
-              )}
-              <div className="flex items-center gap-sm">
-                <span className="font-label-sm text-label-sm text-secondary">EST. DURATION:</span>
-                <span className="font-label-sm text-label-sm font-bold text-primary">
-                  {focusTask?.estimatedDuration || "25:00"}
-                </span>
-              </div>
-            </div>
-            {/* Decorative circle */}
-            <div className="absolute top-[-20px] right-[-20px] w-64 h-64 border-[1px] border-outline-variant/30 rounded-full pointer-events-none"></div>
-          </section>
-
-          {/* Quick Metrics */}
-          <section className="col-span-12 lg:col-span-4 bg-surface-container border border-outline-variant p-lg flex flex-col justify-between">
-            <div>
-              <h3 className="font-label-caps text-label-caps text-secondary mb-lg">LOAD CAPACITY</h3>
-              <div className="flex items-end gap-xs mb-sm">
-                <span className="text-[48px] font-bold leading-none">{loading ? "—" : loadPercent}</span>
-                <span className="text-[20px] font-bold text-secondary mb-sm">%</span>
-              </div>
-              <div className="w-full bg-outline-variant h-[2px]">
-                <div className="bg-primary h-full transition-all duration-1000" style={{ width: `${loadPercent}%` }}></div>
-              </div>
-            </div>
-            <div className="mt-lg">
-              <p className="font-label-sm text-label-sm text-secondary">{completedCount} of {totalCount} Tasks completed</p>
-              <div className="flex gap-xs mt-sm">
-                {Array.from({ length: Math.min(totalCount, 12) }, (_, i) => (
-                  <div key={i} className={`h-xs flex-1 ${i < completedCount ? 'bg-primary' : 'bg-outline-variant'}`}></div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Task List */}
-          <section className="col-span-12 mt-xl">
-            <div className="flex items-center justify-between mb-lg border-b border-outline-variant pb-md">
-              <h3 className="font-label-caps text-label-caps text-primary tracking-widest">SCHEDULED PROTOCOLS</h3>
-              <div className="flex gap-md">
-                <span className="font-label-sm text-label-sm text-secondary">FILTER: ALL</span>
-                <span className="font-label-sm text-label-sm text-secondary">SORT: CHRONO</span>
-              </div>
-            </div>
-            <div className="space-y-xs">
-              {loading ? (
-                <div className="p-md text-center font-label-caps text-label-caps text-on-surface-variant">LOADING...</div>
-              ) : scheduledTasks.length === 0 ? (
-                <div className="p-md text-center font-label-caps text-label-caps text-on-surface-variant">NO SCHEDULED TASKS</div>
-              ) : (
-                scheduledTasks.map((task, i) => (
-                  <div
-                    key={task._id}
-                    className={`task-card group ${task.status === "completed" ? "opacity-50" : ""} bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer p-md border border-transparent hover:border-outline-variant`}
-                    onClick={() => task.status !== "completed" && navigate(`/focus/${task._id}`)}
+                <>
+                  <button 
+                    onClick={() => navigate(`/focus/${focusTask._id}`)}
+                    className="bg-on-tertiary px-lg py-md rounded-full text-primary font-bold hover:scale-105 active:scale-95 transition-all flex items-center gap-md"
                   >
-                    <div className="flex items-center gap-xl">
-                      <span className="font-label-sm text-label-sm text-secondary w-20">
-                        {task.dueDate ? new Date(task.dueDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : `${String(9 + i).padStart(2, '0')}:00`}
-                      </span>
-                      <div className="flex-1">
-                        <h4 className={`font-body-md text-body-md font-bold text-primary group-hover:translate-x-2 transition-transform ${task.status === "completed" ? "line-through" : ""}`}>
-                          {task.title}
-                        </h4>
+                    <span>START SESSION</span>
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
+                  </button>
+                  <button 
+                    onClick={() => navigate(`/tasks/${focusTask._id}`)}
+                    className="border border-on-primary-container px-lg py-md rounded-full text-on-primary font-bold hover:bg-surface-container-low hover:text-primary transition-all"
+                  >
+                    DETAILS
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="absolute top-lg right-lg text-right hidden lg:block">
+            <div className="text-on-primary-container font-label-caps text-[80px] leading-none opacity-10 select-none uppercase">
+              {focusTask ? `MND-${focusTask._id.substring(focusTask._id.length - 3)}` : "IDLE"}
+            </div>
+          </div>
+        </div>
+
+        {/* SCHEDULED PROTOCOLS */}
+        <div className="space-y-lg">
+          <div className="flex items-end justify-between border-b-2 border-primary pb-sm">
+            <h2 className="font-headline-lg text-headline-lg flex items-center gap-md">
+              <span className="material-symbols-outlined text-[32px]">schedule</span>
+              SCHEDULED PROTOCOLS
+            </h2>
+            <span className="font-label-caps text-on-surface-variant mb-1">{dayStr}</span>
+          </div>
+          <div className="grid grid-cols-1 gap-px bg-surface-variant border border-surface-variant overflow-hidden">
+            {loading ? (
+              <div className="bg-surface-container-lowest p-lg text-center font-label-caps text-on-surface-variant">LOADING DIRECTIVES...</div>
+            ) : scheduledTasks.length === 0 ? (
+              <div className="bg-surface-container-lowest p-lg text-center font-label-caps text-on-surface-variant">NO PROTOCOLS SCHEDULED</div>
+            ) : (
+              scheduledTasks.map((task, i) => (
+                <div 
+                  key={task._id} 
+                  className={`group ${task.status === "completed" ? "bg-white opacity-60 hover:opacity-100" : task._id === focusTask?._id ? "bg-surface-container-lowest" : "bg-white"} p-lg hover:bg-surface-container-low transition-all flex flex-col md:flex-row md:items-center justify-between gap-md relative overflow-hidden`}
+                >
+                  {task._id === focusTask?._id && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>}
+                  <div className="flex items-center gap-lg">
+                    <div className={`font-label-caps text-xl font-black w-20 ${task.status !== 'completed' && task._id !== focusTask?._id ? 'text-on-surface-variant' : ''}`}>
+                      {task.dueDate ? new Date(task.dueDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : `${String(8 + i).padStart(2, '0')}:00`}
+                    </div>
+                    <div className="space-y-xs">
+                      <h3 className={`font-bold text-lg uppercase tracking-tight ${task.status === "completed" ? "line-through text-on-surface-variant" : ""}`}>
+                        {task.title}
+                      </h3>
+                      <div className="flex items-center gap-md">
+                        {getStatusDisplay(task)}
                         {task.status !== "completed" && (
-                          <div className="task-detail mt-md">
-                            <p className="text-secondary font-body-md text-[14px]">{task.description}</p>
-                            {task.tags && task.tags.length > 0 && (
-                              <div className="flex gap-sm mt-md">
-                                {task.tags.map(tag => (
-                                  <span key={tag} className="px-md py-xs bg-surface-container-high font-label-sm text-[10px] rounded-full">{tag.toUpperCase()}</span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          <span className="text-xs text-on-surface-variant font-label-sm uppercase">PRIORITY: {task.priority || "MEDIUM"}</span>
                         )}
                       </div>
-                      {task.status === "completed" ? (
-                        <span className="material-symbols-outlined text-on-tertiary-container" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                      ) : (
-                        <>
-                          <span className="font-label-sm text-label-sm text-secondary uppercase tracking-widest">
-                            P{String(i + 1).padStart(2, '0')}
-                          </span>
-                          <span className="material-symbols-outlined text-outline group-hover:text-primary transition-colors">expand_more</span>
-                        </>
-                      )}
                     </div>
                   </div>
-                ))
-              )}
+                  <div className="flex items-center gap-md">
+                    <button 
+                      onClick={() => navigate(`/tasks/${task._id}`)}
+                      className="material-symbols-outlined p-2 border border-outline-variant rounded-full hover:bg-primary hover:text-on-primary transition-all"
+                    >
+                      {task.status === "completed" ? "visibility" : task._id === focusTask?._id ? "more_vert" : "play_arrow"}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* ASYMMETRIC ANALYTICS BENTO */}
+        <div className="grid grid-cols-12 gap-gutter mb-xl">
+          <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-lg space-y-md">
+            <div className="flex justify-between items-center">
+              <h4 className="font-label-caps text-label-caps uppercase text-on-surface-variant">Infrastructure Load</h4>
+              <span className="text-xs font-bold text-primary">REAL-TIME</span>
             </div>
-          </section>
+            <div className="h-48 w-full bg-surface-container-low relative overflow-hidden group">
+              <div className="absolute inset-0 flex items-end justify-between px-md gap-1">
+                <div className="bg-primary-container w-full h-[60%] group-hover:h-[80%] transition-all duration-700"></div>
+                <div className="bg-primary w-full h-[40%] group-hover:h-[60%] transition-all duration-700 delay-75"></div>
+                <div className="bg-primary-container w-full h-[70%] group-hover:h-[50%] transition-all duration-700 delay-100"></div>
+                <div className="bg-primary w-full h-[30%] group-hover:h-[90%] transition-all duration-700 delay-150"></div>
+                <div className="bg-primary-container w-full h-[55%] group-hover:h-[45%] transition-all duration-700 delay-200"></div>
+                <div className="bg-primary w-full h-[85%] group-hover:h-[65%] transition-all duration-700 delay-300"></div>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="font-display-lg text-4xl font-black opacity-20">78.4%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="col-span-12 lg:col-span-4 bg-primary text-on-primary p-lg flex flex-col justify-between border border-primary">
+            <h4 className="font-label-caps text-label-caps uppercase text-on-primary-container">Next Milestone</h4>
+            <div className="space-y-xs">
+              <div className="font-display-lg text-4xl">02:45:12</div>
+              <p className="text-xs text-on-primary-container uppercase tracking-widest font-label-caps">Until Network Lockdown</p>
+            </div>
+            <button className="w-full mt-lg py-sm border border-on-primary-container font-bold hover:bg-on-primary hover:text-primary transition-all font-label-caps uppercase">
+              EXTEND WINDOW
+            </button>
+          </div>
         </div>
       </div>
     </AppLayout>

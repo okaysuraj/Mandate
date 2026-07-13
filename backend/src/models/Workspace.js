@@ -31,6 +31,10 @@ const workspaceSchema = new mongoose.Schema(
         },
       },
     ],
+    integrations: {
+      slack: { type: Boolean, default: false },
+      googleCalendar: { type: Boolean, default: false }
+    }
   },
   { timestamps: true }
 );

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import { useNavigate } from "react-router";
+import AppLayout from "../components/AppLayout";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 
 const ProjectsPage = () => {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("active");
   const { user } = useAuth();
 
   useEffect(() => {
@@ -16,6 +18,7 @@ const ProjectsPage = () => {
         const { data } = await axios.get("/api/tasks", { params: { limit: 100 } });
         setTasks(data.data || []);
       } catch (error) {
+        console.error(error);
         toast.error("Failed to load projects");
       } finally {
         setLoading(false);
@@ -26,135 +29,250 @@ const ProjectsPage = () => {
 
   const activeCount = tasks.filter(t => t.status !== "completed").length;
   const completedCount = tasks.filter(t => t.status === "completed").length;
-  const throughput = tasks.length > 0 ? ((completedCount / tasks.length) * 100).toFixed(1) : "0.0";
+  const systemHealth = tasks.length > 0 ? ((completedCount / tasks.length) * 100).toFixed(1) : "0.0";
+  const criticalCount = tasks.filter(t => t.priority === "urgent" && t.status !== "completed").length;
 
   const getStatusChip = (status) => {
     switch (status) {
-      case "completed": return { label: "COMPLETE", class: "bg-on-tertiary-container text-white" };
-      case "in-progress": return { label: "ACTIVE", class: "bg-surface-container-high text-on-surface-variant border border-outline-variant" };
-      default: return { label: "PENDING", class: "bg-surface-container-high text-on-surface-variant border border-outline-variant" };
+      case "completed": 
+        return { label: "COMPLETED", class: "bg-primary-container text-on-primary-container", dot: "bg-on-primary-container" };
+      case "in-progress": 
+        return { label: "ACTIVE", class: "bg-tertiary-container text-on-tertiary-container", dot: "bg-on-tertiary-container" };
+      default: 
+        return { label: "STALLED", class: "bg-surface-container-high text-on-secondary-container", dot: "bg-on-secondary-container" };
     }
   };
 
+  const getProgress = (task) => {
+    if (task.status === "completed") return 100;
+    if (task.status === "in-progress") return 64;
+    return 32;
+  };
+
+  const filteredTasks = tasks.filter(t => {
+    if (filter === "active") return t.status !== "completed";
+    if (filter === "archived") return t.status === "completed";
+    return true;
+  });
+
   return (
-    <div className="bg-background text-on-surface min-h-screen flex flex-col">
-      {/* Top NavBar */}
-      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-lg py-md bg-surface border-b border-outline-variant">
-        <Navbar variant="landing" />
-      </header>
-
-      <main className="mt-xl pt-xl px-lg pb-xl max-w-[1440px] mx-auto w-full">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-xl gap-md">
-          <div className="space-y-sm">
-            <h1 className="font-display-lg text-display-lg tracking-tighter uppercase">Project Ledger</h1>
-            <p className="font-body-md text-body-md text-on-surface-variant max-w-xl">
-              Active industrial deployments and workspace synchronizations across the Mandate network.
-            </p>
-          </div>
-          <div className="flex gap-sm">
-            <button className="px-lg py-sm rounded-full border border-outline text-primary font-label-caps text-label-caps hover:bg-surface-container-low transition-all duration-300">
-              Export CSV
+    <AppLayout>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-md mb-xl">
+        <div>
+          <span className="font-label-caps text-label-caps text-on-surface-variant opacity-50 block mb-xs">REGISTRY OVERVIEW</span>
+          <h2 className="font-headline-lg text-headline-lg">Industrial Projects</h2>
+        </div>
+        <div className="flex gap-sm">
+          <div className="flex bg-surface-container-low rounded-full p-1 border border-outline-variant">
+            <button 
+              onClick={() => setFilter("active")}
+              className={`px-md py-1.5 rounded-full text-label-sm font-label-sm transition-colors ${filter === "active" ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high"}`}
+            >
+              Active ({activeCount})
             </button>
-            <button className="px-lg py-sm rounded-full bg-primary text-on-primary font-label-caps text-label-caps hover:opacity-80 transition-all duration-300">
-              + New Project
+            <button 
+              onClick={() => setFilter("archived")}
+              className={`px-md py-1.5 rounded-full text-label-sm font-label-sm transition-colors ${filter === "archived" ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high"}`}
+            >
+              Archived ({completedCount})
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-xl">
-          <div className="bg-surface-container-lowest border border-outline-variant p-lg">
-            <p className="font-label-caps text-label-caps text-on-surface-variant mb-md">ACTIVE NODES</p>
-            <div className="flex items-baseline gap-sm">
-              <span className="font-display-lg text-headline-lg">{loading ? "—" : activeCount}</span>
-              <span className="text-on-tertiary-container font-label-sm text-label-sm">+2% vs prev</span>
-            </div>
+      {/* Dashboard Modules (Bento style summaries) */}
+      <div className="bento-grid mb-xl">
+        <div className="col-span-12 md:col-span-4 bg-surface border border-outline-variant p-lg flex flex-col justify-between">
+          <div>
+            <p className="font-label-caps text-label-caps text-on-surface-variant mb-md">SYSTEM HEALTH</p>
+            <h3 className="font-display-lg text-display-lg">{systemHealth}<span className="text-headline-lg opacity-40">%</span></h3>
           </div>
-          <div className="bg-surface-container-lowest border border-outline-variant p-lg">
-            <p className="font-label-caps text-label-caps text-on-surface-variant mb-md">THROUGHPUT</p>
-            <div className="flex items-baseline gap-sm">
-              <span className="font-display-lg text-headline-lg">{loading ? "—" : `${throughput}%`}</span>
-              <span className="text-on-surface-variant font-label-sm text-label-sm">Nominal</span>
+          <div className="mt-lg flex items-center gap-2">
+            <div className="h-1 flex-1 bg-surface-container-highest rounded-full overflow-hidden">
+              <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${systemHealth}%` }}></div>
             </div>
-          </div>
-          <div className="bg-surface-container-lowest border border-outline-variant p-lg">
-            <p className="font-label-caps text-label-caps text-on-surface-variant mb-md">SYSTEM LOAD</p>
-            <span className="font-display-lg text-headline-lg">Low</span>
+            <span className="text-xs font-label-sm text-on-tertiary-container">+0.2%</span>
           </div>
         </div>
+        <div className="col-span-12 md:col-span-4 bg-surface border border-outline-variant p-lg flex flex-col justify-between">
+          <div>
+            <p className="font-label-caps text-label-caps text-on-surface-variant mb-md">ACTIVE OPERATORS</p>
+            <h3 className="font-display-lg text-display-lg">142</h3>
+          </div>
+          <p className="text-on-surface-variant font-body-md text-sm mt-lg">Across 18 regional hubs</p>
+        </div>
+        <div className="col-span-12 md:col-span-4 bg-surface border border-outline-variant p-lg flex flex-col justify-between">
+          <div>
+            <p className="font-label-caps text-label-caps text-on-surface-variant mb-md">CRITICAL BLOCKS</p>
+            <h3 className="font-display-lg text-display-lg">{String(criticalCount).padStart(2, '0')}</h3>
+          </div>
+          <div className="mt-lg flex gap-2">
+            {criticalCount > 0 ? (
+              <span className="px-2 py-0.5 bg-error-container text-on-error-container text-[10px] font-label-caps rounded-sm">REQUIRES ATTENTION</span>
+            ) : (
+              <span className="px-2 py-0.5 bg-tertiary-container text-on-tertiary-container text-[10px] font-label-caps rounded-sm">NOMINAL</span>
+            )}
+          </div>
+        </div>
+      </div>
 
-        {/* Projects Table */}
-        <div className="w-full overflow-x-auto bg-surface-container-lowest border border-outline-variant">
-          <table className="w-full border-collapse text-left">
+      {/* Filters & Actions */}
+      <div className="flex flex-wrap items-center justify-between gap-md mb-md border-b border-outline-variant pb-md">
+        <div className="flex gap-md">
+          <div className="flex items-center gap-2">
+            <span className="text-label-sm font-label-sm text-on-surface-variant">Criticality:</span>
+            <select className="bg-transparent border-none font-bold text-label-sm focus:ring-0 cursor-pointer outline-none">
+              <option>All Levels</option>
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-label-sm font-label-sm text-on-surface-variant">Sector:</span>
+            <select className="bg-transparent border-none font-bold text-label-sm focus:ring-0 cursor-pointer outline-none">
+              <option>All Sectors</option>
+              <option>Energy</option>
+              <option>Manufacturing</option>
+              <option>Logistics</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex gap-sm">
+          <button className="flex items-center gap-2 px-md py-2 border border-outline-variant rounded-full text-label-sm font-label-sm hover:bg-surface-container-high transition-colors">
+            <span className="material-symbols-outlined text-[18px]">filter_list</span> Filter
+          </button>
+          <button className="flex items-center gap-2 px-md py-2 border border-outline-variant rounded-full text-label-sm font-label-sm hover:bg-surface-container-high transition-colors">
+            <span className="material-symbols-outlined text-[18px]">sort</span> Sort
+          </button>
+        </div>
+      </div>
+
+      {/* High-Density Table */}
+      <div className="bg-surface-container-lowest border border-outline-variant overflow-hidden mb-xl">
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-outline-variant">
-                <th className="px-lg py-md font-label-caps text-label-caps text-primary bg-surface-container-low">UID</th>
-                <th className="px-lg py-md font-label-caps text-label-caps text-primary bg-surface-container-low">PROJECT NAME</th>
-                <th className="px-lg py-md font-label-caps text-label-caps text-primary bg-surface-container-low">STATUS</th>
-                <th className="px-lg py-md font-label-caps text-label-caps text-primary bg-surface-container-low">PRIORITY</th>
-                <th className="px-lg py-md font-label-caps text-label-caps text-primary bg-surface-container-low text-right">ACTIONS</th>
+              <tr className="bg-surface-container border-b border-outline-variant">
+                <th className="p-md font-label-caps text-label-caps text-on-surface-variant w-32">PROJECT ID</th>
+                <th className="p-md font-label-caps text-label-caps text-on-surface-variant">NAME</th>
+                <th className="p-md font-label-caps text-label-caps text-on-surface-variant">STATUS</th>
+                <th className="p-md font-label-caps text-label-caps text-on-surface-variant">HEALTH INDEX</th>
+                <th className="p-md font-label-caps text-label-caps text-on-surface-variant text-center">PRIORITY</th>
+                <th className="p-md font-label-caps text-label-caps text-on-surface-variant">DUE DATE</th>
+                <th className="p-md font-label-caps text-label-caps text-on-surface-variant w-16"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant">
+            <tbody className="divide-y divide-surface-container">
               {loading ? (
-                <tr><td colSpan={5} className="px-lg py-lg text-center font-label-caps text-label-caps text-on-surface-variant">LOADING...</td></tr>
-              ) : tasks.length === 0 ? (
-                <tr><td colSpan={5} className="px-lg py-lg text-center font-label-caps text-label-caps text-on-surface-variant">NO PROJECTS</td></tr>
+                <tr>
+                  <td colSpan={7} className="p-md text-center text-label-sm font-label-sm text-on-surface-variant">LOADING REGISTRY...</td>
+                </tr>
+              ) : filteredTasks.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-md text-center text-label-sm font-label-sm text-on-surface-variant">NO PROJECTS MATCHING CRITERIA</td>
+                </tr>
               ) : (
-                tasks.map((task, i) => {
+                filteredTasks.map((task, i) => {
                   const status = getStatusChip(task.status);
+                  const progress = getProgress(task);
                   return (
-                    <tr key={task._id} className="group hover:bg-surface-container-low transition-colors duration-200">
-                      <td className="px-lg py-lg font-label-sm text-label-sm text-on-surface-variant">
-                        #MP-{String(8821 + i).padStart(4, '0')}
-                      </td>
-                      <td className="px-lg py-lg">
-                        <div className="font-headline-lg-mobile text-headline-lg-mobile font-bold tracking-tight">{task.title}</div>
-                        <div className="text-label-sm text-on-surface-variant">{task.description?.substring(0, 40) || "—"}</div>
-                      </td>
-                      <td className="px-lg py-lg">
-                        <span className={`px-md py-xs rounded-full font-label-caps text-[9px] tracking-widest ${status.class}`}>
-                          {status.label}
+                    <tr 
+                      key={task._id} 
+                      onClick={() => navigate(`/tasks/${task._id}`)}
+                      className="hover:bg-surface-container-low transition-colors group cursor-pointer"
+                    >
+                      <td className="p-md font-label-sm text-label-sm text-on-surface-variant">#PRJ-{String(2400 + i).padStart(4, '0')}</td>
+                      <td className="p-md font-bold text-body-md truncate max-w-xs">{task.title}</td>
+                      <td className="p-md">
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-label-caps ${status.class}`}>
+                          <span className={`w-1 h-1 rounded-full ${status.dot}`}></span> {status.label}
                         </span>
                       </td>
-                      <td className="px-lg py-lg">
-                        <span className="font-label-caps text-label-caps text-secondary uppercase">{task.priority || "medium"}</span>
-                      </td>
-                      <td className="px-lg py-lg text-right">
-                        <div className="flex justify-end gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button className="px-md py-xs rounded-full border border-outline-variant text-on-surface-variant font-label-caps text-[10px] hover:border-primary hover:text-primary transition-all">ARCHIVE</button>
-                          <button className="px-md py-xs rounded-full border border-outline-variant text-on-surface-variant font-label-caps text-[10px] hover:border-primary hover:text-primary transition-all">EXPORT</button>
+                      <td className="p-md">
+                        <div className="flex items-center gap-2">
+                          <span className="font-label-sm text-label-sm font-bold">{progress}%</span>
+                          <div className="w-24 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+                            <div className={`h-full w-[${progress}%] ${progress < 50 ? 'bg-error' : 'bg-primary'}`} style={{ width: `${progress}%` }}></div>
+                          </div>
                         </div>
                       </td>
+                      <td className="p-md text-center font-label-sm text-label-sm uppercase">{task.priority || "MEDIUM"}</td>
+                      <td className="p-md font-label-sm text-label-sm uppercase">
+                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "UNSCHEDULED"}
+                      </td>
+                      <td className="p-md">
+                        <button className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="material-symbols-outlined text-on-surface-variant hover:text-primary">more_vert</span>
+                        </button>
+                      </td>
                     </tr>
-                  );
+                  )
                 })
               )}
             </tbody>
           </table>
         </div>
-
+        
         {/* Pagination */}
-        <div className="mt-lg flex justify-between items-center">
-          <span className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">
-            Displaying {tasks.length} active entries
-          </span>
-          <div className="flex gap-xs">
-            <button className="w-10 h-10 flex items-center justify-center border border-outline-variant hover:bg-primary hover:text-on-primary transition-all">
-              <span className="material-symbols-outlined">chevron_left</span>
+        <div className="p-md border-t border-outline-variant flex items-center justify-between bg-surface-container-low">
+          <p className="text-label-sm font-label-sm text-on-surface-variant">Showing {filteredTasks.length > 0 ? 1 : 0}-{Math.min(12, filteredTasks.length)} of {filteredTasks.length} projects</p>
+          <div className="flex gap-unit">
+            <button className="w-8 h-8 flex items-center justify-center rounded-sm border border-outline-variant hover:bg-surface-container-high transition-colors">
+              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
-            <button className="w-10 h-10 flex items-center justify-center border border-outline-variant bg-primary text-on-primary">1</button>
-            <button className="w-10 h-10 flex items-center justify-center border border-outline-variant hover:bg-surface-container-high transition-all">2</button>
-            <button className="w-10 h-10 flex items-center justify-center border border-outline-variant hover:bg-primary hover:text-on-primary transition-all">
-              <span className="material-symbols-outlined">chevron_right</span>
+            <button className="w-8 h-8 flex items-center justify-center rounded-sm border border-primary bg-primary text-on-primary text-xs font-bold">1</button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-sm border border-outline-variant hover:bg-surface-container-high transition-colors text-xs font-bold">2</button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-sm border border-outline-variant hover:bg-surface-container-high transition-colors">
+              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
             </button>
           </div>
         </div>
-      </main>
+      </div>
 
-      <Footer />
-    </div>
+      {/* Contextual Insight (Bento Bottom) */}
+      <div className="mt-xl grid grid-cols-1 md:grid-cols-2 gap-xl mb-xl">
+        <div className="bg-surface border border-outline-variant p-lg">
+          <h4 className="font-label-caps text-label-caps mb-lg border-b border-outline-variant pb-2">CRITICAL TIMELINE</h4>
+          <div className="space-y-md mt-lg">
+            {tasks.filter(t => t.priority === "urgent" || t.priority === "high").slice(0, 2).map((task, i) => (
+              <div key={task._id} className="flex items-start gap-md">
+                <div className={`w-2 h-2 rounded-full mt-2 ${task.priority === "urgent" ? "bg-error" : "bg-primary"}`}></div>
+                <div>
+                  <p className="text-sm font-bold">{task.title}</p>
+                  <p className="text-xs text-on-surface-variant truncate w-64">{task.description || "No description provided."}</p>
+                </div>
+              </div>
+            ))}
+            {tasks.filter(t => t.priority === "urgent" || t.priority === "high").length === 0 && (
+              <p className="text-xs text-on-surface-variant">No critical timeline items found.</p>
+            )}
+          </div>
+        </div>
+        <div className="bg-surface border border-outline-variant p-lg flex flex-col justify-between">
+          <div>
+            <h4 className="font-label-caps text-label-caps mb-lg border-b border-outline-variant pb-2">SECTOR ALLOCATION</h4>
+            <div className="flex items-center gap-lg mt-md">
+              <div className="w-24 h-24 rounded-full border-8 border-primary border-r-transparent rotate-45"></div>
+              <div className="space-y-unit">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary"></div>
+                  <span className="text-xs font-label-sm">Energy (62%)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-outline-variant"></div>
+                  <span className="text-xs font-label-sm">Manuf. (28%)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-surface-container-high"></div>
+                  <span className="text-xs font-label-sm">Logistics (10%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </AppLayout>
   );
 };
 

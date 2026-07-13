@@ -45,6 +45,33 @@ const userSchema = new mongoose.Schema(
         ref: "Workspace",
       },
     ],
+    currentStreak: {
+      type: Number,
+      default: 0,
+    },
+    longestStreak: {
+      type: Number,
+      default: 0,
+    },
+    lastActiveDate: {
+      type: Date,
+    },
+    stripeCustomerId: {
+      type: String,
+      sparse: true,
+    },
+    subscriptionStatus: {
+      type: String,
+      enum: ["active", "past_due", "canceled", "incomplete", "incomplete_expired", "trialing", "unpaid", "none"],
+      default: "none",
+    },
+    subscriptionPlan: {
+      type: String,
+      default: "free",
+    },
+    expoPushToken: {
+      type: String,
+    }
   },
   { timestamps: true }
 );

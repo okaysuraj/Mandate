@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  Modal, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator
+  Modal, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Image
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
@@ -11,6 +11,7 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("pending");
   const [priority, setPriority] = useState("medium");
+  const [allocation, setAllocation] = useState(75);
   const [loading, setLoading] = useState(false);
   const { colors, typography, spacing, borderRadius } = useTheme();
 
@@ -37,7 +38,7 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
         title,
         description,
         status,
-        priority
+        priority,
       });
       onClose();
     } catch (error) {
@@ -47,21 +48,21 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
     }
   };
 
-  const renderOptionBtn = (value, current, setValue, label) => {
-    const isSelected = value === current;
+  const renderSegmentBtn = (value, label, isFirst, isLast) => {
+    const isSelected = value === priority;
     return (
       <TouchableOpacity
         style={[
-          styles.optionBtn,
+          styles.segmentBtn,
           { 
-            backgroundColor: isSelected ? colors.primary : colors.surfaceContainer,
-            borderColor: isSelected ? colors.primary : colors.outlineVariant,
-            borderRadius: borderRadius.DEFAULT
+            backgroundColor: isSelected ? colors.primary : colors.surfaceContainerLowest,
+            borderLeftWidth: isFirst ? 0 : 1,
+            borderLeftColor: colors.outlineVariant,
           }
         ]}
-        onPress={() => setValue(value)}
+        onPress={() => setPriority(value)}
       >
-        <Text style={[typography.labelCaps, { color: isSelected ? colors.onPrimary : colors.secondary }]}>
+        <Text style={[typography.labelCaps, { color: isSelected ? colors.onPrimary : colors.onSurfaceVariant }]}>
           {label}
         </Text>
       </TouchableOpacity>
@@ -77,95 +78,123 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
         <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
           {/* Header */}
           <View style={[styles.header, { borderBottomColor: colors.outlineVariant }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>NODE CONFIGURATION</Text>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>
-                {task ? "EDIT TASK" : "NEW TASK"}
+            <View style={styles.headerLeft}>
+              <TouchableOpacity onPress={onClose} style={styles.backBtn}>
+                <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
+              </TouchableOpacity>
+              <Text style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase' }]}>
+                {task ? "EDIT TASK" : "CREATE TASK"}
               </Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={[styles.closeBtn, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <MaterialIcons name="close" size={24} color={colors.primary} />
-            </TouchableOpacity>
+            <View style={[styles.avatarContainer, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerHigh }]}>
+              <Image 
+                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD3uS-AaCfL0hkObqtrHUJCH8xA3dLcvqrQSiZO7LTz68SbYJIOQKdHn5yp3AyG2RZCKQ9aeKJm-B2YSONGjI9dgzo0LA4cUiInusAZd8xttTPP3tMQOs5W4720Op8_w1TI6wf7Uh_t--ruFJTPfQtXQqPuVUByrMyNIE5K4byKQz9EFmo9OJvEj8rJJGbp0ChlkVs1MOyA6Id8fo90yuwkKKCGC_L1oYEnWpgKZ16rkUR7deqcKEl1MQ' }}
+                style={styles.avatarImage}
+              />
+            </View>
           </View>
 
-          <ScrollView style={styles.formContent}>
-            {/* Title */}
-            <View style={styles.formGroup}>
-              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>NODE DESIGNATION</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  typography.bodyMd,
-                  { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, color: colors.primary }
-                ]}
-                placeholder="Enter designation..."
-                placeholderTextColor={colors.outline}
-                value={title}
-                onChangeText={setTitle}
-              />
-            </View>
-
-            {/* Description */}
-            <View style={styles.formGroup}>
-              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>PARAMETERS / DESC</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  styles.textArea,
-                  typography.bodyMd,
-                  { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, color: colors.primary }
-                ]}
-                placeholder="Operational parameters..."
-                placeholderTextColor={colors.outline}
-                value={description}
-                onChangeText={setDescription}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-              />
-            </View>
-
-            {/* Priority */}
-            <View style={styles.formGroup}>
-              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>PRIORITY PROTOCOL</Text>
-              <View style={styles.optionsRow}>
-                {renderOptionBtn("low", priority, setPriority, "ROUTINE")}
-                {renderOptionBtn("medium", priority, setPriority, "MEDIUM")}
-                {renderOptionBtn("high", priority, setPriority, "CRITICAL")}
-                {renderOptionBtn("urgent", priority, setPriority, "URGENT")}
+          <ScrollView style={styles.formContent} contentContainerStyle={{ gap: 24, paddingBottom: 40 }}>
+            {/* Name */}
+            <View>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>
+                01 // MANDATE_NAME
+              </Text>
+              <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+                <TextInput
+                  style={[
+                    typography.headlineLgMobile,
+                    { color: colors.primary, textTransform: 'uppercase' }
+                  ]}
+                  placeholder="ENTER IDENTIFIER..."
+                  placeholderTextColor={colors.outlineVariant}
+                  value={title}
+                  onChangeText={setTitle}
+                  autoCapitalize="characters"
+                />
               </View>
             </View>
 
-            {/* Status (only if editing) */}
-            {task && (
-              <View style={styles.formGroup}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>NODE STATUS</Text>
-                <View style={styles.optionsRow}>
-                  {renderOptionBtn("pending", status, setStatus, "PENDING")}
-                  {renderOptionBtn("in-progress", status, setStatus, "ACTIVE")}
-                  {renderOptionBtn("completed", status, setStatus, "COMPLETE")}
+            {/* Description (Mapped to Temporal Parameters conceptually in layout, but is description) */}
+            <View>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>
+                02 // PARAMETERS
+              </Text>
+              <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+                <TextInput
+                  style={[
+                    typography.bodyMd,
+                    { color: colors.primary, minHeight: 80 }
+                  ]}
+                  placeholder="OPERATIONAL PARAMS..."
+                  placeholderTextColor={colors.outlineVariant}
+                  value={description}
+                  onChangeText={setDescription}
+                  multiline
+                  textAlignVertical="top"
+                />
+              </View>
+            </View>
+
+            {/* Priority Level */}
+            <View>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>
+                03 // PRIORITY_LEVEL
+              </Text>
+              <View style={[styles.segmentedControl, { borderColor: colors.outlineVariant }]}>
+                {renderSegmentBtn("high", "ALPHA", true, false)}
+                {renderSegmentBtn("medium", "BETA", false, false)}
+                {renderSegmentBtn("low", "GAMMA", false, true)}
+              </View>
+            </View>
+
+            {/* Resource Allocation */}
+            <View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8 }}>
+                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>
+                  04 // RESOURCE_ALLOCATION
+                </Text>
+                <Text style={[typography.labelCaps, { color: colors.primary }]}>{allocation}%</Text>
+              </View>
+              <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, paddingVertical: 24 }]}>
+                {/* Visual Fake Slider */}
+                <View style={{ height: 4, backgroundColor: colors.surfaceDim, width: '100%', position: 'relative', justifyContent: 'center' }}>
+                  <View style={{ position: 'absolute', left: `${allocation}%`, width: 24, height: 24, backgroundColor: colors.primary, marginLeft: -12, borderWidth: 2, borderColor: colors.primary }} />
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 24 }}>
+                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>MINIMAL</Text>
+                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>CRITICAL_LOAD</Text>
                 </View>
               </View>
-            )}
-          </ScrollView>
+            </View>
 
-          {/* Footer */}
-          <View style={[styles.footer, { borderTopColor: colors.outlineVariant }]}>
+            {/* Decorative Visual Token */}
+            <View style={[styles.decorativeBox, { borderColor: colors.outlineVariant }]}>
+              <View style={[styles.statusToken, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
+                <Text style={[typography.labelCaps, { color: colors.primary }]}>SYSTEM_STABLE</Text>
+              </View>
+            </View>
+
+            {/* Submit Button */}
             <TouchableOpacity 
-              style={[styles.saveBtn, { backgroundColor: colors.primary, borderRadius: borderRadius.DEFAULT }, loading && { opacity: 0.7 }]}
+              style={[styles.submitBtn, { backgroundColor: colors.primary, borderRadius: borderRadius.full }]}
               onPress={handleSave}
               disabled={loading}
+              activeOpacity={0.8}
             >
               {loading ? (
                 <ActivityIndicator color={colors.onPrimary} />
               ) : (
                 <>
-                  <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>COMMIT CHANGES</Text>
-                  <MaterialIcons name="check" size={18} color={colors.onPrimary} style={{ marginLeft: 8 }} />
+                  <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>
+                    {task ? "UPDATE_MANDATE" : "INITIALIZE_MANDATE"}
+                  </Text>
+                  <MaterialIcons name="bolt" size={20} color={colors.onPrimary} style={{ marginLeft: 8 }} />
                 </>
               )}
             </TouchableOpacity>
-          </View>
+
+          </ScrollView>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -179,59 +208,70 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '90%',
+    height: '100%',
+    width: '100%',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 24,
+    paddingHorizontal: 24,
+    height: 64,
     borderBottomWidth: 1,
   },
-  closeBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  headerLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+  },
+  backBtn: {
+    marginRight: 16,
+  },
+  avatarContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   formContent: {
     padding: 24,
   },
-  formGroup: {
-    marginBottom: 24,
-  },
-  input: {
+  bentoCard: {
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    padding: 16,
   },
-  textArea: {
-    minHeight: 100,
-    paddingTop: 16,
-  },
-  optionsRow: {
+  segmentedControl: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  optionBtn: {
     borderWidth: 1,
+    overflow: 'hidden',
+  },
+  segmentBtn: {
+    flex: 1,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  decorativeBox: {
+    height: 128,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusToken: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
   },
-  footer: {
-    padding: 24,
-    borderTopWidth: 1,
-  },
-  saveBtn: {
+  submitBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    paddingVertical: 20,
+    marginTop: 16,
   }
 });
 

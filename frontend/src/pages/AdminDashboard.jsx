@@ -1,141 +1,172 @@
 import React, { useState } from 'react';
+import AppLayout from '../components/AppLayout';
 import { useAuth } from '../context/AuthContext';
-import { Shield, ArrowLeft, Users, CreditCard, Activity, TrendingUp, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router';
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('analytics');
+  const [loading, setLoading] = useState(false);
 
-  const stats = [
-    { label: "Active Users", value: "24", change: "+12%" },
-    { label: "Tasks Completed", value: "1,204", change: "+4%" },
-    { label: "Storage Used", value: "1.2 GB", change: "42%" },
-  ];
+  const handleCheckout = async (plan) => {
+    try {
+      setLoading(true);
+      const { data } = await axios.post("/api/stripe/create-checkout-session", { plan });
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      toast.error("MANDATE_OS: Failed to initiate secure checkout protocol");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTierName = () => {
+    if (!user) return "BASIC";
+    if (user.subscriptionPlan === "pro") return "PRO";
+    if (user.subscriptionPlan === "quantum") return "QUANTUM";
+    return "BASIC";
+  };
+
+  const getStatusDisplay = () => {
+    if (user?.subscriptionStatus === "active") return "ACTIVE";
+    return "INACTIVE";
+  };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-[#050505] text-black dark:text-white transition-colors duration-300">
-      <div className="max-w-6xl mx-auto p-8">
-        <button onClick={() => navigate(-1)} className="flex items-center text-sm font-semibold text-zinc-500 hover:text-black dark:hover:text-white transition mb-8">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back to Home
-        </button>
-
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold mb-2 flex items-center">
-            <Shield className="w-8 h-8 mr-3 text-rose-500" /> 
-            Admin Dashboard
-          </h1>
-          <p className="text-zinc-500 dark:text-zinc-400">Manage billing, view analytics, and configure workspace settings.</p>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b border-zinc-200 dark:border-white/10 pb-4">
-          <button 
-            onClick={() => setActiveTab('analytics')}
-            className={`flex items-center font-bold px-4 py-2 rounded-xl transition ${activeTab === 'analytics' ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5'}`}
-          >
-            <Activity className="w-4 h-4 mr-2" /> Analytics
-          </button>
-          <button 
-            onClick={() => setActiveTab('billing')}
-            className={`flex items-center font-bold px-4 py-2 rounded-xl transition ${activeTab === 'billing' ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5'}`}
-          >
-            <CreditCard className="w-4 h-4 mr-2" /> Billing
-          </button>
-          <button 
-            onClick={() => setActiveTab('team')}
-            className={`flex items-center font-bold px-4 py-2 rounded-xl transition ${activeTab === 'team' ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/5'}`}
-          >
-            <Users className="w-4 h-4 mr-2" /> Team Management
-          </button>
-        </div>
-
-        {/* Tab Content */}
-        {activeTab === 'analytics' && (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {stats.map((s, i) => (
-                <div key={i} className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-6 rounded-2xl shadow-sm">
-                  <p className="text-sm font-semibold text-zinc-500 uppercase tracking-wider mb-2">{s.label}</p>
-                  <div className="flex items-end gap-4">
-                    <span className="text-4xl font-bold">{s.value}</span>
-                    <span className="flex items-center text-sm font-bold text-green-500 mb-1">
-                      <TrendingUp className="w-3 h-3 mr-1" /> {s.change}
-                    </span>
-                  </div>
-                </div>
-              ))}
+    <AppLayout>
+      <div className="bg-surface min-h-full pb-xl">
+        <div className="max-w-5xl mx-auto">
+          {/* Header Section */}
+          <div className="mb-xl flex flex-col md:flex-row md:items-end justify-between gap-md">
+            <div>
+              <h1 className="font-headline-lg text-headline-lg text-primary mb-xs uppercase">Subscription & Billing</h1>
+              <p className="text-on-surface-variant font-body-md max-w-xl">Configure usage-based tiering, audit invoice histories, and manage high-fidelity payment systems for Unit 01.</p>
             </div>
-            
-            <div className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 h-80 rounded-2xl p-6 flex flex-col items-center justify-center shadow-sm">
-               {/* Mock Chart Area */}
-               <Activity className="w-16 h-16 text-zinc-200 dark:text-zinc-800 mb-4" />
-               <p className="text-zinc-400 font-medium">Activity graph will be rendered here (Chart.js)</p>
+            <div className="flex gap-md">
+              <button 
+                onClick={() => handleCheckout("pro")}
+                disabled={loading}
+                className="bg-primary text-on-primary font-label-caps text-label-caps px-lg py-md rounded-full flex items-center gap-sm disabled:opacity-70 hover:opacity-90 transition-opacity uppercase"
+              >
+                <span className="material-symbols-outlined text-sm">upgrade</span> {loading ? "PROCESSING..." : "UPGRADE_PLAN"}
+              </button>
             </div>
           </div>
-        )}
 
-        {activeTab === 'billing' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-8 rounded-2xl shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4">
-                <span className="px-3 py-1 bg-black text-white dark:bg-white dark:text-black text-xs font-bold rounded-full">CURRENT PLAN</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-2">Pro Workspace</h3>
-              <p className="text-zinc-500 mb-6">$12 / user / month</p>
-              
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center text-sm font-medium"><CheckCircle className="w-4 h-4 text-green-500 mr-2" /> Unlimited Tasks & Projects</li>
-                <li className="flex items-center text-sm font-medium"><CheckCircle className="w-4 h-4 text-green-500 mr-2" /> Full AI Integration (GPT-4o)</li>
-                <li className="flex items-center text-sm font-medium"><CheckCircle className="w-4 h-4 text-green-500 mr-2" /> Advanced Rule Engine</li>
-              </ul>
-              
-              <button className="w-full py-3 bg-zinc-100 hover:bg-zinc-200 dark:bg-white/10 dark:hover:bg-white/20 font-bold rounded-xl transition">Manage Subscription (Stripe)</button>
-            </div>
-
-            <div className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-8 rounded-2xl shadow-sm">
-              <h3 className="text-xl font-bold mb-6">Payment Methods</h3>
-              <div className="flex items-center p-4 border border-zinc-200 dark:border-white/10 rounded-xl mb-4">
-                <CreditCard className="w-6 h-6 mr-4 text-zinc-400" />
+          {/* Bento Grid - Usage & Tiering */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-lg mb-xl">
+            {/* Tier Overview Card */}
+            <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-lg rounded-none relative overflow-hidden">
+              <div className="flex justify-between items-start mb-lg">
                 <div>
-                  <p className="font-bold">Visa ending in 4242</p>
-                  <p className="text-xs text-zinc-500">Expires 12/28</p>
+                  <span className="bg-tertiary-fixed text-on-tertiary-container font-label-caps text-[10px] px-2 py-0.5 rounded-full tracking-wider mb-sm inline-block">ACTIVE TIER: {getTierName()}</span>
+                  <h2 className="font-headline-lg text-headline-lg-mobile text-primary">Usage-Based Performance</h2>
+                </div>
+                <div className="text-right">
+                  <p className="font-label-caps text-label-caps text-outline">STATUS</p>
+                  <p className="font-headline-lg text-headline-lg text-primary">{getStatusDisplay()}</p>
                 </div>
               </div>
-              <button className="text-sm font-bold text-rose-500 hover:text-rose-600 transition">+ Add payment method</button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'team' && (
-          <div className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-8 rounded-2xl shadow-sm">
-            <h3 className="text-xl font-bold mb-6">Workspace Members</h3>
-            <div className="space-y-4">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="flex items-center justify-between p-4 border border-zinc-100 dark:border-white/5 rounded-xl">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center font-bold">
-                      U{i}
-                    </div>
-                    <div>
-                      <p className="font-bold">Team Member {i}</p>
-                      <p className="text-xs text-zinc-500">user{i}@company.com</p>
-                    </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-lg mb-lg">
+                <div className="space-y-xs">
+                  <p className="font-label-caps text-label-caps text-on-surface-variant">API CALLS</p>
+                  <div className="h-1 bg-surface-container-high rounded-full overflow-hidden">
+                    <div className="h-full bg-primary w-[15%]"></div>
                   </div>
-                  <select className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg p-2 text-sm focus:outline-none">
-                    <option>Admin</option>
-                    <option>Editor</option>
-                    <option>Viewer</option>
-                  </select>
+                  <div className="flex justify-between font-label-sm text-label-sm text-outline">
+                    <span>1.2k</span>
+                    <span>10k</span>
+                  </div>
                 </div>
-              ))}
+                <div className="space-y-xs">
+                  <p className="font-label-caps text-label-caps text-on-surface-variant">DATA PROCESSING</p>
+                  <div className="h-1 bg-surface-container-high rounded-full overflow-hidden">
+                    <div className="h-full bg-primary w-[5%]"></div>
+                  </div>
+                  <div className="flex justify-between font-label-sm text-label-sm text-outline">
+                    <span>0.1 TB</span>
+                    <span>2 TB</span>
+                  </div>
+                </div>
+                <div className="space-y-xs">
+                  <p className="font-label-caps text-label-caps text-on-surface-variant">ACTIVE AGENTS</p>
+                  <div className="h-1 bg-surface-container-high rounded-full overflow-hidden">
+                    <div className="h-full bg-primary w-[50%]"></div>
+                  </div>
+                  <div className="flex justify-between font-label-sm text-label-sm text-outline">
+                    <span>1 / 2</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-md border-t border-outline-variant pt-lg">
+                <span className="material-symbols-outlined text-outline">info</span>
+                <p className="font-body-md text-label-sm text-on-surface-variant">Your usage is well within your current tier's limits.</p>
+              </div>
             </div>
-            <button className="mt-6 px-4 py-2 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl text-sm transition">Invite Member</button>
+
+            {/* Payment Method Card */}
+            <div className="col-span-12 lg:col-span-4 bg-primary text-on-primary p-lg rounded-none flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-center mb-xl">
+                  <span className="font-label-caps text-label-caps opacity-60">PRIMARY_PAYMENT</span>
+                  <span className="material-symbols-outlined">contactless</span>
+                </div>
+                <p className="font-label-caps text-headline-lg-mobile tracking-[0.2em] mb-md">•••• •••• •••• ----</p>
+                <div className="flex justify-between">
+                  <div>
+                    <p className="font-label-caps text-[10px] opacity-60">CARDHOLDER</p>
+                    <p className="font-label-caps text-label-sm uppercase">{user?.name || "SYSTEM_ADMIN_01"}</p>
+                  </div>
+                  <div>
+                    <p className="font-label-caps text-[10px] opacity-60">EXPIRY</p>
+                    <p className="font-label-caps text-label-sm">-- / --</p>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={() => window.location.href = "https://billing.stripe.com/p/login/test_8wMaF75p7a0d1eEbII"} 
+                className="w-full border border-on-primary font-label-caps text-label-caps py-md rounded-full mt-xl hover:bg-on-primary hover:text-primary transition-colors uppercase"
+              >
+                MANAGE_METHODS
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* Bottom Bento row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+            <div className="bg-surface-container-low border border-outline-variant p-lg rounded-none flex flex-col justify-between min-h-[200px]">
+              <div>
+                <h4 className="font-label-caps text-label-sm text-primary mb-sm">BILLING_ENTITY</h4>
+                <p className="font-body-md text-on-surface-variant">{user?.name || "Global Nexus Operations Ltd."}<br/>{user?.email}<br/></p>
+              </div>
+              <button className="font-label-caps text-label-caps text-primary self-start border-b border-primary pt-md uppercase">EDIT_ENTITY</button>
+            </div>
+            <div className="bg-surface-container-low border border-outline-variant p-lg rounded-none flex flex-col justify-between min-h-[200px]">
+              <div>
+                <h4 className="font-label-caps text-label-sm text-primary mb-sm">NOTIFICATION_PREFERENCES</h4>
+                <div className="flex items-center justify-between mb-sm">
+                  <span className="font-label-sm text-on-surface-variant">Monthly Invoice PDF</span>
+                  <div className="w-10 h-5 bg-primary rounded-full relative p-0.5 flex items-center justify-end cursor-pointer">
+                    <div className="w-4 h-4 bg-on-primary rounded-full"></div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="font-label-sm text-on-surface-variant">Usage Threshold Alert (80%)</span>
+                  <div className="w-10 h-5 bg-primary rounded-full relative p-0.5 flex items-center justify-end cursor-pointer">
+                    <div className="w-4 h-4 bg-on-primary rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+              <p className="font-label-caps text-[10px] text-outline mt-md">AUTO_SAVE_ENABLED</p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

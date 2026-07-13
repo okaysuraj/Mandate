@@ -20,9 +20,13 @@ import AdminDashboard from "./pages/AdminDashboard";
 // New Pages
 import TodayPage from "./pages/TodayPage";
 import BacklogPage from "./pages/BacklogPage";
+import KanbanPage from "./pages/KanbanPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import CalendarPage from "./pages/CalendarPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import FirstMandatePage from "./pages/FirstMandatePage";
+import SplashPage from "./pages/SplashPage";
+import TaskDetailPage from "./pages/TaskDetailPage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useEffect } from "react";
@@ -51,6 +55,7 @@ const App = () => {
         <Route path="/dashboard" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
         <Route path="/today" element={<ProtectedRoute><TodayPage /></ProtectedRoute>} />
         <Route path="/backlog" element={<ProtectedRoute><BacklogPage /></ProtectedRoute>} />
+        <Route path="/kanban" element={<ProtectedRoute><KanbanPage /></ProtectedRoute>} />
         <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
         <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
         <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
@@ -60,12 +65,15 @@ const App = () => {
         {/* Existing Routes */}
         <Route path="/team" element={<ProtectedRoute><TeamSettingsPage /></ProtectedRoute>} />
         <Route path="/welcome" element={<ProtectedRoute><WelcomePage /></ProtectedRoute>} />
+        <Route path="/first-mandate" element={<ProtectedRoute><FirstMandatePage /></ProtectedRoute>} />
+        <Route path="/splash" element={<ProtectedRoute><SplashPage /></ProtectedRoute>} />
         <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
         <Route path="/docs" element={<ProtectedRoute><DocsPage /></ProtectedRoute>} />
         <Route path="/goals" element={<ProtectedRoute><GoalsPage /></ProtectedRoute>} />
         <Route path="/automations" element={<ProtectedRoute><AutomationsPage /></ProtectedRoute>} />
         <Route path="/integrations" element={<ProtectedRoute><IntegrationsPage /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/tasks/:id" element={<ProtectedRoute><TaskDetailPage /></ProtectedRoute>} />
       </Routes>
     </div>
   );

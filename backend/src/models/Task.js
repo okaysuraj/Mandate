@@ -60,6 +60,21 @@ const taskSchema = new mongoose.Schema(
       type: String,
       enum: ["low", "medium", "high"],
     },
+    orderIndex: {
+      type: Number,
+      default: 0,
+    },
+    snoozedUntil: {
+      type: Date,
+    },
+    attachments: [
+      {
+        name: String,
+        url: String,
+        type: String,
+        size: Number,
+      }
+    ],
     parentTaskId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Task",
