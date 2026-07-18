@@ -7,16 +7,16 @@ import { useAuth } from "../context/AuthContext";
 
 const ProjectsPage = () => {
   const navigate = useNavigate();
-  const [tasks, setTasks] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("active");
   const { user } = useAuth();
 
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchProjects = async () => {
       try {
-        const { data } = await axios.get("/api/tasks", { params: { limit: 100 } });
-        setTasks(data.data || []);
+        const { data } = await axios.get("/api/projects", { params: { workspaceId: user?.activeWorkspace } });
+        setProjects(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error(error);
         toast.error("Failed to load projects");
@@ -24,34 +24,36 @@ const ProjectsPage = () => {
         setLoading(false);
       }
     };
-    if (user) fetchTasks();
+    if (user) fetchProjects();
   }, [user]);
 
-  const activeCount = tasks.filter(t => t.status !== "completed").length;
-  const completedCount = tasks.filter(t => t.status === "completed").length;
-  const systemHealth = tasks.length > 0 ? ((completedCount / tasks.length) * 100).toFixed(1) : "0.0";
-  const criticalCount = tasks.filter(t => t.priority === "urgent" && t.status !== "completed").length;
+  const activeCount = projects.filter(project => project.status !== "completed" && project.status !== "archived").length;
+  const completedCount = projects.filter(project => project.status === "completed").length;
+  const systemHealth = projects.length > 0 ? ((completedCount / projects.length) * 100).toFixed(1) : "0.0";
+  const criticalCount = projects.filter(project => project.status === "active" && (project.priority === "urgent" || project.priority === "high")).length;
 
   const getStatusChip = (status) => {
     switch (status) {
       case "completed": 
         return { label: "COMPLETED", class: "bg-primary-container text-on-primary-container", dot: "bg-on-primary-container" };
-      case "in-progress": 
+      case "active": 
         return { label: "ACTIVE", class: "bg-tertiary-container text-on-tertiary-container", dot: "bg-on-tertiary-container" };
+      case "archived": 
+        return { label: "ARCHIVED", class: "bg-surface-container-high text-on-secondary-container", dot: "bg-on-secondary-container" };
       default: 
         return { label: "STALLED", class: "bg-surface-container-high text-on-secondary-container", dot: "bg-on-secondary-container" };
     }
   };
 
-  const getProgress = (task) => {
-    if (task.status === "completed") return 100;
-    if (task.status === "in-progress") return 64;
+  const getProgress = (project) => {
+    if (project.status === "completed") return 100;
+    if (project.status === "archived") return 70;
     return 32;
   };
 
-  const filteredTasks = tasks.filter(t => {
-    if (filter === "active") return t.status !== "completed";
-    if (filter === "archived") return t.status === "completed";
+  const filteredProjects = projects.filter(project => {
+    if (filter === "active") return project.status !== "completed" && project.status !== "archived";
+    if (filter === "archived") return project.status === "completed" || project.status === "archived";
     return true;
   });
 
@@ -168,22 +170,22 @@ const ProjectsPage = () => {
                 <tr>
                   <td colSpan={7} className="p-md text-center text-label-sm font-label-sm text-on-surface-variant">LOADING REGISTRY...</td>
                 </tr>
-              ) : filteredTasks.length === 0 ? (
+              ) : filteredProjects.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="p-md text-center text-label-sm font-label-sm text-on-surface-variant">NO PROJECTS MATCHING CRITERIA</td>
                 </tr>
               ) : (
-                filteredTasks.map((task, i) => {
-                  const status = getStatusChip(task.status);
-                  const progress = getProgress(task);
+                filteredProjects.map((project, i) => {
+                  const status = getStatusChip(project.status);
+                  const progress = getProgress(project);
                   return (
                     <tr 
-                      key={task._id} 
-                      onClick={() => navigate(`/tasks/${task._id}`)}
+                      key={project._id} 
+                      onClick={() => navigate(`/projects/${project._id}`)}
                       className="hover:bg-surface-container-low transition-colors group cursor-pointer"
                     >
                       <td className="p-md font-label-sm text-label-sm text-on-surface-variant">#PRJ-{String(2400 + i).padStart(4, '0')}</td>
-                      <td className="p-md font-bold text-body-md truncate max-w-xs">{task.title}</td>
+                      <td className="p-md font-bold text-body-md truncate max-w-xs">{project.name || project.title || "Untitled Project"}</td>
                       <td className="p-md">
                         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-label-caps ${status.class}`}>
                           <span className={`w-1 h-1 rounded-full ${status.dot}`}></span> {status.label}
@@ -197,9 +199,9 @@ const ProjectsPage = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="p-md text-center font-label-sm text-label-sm uppercase">{task.priority || "MEDIUM"}</td>
+                      <td className="p-md text-center font-label-sm text-label-sm uppercase">{project.priority || "MEDIUM"}</td>
                       <td className="p-md font-label-sm text-label-sm uppercase">
-                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "UNSCHEDULED"}
+                        {project.dueDate ? new Date(project.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "UNSCHEDULED"}
                       </td>
                       <td className="p-md">
                         <button className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -216,7 +218,7 @@ const ProjectsPage = () => {
         
         {/* Pagination */}
         <div className="p-md border-t border-outline-variant flex items-center justify-between bg-surface-container-low">
-          <p className="text-label-sm font-label-sm text-on-surface-variant">Showing {filteredTasks.length > 0 ? 1 : 0}-{Math.min(12, filteredTasks.length)} of {filteredTasks.length} projects</p>
+          <p className="text-label-sm font-label-sm text-on-surface-variant">Showing {filteredProjects.length > 0 ? 1 : 0}-{Math.min(12, filteredProjects.length)} of {filteredProjects.length} projects</p>
           <div className="flex gap-unit">
             <button className="w-8 h-8 flex items-center justify-center rounded-sm border border-outline-variant hover:bg-surface-container-high transition-colors">
               <span className="material-symbols-outlined text-[18px]">chevron_left</span>
@@ -235,9 +237,9 @@ const ProjectsPage = () => {
         <div className="bg-surface border border-outline-variant p-lg">
           <h4 className="font-label-caps text-label-caps mb-lg border-b border-outline-variant pb-2">CRITICAL TIMELINE</h4>
           <div className="space-y-md mt-lg">
-            {tasks.filter(t => t.priority === "urgent" || t.priority === "high").slice(0, 2).map((task, i) => (
-              <div key={task._id} className="flex items-start gap-md">
-                <div className={`w-2 h-2 rounded-full mt-2 ${task.priority === "urgent" ? "bg-error" : "bg-primary"}`}></div>
+            {projects.filter(project => project.priority === "urgent" || project.priority === "high").slice(0, 2).map((project) => (
+              <div key={project._id} className="flex items-start gap-md">
+                <div className={`w-2 h-2 rounded-full mt-2 ${project.priority === "urgent" ? "bg-error" : "bg-primary"}`}></div>
                 <div>
                   <p className="text-sm font-bold">{task.title}</p>
                   <p className="text-xs text-on-surface-variant truncate w-64">{task.description || "No description provided."}</p>

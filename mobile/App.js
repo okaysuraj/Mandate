@@ -84,6 +84,7 @@ import PermissionsScreen from "./src/screens/PermissionsScreen";
 import AccountabilityMatrixScreen from "./src/screens/AccountabilityMatrixScreen";
 import DeviceManagementScreen from "./src/screens/DeviceManagementScreen";
 import NotificationPrefsScreen from "./src/screens/NotificationPrefsScreen";
+import NotificationCenterScreen from "./src/screens/NotificationCenterScreen";
 const SettingsStack = createNativeStackNavigator();
 const KnowledgeStack = createNativeStackNavigator();
 const ProjectsStack = createNativeStackNavigator();
@@ -153,6 +154,7 @@ const SettingsStackScreen = () => (
     <SettingsStack.Screen name="AccountabilityMatrix" component={AccountabilityMatrixScreen} />
     <SettingsStack.Screen name="DeviceManagement" component={DeviceManagementScreen} />
     <SettingsStack.Screen name="NotificationPrefs" component={NotificationPrefsScreen} />
+    <SettingsStack.Screen name="NotificationCenter" component={NotificationCenterScreen} />
   </SettingsStack.Navigator>
 );
 

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router";
 import AppLayout from "../components/AppLayout";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
@@ -160,6 +161,22 @@ const SettingsPage = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Quick Settings Links */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+            <Link to="/profile-settings" className="bg-surface-container-lowest border border-outline-variant p-lg hover:bg-surface-container-low transition-colors">
+              <h3 className="font-label-caps text-label-sm text-outline mb-sm uppercase tracking-widest">Profile</h3>
+              <p className="font-body-md text-primary">Manage identity and presence</p>
+            </Link>
+            <Link to="/security-settings" className="bg-surface-container-lowest border border-outline-variant p-lg hover:bg-surface-container-low transition-colors">
+              <h3 className="font-label-caps text-label-sm text-outline mb-sm uppercase tracking-widest">Security</h3>
+              <p className="font-body-md text-primary">Control authentication and access</p>
+            </Link>
+            <Link to="/notifications-settings" className="bg-surface-container-lowest border border-outline-variant p-lg hover:bg-surface-container-low transition-colors">
+              <h3 className="font-label-caps text-label-sm text-outline mb-sm uppercase tracking-widest">Notifications</h3>
+              <p className="font-body-md text-primary">Tune alerts and digests</p>
+            </Link>
           </div>
 
           {/* Advanced Communication Protocols */}

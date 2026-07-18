@@ -27,6 +27,76 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import FirstMandatePage from "./pages/FirstMandatePage";
 import SplashPage from "./pages/SplashPage";
 import TaskDetailPage from "./pages/TaskDetailPage";
+import InboxPage from "./pages/InboxPage";
+import BillingPage from "./pages/BillingPage";
+import CommandPalettePage from "./pages/CommandPalettePage";
+import ProfileSettingsPage from "./pages/ProfileSettingsPage";
+import SecuritySettingsPage from "./pages/SecuritySettingsPage";
+import NotificationsSettingsPage from "./pages/NotificationsSettingsPage";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
+import TeamWorkspacePage from "./pages/TeamWorkspacePage";
+import DailyPlanningPage from "./pages/DailyPlanningPage";
+import EndOfDayReviewPage from "./pages/EndOfDayReviewPage";
+import FocusSummaryPage from "./pages/FocusSummaryPage";
+import LockInPage from "./pages/LockInPage";
+import GoalDetailPage from "./pages/GoalDetailPage";
+import AutomationRulesPage from "./pages/AutomationRulesPage";
+import AutomationLogsPage from "./pages/AutomationLogsPage";
+import DeviceManagementPage from "./pages/DeviceManagementPage";
+import PermissionsPage from "./pages/PermissionsPage";
+import ThemeAppearancePage from "./pages/ThemeAppearancePage";
+import AccountabilityMatrixPage from "./pages/AccountabilityMatrixPage";
+import DataExportPage from "./pages/DataExportPage";
+import NotificationPreferencesPage from "./pages/NotificationPreferencesPage";
+import PersonalizedInsightsPage from "./pages/PersonalizedInsightsPage";
+import PriorityRecommendationsPage from "./pages/PriorityRecommendationsPage";
+import SmartReschedulingPage from "./pages/SmartReschedulingPage";
+import TaskBreakdownPage from "./pages/TaskBreakdownPage";
+import GlobalSearchPage from "./pages/GlobalSearchPage";
+import KeyboardShortcutsPage from "./pages/KeyboardShortcutsPage";
+import SavedViewsPage from "./pages/SavedViewsPage";
+import GoalTimelinePage from "./pages/GoalTimelinePage";
+import TaskTemplatesPage from "./pages/TaskTemplatesPage";
+import FocusModePage from "./pages/FocusModePage";
+import TeamHealthPage from "./pages/TeamHealthPage";
+import WorkspaceAuditPage from "./pages/WorkspaceAuditPage";
+import CustomReportsPage from "./pages/CustomReportsPage";
+import DecisionLogPage from "./pages/DecisionLogPage";
+import AutomationPlaybooksPage from "./pages/AutomationPlaybooksPage";
+import KnowledgeBasePage from "./pages/KnowledgeBasePage";
+import ReleaseNotesPage from "./pages/ReleaseNotesPage";
+import StatusCenterPage from "./pages/StatusCenterPage";
+import ReminderSettingsPage from "./pages/ReminderSettingsPage";
+import OfflineModePage from "./pages/OfflineModePage";
+import MaintenanceDowntimePage from "./pages/MaintenanceDowntimePage";
+import MonthlyReviewPage from "./pages/MonthlyReviewPage";
+import WorkstreamsPage from "./pages/WorkstreamsPage";
+import MilestoneTrackerPage from "./pages/MilestoneTrackerPage";
+import DependencyMapPage from "./pages/DependencyMapPage";
+import IncidentLogPage from "./pages/IncidentLogPage";
+import PeopleDirectoryPage from "./pages/PeopleDirectoryPage";
+import WorkloadBalancerPage from "./pages/WorkloadBalancerPage";
+import RetentionInsightsPage from "./pages/RetentionInsightsPage";
+import CustomerJourneyPage from "./pages/CustomerJourneyPage";
+import PartnerPortalPage from "./pages/PartnerPortalPage";
+import VendorManagementPage from "./pages/VendorManagementPage";
+import ComplianceCenterPage from "./pages/ComplianceCenterPage";
+import ProcurementHubPage from "./pages/ProcurementHubPage";
+import SupportDeskPage from "./pages/SupportDeskPage";
+import KnowledgeSharePage from "./pages/KnowledgeSharePage";
+import FinanceOverviewPage from "./pages/FinanceOverviewPage";
+import BudgetPlanningPage from "./pages/BudgetPlanningPage";
+import InvoiceTrackerPage from "./pages/InvoiceTrackerPage";
+import ForecastingPage from "./pages/ForecastingPage";
+import ExecutiveSummaryPage from "./pages/ExecutiveSummaryPage";
+import ImpactReportPage from "./pages/ImpactReportPage";
+import BoardViewPage from "./pages/BoardViewPage";
+import WorkspaceOverviewPage from "./pages/WorkspaceOverviewPage";
+import MobileWorkspacePage from "./pages/MobileWorkspacePage";
+import QuickActionsPage from "./pages/QuickActionsPage";
+import ActivityStreamPage from "./pages/ActivityStreamPage";
+import AutomationCenterPage from "./pages/AutomationCenterPage";
+import WorkspaceTemplatesPage from "./pages/WorkspaceTemplatesPage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useEffect } from "react";
@@ -74,6 +144,85 @@ const App = () => {
         <Route path="/integrations" element={<ProtectedRoute><IntegrationsPage /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
         <Route path="/tasks/:id" element={<ProtectedRoute><TaskDetailPage /></ProtectedRoute>} />
+        <Route path="/inbox" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
+        <Route path="/billing" element={<ProtectedRoute><BillingPage /></ProtectedRoute>} />
+        <Route path="/command-palette" element={<ProtectedRoute><CommandPalettePage /></ProtectedRoute>} />
+        <Route path="/profile-settings" element={<ProtectedRoute><ProfileSettingsPage /></ProtectedRoute>} />
+        <Route path="/security-settings" element={<ProtectedRoute><SecuritySettingsPage /></ProtectedRoute>} />
+        <Route path="/notifications-settings" element={<ProtectedRoute><NotificationsSettingsPage /></ProtectedRoute>} />
+        <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
+        <Route path="/team-workspace" element={<ProtectedRoute><TeamWorkspacePage /></ProtectedRoute>} />
+        <Route path="/daily-planning" element={<ProtectedRoute><DailyPlanningPage /></ProtectedRoute>} />
+        <Route path="/end-of-day-review" element={<ProtectedRoute><EndOfDayReviewPage /></ProtectedRoute>} />
+        <Route path="/focus-summary" element={<ProtectedRoute><FocusSummaryPage /></ProtectedRoute>} />
+        <Route path="/lock-in" element={<ProtectedRoute><LockInPage /></ProtectedRoute>} />
+        <Route path="/goals/:id" element={<ProtectedRoute><GoalDetailPage /></ProtectedRoute>} />
+        <Route path="/automation-rules" element={<ProtectedRoute><AutomationRulesPage /></ProtectedRoute>} />
+        <Route path="/automation-logs" element={<ProtectedRoute><AutomationLogsPage /></ProtectedRoute>} />
+        <Route path="/device-management" element={<ProtectedRoute><DeviceManagementPage /></ProtectedRoute>} />
+        <Route path="/permissions" element={<ProtectedRoute><PermissionsPage /></ProtectedRoute>} />
+        <Route path="/theme-appearance" element={<ProtectedRoute><ThemeAppearancePage /></ProtectedRoute>} />
+        <Route path="/accountability-matrix" element={<ProtectedRoute><AccountabilityMatrixPage /></ProtectedRoute>} />
+        <Route path="/data-export" element={<ProtectedRoute><DataExportPage /></ProtectedRoute>} />
+        <Route path="/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
+        <Route path="/personalized-insights" element={<ProtectedRoute><PersonalizedInsightsPage /></ProtectedRoute>} />
+        <Route path="/priority-recommendations" element={<ProtectedRoute><PriorityRecommendationsPage /></ProtectedRoute>} />
+        <Route path="/smart-rescheduling" element={<ProtectedRoute><SmartReschedulingPage /></ProtectedRoute>} />
+        <Route path="/task-breakdown" element={<ProtectedRoute><TaskBreakdownPage /></ProtectedRoute>} />
+        <Route path="/global-search" element={<ProtectedRoute><GlobalSearchPage /></ProtectedRoute>} />
+        <Route path="/keyboard-shortcuts" element={<ProtectedRoute><KeyboardShortcutsPage /></ProtectedRoute>} />
+        <Route path="/saved-views" element={<ProtectedRoute><SavedViewsPage /></ProtectedRoute>} />
+        <Route path="/reminder-settings" element={<ProtectedRoute><ReminderSettingsPage /></ProtectedRoute>} />
+        <Route path="/offline-mode" element={<ProtectedRoute><OfflineModePage /></ProtectedRoute>} />
+        <Route path="/maintenance-downtime" element={<ProtectedRoute><MaintenanceDowntimePage /></ProtectedRoute>} />
+        <Route path="/monthly-review" element={<ProtectedRoute><MonthlyReviewPage /></ProtectedRoute>} />
+        <Route path="/goal-timeline" element={<ProtectedRoute><GoalTimelinePage /></ProtectedRoute>} />
+        <Route path="/task-templates" element={<ProtectedRoute><TaskTemplatesPage /></ProtectedRoute>} />
+        <Route path="/focus-mode" element={<ProtectedRoute><FocusModePage /></ProtectedRoute>} />
+        <Route path="/team-health" element={<ProtectedRoute><TeamHealthPage /></ProtectedRoute>} />
+        <Route path="/workspace-audit" element={<ProtectedRoute><WorkspaceAuditPage /></ProtectedRoute>} />
+        <Route path="/custom-reports" element={<ProtectedRoute><CustomReportsPage /></ProtectedRoute>} />
+        <Route path="/decision-log" element={<ProtectedRoute><DecisionLogPage /></ProtectedRoute>} />
+        <Route path="/automation-playbooks" element={<ProtectedRoute><AutomationPlaybooksPage /></ProtectedRoute>} />
+        <Route path="/knowledge-base" element={<ProtectedRoute><KnowledgeBasePage /></ProtectedRoute>} />
+        <Route path="/release-notes" element={<ProtectedRoute><ReleaseNotesPage /></ProtectedRoute>} />
+        <Route path="/status-center" element={<ProtectedRoute><StatusCenterPage /></ProtectedRoute>} />
+        <Route path="/meeting-notes" element={<ProtectedRoute><MeetingNotesPage /></ProtectedRoute>} />
+        <Route path="/stakeholder-map" element={<ProtectedRoute><StakeholderMapPage /></ProtectedRoute>} />
+        <Route path="/sprint-board" element={<ProtectedRoute><SprintBoardPage /></ProtectedRoute>} />
+        <Route path="/roadmap" element={<ProtectedRoute><RoadmapPage /></ProtectedRoute>} />
+        <Route path="/change-requests" element={<ProtectedRoute><ChangeRequestsPage /></ProtectedRoute>} />
+        <Route path="/escalations" element={<ProtectedRoute><EscalationsPage /></ProtectedRoute>} />
+        <Route path="/risk-register" element={<ProtectedRoute><RiskRegisterPage /></ProtectedRoute>} />
+        <Route path="/capacity-planning" element={<ProtectedRoute><CapacityPlanningPage /></ProtectedRoute>} />
+        <Route path="/signal-center" element={<ProtectedRoute><SignalCenterPage /></ProtectedRoute>} />
+        <Route path="/workstreams" element={<ProtectedRoute><WorkstreamsPage /></ProtectedRoute>} />
+        <Route path="/milestone-tracker" element={<ProtectedRoute><MilestoneTrackerPage /></ProtectedRoute>} />
+        <Route path="/dependency-map" element={<ProtectedRoute><DependencyMapPage /></ProtectedRoute>} />
+        <Route path="/incident-log" element={<ProtectedRoute><IncidentLogPage /></ProtectedRoute>} />
+        <Route path="/people-directory" element={<ProtectedRoute><PeopleDirectoryPage /></ProtectedRoute>} />
+        <Route path="/workload-balancer" element={<ProtectedRoute><WorkloadBalancerPage /></ProtectedRoute>} />
+        <Route path="/retention-insights" element={<ProtectedRoute><RetentionInsightsPage /></ProtectedRoute>} />
+        <Route path="/customer-journey" element={<ProtectedRoute><CustomerJourneyPage /></ProtectedRoute>} />
+        <Route path="/partner-portal" element={<ProtectedRoute><PartnerPortalPage /></ProtectedRoute>} />
+        <Route path="/vendor-management" element={<ProtectedRoute><VendorManagementPage /></ProtectedRoute>} />
+        <Route path="/compliance-center" element={<ProtectedRoute><ComplianceCenterPage /></ProtectedRoute>} />
+        <Route path="/procurement-hub" element={<ProtectedRoute><ProcurementHubPage /></ProtectedRoute>} />
+        <Route path="/support-desk" element={<ProtectedRoute><SupportDeskPage /></ProtectedRoute>} />
+        <Route path="/knowledge-share" element={<ProtectedRoute><KnowledgeSharePage /></ProtectedRoute>} />
+        <Route path="/finance-overview" element={<ProtectedRoute><FinanceOverviewPage /></ProtectedRoute>} />
+        <Route path="/budget-planning" element={<ProtectedRoute><BudgetPlanningPage /></ProtectedRoute>} />
+        <Route path="/invoice-tracker" element={<ProtectedRoute><InvoiceTrackerPage /></ProtectedRoute>} />
+        <Route path="/forecasting" element={<ProtectedRoute><ForecastingPage /></ProtectedRoute>} />
+        <Route path="/executive-summary" element={<ProtectedRoute><ExecutiveSummaryPage /></ProtectedRoute>} />
+        <Route path="/impact-report" element={<ProtectedRoute><ImpactReportPage /></ProtectedRoute>} />
+        <Route path="/board-view" element={<ProtectedRoute><BoardViewPage /></ProtectedRoute>} />
+        <Route path="/workspace-overview" element={<ProtectedRoute><WorkspaceOverviewPage /></ProtectedRoute>} />
+        <Route path="/mobile-workspace" element={<ProtectedRoute><MobileWorkspacePage /></ProtectedRoute>} />
+        <Route path="/quick-actions" element={<ProtectedRoute><QuickActionsPage /></ProtectedRoute>} />
+        <Route path="/activity-stream" element={<ProtectedRoute><ActivityStreamPage /></ProtectedRoute>} />
+        <Route path="/automation-center" element={<ProtectedRoute><AutomationCenterPage /></ProtectedRoute>} />
+        <Route path="/workspace-templates" element={<ProtectedRoute><WorkspaceTemplatesPage /></ProtectedRoute>} />
       </Routes>
     </div>
   );
