@@ -98,6 +98,15 @@ import ActivityStreamPage from "./pages/ActivityStreamPage";
 import AutomationCenterPage from "./pages/AutomationCenterPage";
 import WorkspaceTemplatesPage from "./pages/WorkspaceTemplatesPage";
 
+import MeetingNotesPage from './pages/MeetingNotesPage';
+import StakeholderMapPage from './pages/StakeholderMapPage';
+import SprintBoardPage from './pages/SprintBoardPage';
+import RoadmapPage from './pages/RoadmapPage';
+import ChangeRequestsPage from './pages/ChangeRequestsPage';
+import EscalationsPage from './pages/EscalationsPage';
+import RiskRegisterPage from './pages/RiskRegisterPage';
+import CapacityPlanningPage from './pages/CapacityPlanningPage';
+import SignalCenterPage from './pages/SignalCenterPage';
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useEffect } from "react";
 
