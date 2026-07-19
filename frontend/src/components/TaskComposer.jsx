@@ -4,7 +4,7 @@ import {
   X, Calendar, Flag, Folder, Zap, 
   ChevronDown, ChevronUp, Clock, Battery, Sparkles 
 } from 'lucide-react';
-import axios from 'axios';
+import api from '../lib/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { User as UserIcon } from 'lucide-react';
@@ -45,7 +45,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
       
       // Fetch members
       if (user?.activeWorkspace) {
-        axios.get(`/api/workspaces/${user.activeWorkspace}/members`)
+        api.get(`/workspaces/${user.activeWorkspace}/members`)
           .then(res => setWorkspaceMembers(res.data))
           .catch(err => console.error(err));
       }
@@ -57,7 +57,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
     setIsParsing(true);
     toast.loading('AI is parsing your input...', { id: 'parse-toast' });
     try {
-      const { data } = await axios.post('/api/ai/parse-task', { input: title });
+      const { data } = await api.post('/ai/parse-task', { input: title });
       setTitle(data.title || title);
       if (data.tags?.length > 0) setTags(data.tags.join(', '));
       if (data.priority) setPriority(data.priority);
@@ -76,7 +76,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
 
     setLoading(true);
     try {
-      const res = await axios.post('/api/tasks', {
+      const res = await api.post('/tasks', {
         title,
         intent,
         dueDate: dueDate || undefined,

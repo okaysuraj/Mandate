@@ -41,6 +41,69 @@ import { SocketProvider } from "./src/context/SocketContext";
 import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
 
 import LandingScreen from "./src/screens/LandingScreen";
+import AiSmartReschedulingScreen from "./src/screens/AiSmartReschedulingScreen";
+import AiTaskBreakdownScreen from "./src/screens/AiTaskBreakdownScreen";
+import AssignedToMeScreen from "./src/screens/AssignedToMeScreen";
+import BacklogScreen from "./src/screens/BacklogScreen";
+import BurnoutInsightsScreen from "./src/screens/BurnoutInsightsScreen";
+import CapacityViewScreen from "./src/screens/CapacityViewScreen";
+import CommitmentHistoryScreen from "./src/screens/CommitmentHistoryScreen";
+import CreateGoalScreen from "./src/screens/CreateGoalScreen";
+import CreateProjectScreen from "./src/screens/CreateProjectScreen";
+import CreateTaskScreen from "./src/screens/CreateTaskScreen";
+import CriticalAlertsScreen from "./src/screens/CriticalAlertsScreen";
+import DailyReviewScreen from "./src/screens/DailyReviewScreen";
+import DangerZoneScreen from "./src/screens/DangerZoneScreen";
+import DataExportScreen from "./src/screens/DataExportScreen";
+import DeviationReportScreen from "./src/screens/DeviationReportScreen";
+import DigestPreviewScreen from "./src/screens/DigestPreviewScreen";
+import EditTaskScreen from "./src/screens/EditTaskScreen";
+import EmailVerificationScreen from "./src/screens/EmailVerificationScreen";
+import EmptyStateNoMandatesScreen from "./src/screens/EmptyStateNoMandatesScreen";
+import EmptyStateNoTasksScreen from "./src/screens/EmptyStateNoTasksScreen";
+import ErrorScreen from "./src/screens/ErrorScreen";
+import FilterBuilderScreen from "./src/screens/FilterBuilderScreen";
+import FirstMandateCreationScreen from "./src/screens/FirstMandateCreationScreen";
+import FocusNotesLogsScreen from "./src/screens/FocusNotesLogsScreen";
+import FocusSummaryScreen from "./src/screens/FocusSummaryScreen";
+import FocusTimerLogsScreen from "./src/screens/FocusTimerLogsScreen";
+import GlobalSearchScreen from "./src/screens/GlobalSearchScreen";
+import GoalProgressTrackingScreen from "./src/screens/GoalProgressTrackingScreen";
+import HomeDashboardScreen from "./src/screens/HomeDashboardScreen";
+import InitialConfigurationScreen from "./src/screens/InitialConfigurationScreen";
+import InviteMembersScreen from "./src/screens/InviteMembersScreen";
+import KeyboardShortcutsScreen from "./src/screens/KeyboardShortcutsScreen";
+import MaintenanceScreen from "./src/screens/MaintenanceScreen";
+import MonthlyReviewScreen from "./src/screens/MonthlyReviewScreen";
+import NaturalLanguageInputScreen from "./src/screens/NaturalLanguageInputScreen";
+import NotificationPreferencesScreen from "./src/screens/NotificationPreferencesScreen";
+import OfflineModeScreen from "./src/screens/OfflineModeScreen";
+import OwnershipTransferScreen from "./src/screens/OwnershipTransferScreen";
+import PreferencesBehaviorScreen from "./src/screens/PreferencesBehaviorScreen";
+import PriorityStatusScreen from "./src/screens/PriorityStatusScreen";
+import ProjectTimelineScreen from "./src/screens/ProjectTimelineScreen";
+import ProtocolPausedScreen from "./src/screens/ProtocolPausedScreen";
+import QuickCreateScreen from "./src/screens/QuickCreateScreen";
+import ReflectionHistoryScreen from "./src/screens/ReflectionHistoryScreen";
+import SavedViewsScreen from "./src/screens/SavedViewsScreen";
+import SelectionProtocolScreen from "./src/screens/SelectionProtocolScreen";
+import SmartViewsScreen from "./src/screens/SmartViewsScreen";
+import SplashScreen from "./src/screens/SplashScreen";
+import SubtaskManagementScreen from "./src/screens/SubtaskManagementScreen";
+import SyncConflictResolutionScreen from "./src/screens/SyncConflictResolutionScreen";
+import TableViewScreen from "./src/screens/TableViewScreen";
+import TagsManagementScreen from "./src/screens/TagsManagementScreen";
+import TaskActivityHistoryScreen from "./src/screens/TaskActivityHistoryScreen";
+import TaskAssignmentScreen from "./src/screens/TaskAssignmentScreen";
+import TaskAttachmentsScreen from "./src/screens/TaskAttachmentsScreen";
+import TaskCommentsScreen from "./src/screens/TaskCommentsScreen";
+import TaskCompletionTrendsScreen from "./src/screens/TaskCompletionTrendsScreen";
+import TaskRecurrenceScreen from "./src/screens/TaskRecurrenceScreen";
+import TaskReflectionScreen from "./src/screens/TaskReflectionScreen";
+import TaskToGoalLinkingScreen from "./src/screens/TaskToGoalLinkingScreen";
+import TeamActivityScreen from "./src/screens/TeamActivityScreen";
+import WeeklyReviewScreen from "./src/screens/WeeklyReviewScreen";
+import WelcomeScreen from "./src/screens/WelcomeScreen";
 import LoginScreen from "./src/screens/LoginScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
 import ForgotPasswordScreen from "./src/screens/ForgotPasswordScreen";
@@ -118,6 +181,69 @@ const ProjectsStackScreen = () => (
     <ProjectsStack.Screen name="ProjectCalendar" component={ProjectCalendarScreen} />
     <ProjectsStack.Screen name="TimelineView" component={TimelineViewScreen} />
     <ProjectsStack.Screen name="ListView" component={ListViewScreen} />
+    <ProjectsStack.Screen name="AiSmartRescheduling" component={AiSmartReschedulingScreen} />
+    <ProjectsStack.Screen name="AiTaskBreakdown" component={AiTaskBreakdownScreen} />
+    <ProjectsStack.Screen name="AssignedToMe" component={AssignedToMeScreen} />
+    <ProjectsStack.Screen name="Backlog" component={BacklogScreen} />
+    <ProjectsStack.Screen name="BurnoutInsights" component={BurnoutInsightsScreen} />
+    <ProjectsStack.Screen name="CapacityView" component={CapacityViewScreen} />
+    <ProjectsStack.Screen name="CommitmentHistory" component={CommitmentHistoryScreen} />
+    <ProjectsStack.Screen name="CreateGoal" component={CreateGoalScreen} />
+    <ProjectsStack.Screen name="CreateProject" component={CreateProjectScreen} />
+    <ProjectsStack.Screen name="CreateTask" component={CreateTaskScreen} />
+    <ProjectsStack.Screen name="CriticalAlerts" component={CriticalAlertsScreen} />
+    <ProjectsStack.Screen name="DailyReview" component={DailyReviewScreen} />
+    <ProjectsStack.Screen name="DangerZone" component={DangerZoneScreen} />
+    <ProjectsStack.Screen name="DataExport" component={DataExportScreen} />
+    <ProjectsStack.Screen name="DeviationReport" component={DeviationReportScreen} />
+    <ProjectsStack.Screen name="DigestPreview" component={DigestPreviewScreen} />
+    <ProjectsStack.Screen name="EditTask" component={EditTaskScreen} />
+    <ProjectsStack.Screen name="EmailVerification" component={EmailVerificationScreen} />
+    <ProjectsStack.Screen name="EmptyStateNoMandates" component={EmptyStateNoMandatesScreen} />
+    <ProjectsStack.Screen name="EmptyStateNoTasks" component={EmptyStateNoTasksScreen} />
+    <ProjectsStack.Screen name="Error" component={ErrorScreen} />
+    <ProjectsStack.Screen name="FilterBuilder" component={FilterBuilderScreen} />
+    <ProjectsStack.Screen name="FirstMandateCreation" component={FirstMandateCreationScreen} />
+    <ProjectsStack.Screen name="FocusNotesLogs" component={FocusNotesLogsScreen} />
+    <ProjectsStack.Screen name="FocusSummary" component={FocusSummaryScreen} />
+    <ProjectsStack.Screen name="FocusTimerLogs" component={FocusTimerLogsScreen} />
+    <ProjectsStack.Screen name="GlobalSearch" component={GlobalSearchScreen} />
+    <ProjectsStack.Screen name="GoalProgressTracking" component={GoalProgressTrackingScreen} />
+    <ProjectsStack.Screen name="HomeDashboard" component={HomeDashboardScreen} />
+    <ProjectsStack.Screen name="InitialConfiguration" component={InitialConfigurationScreen} />
+    <ProjectsStack.Screen name="InviteMembers" component={InviteMembersScreen} />
+    <ProjectsStack.Screen name="KeyboardShortcuts" component={KeyboardShortcutsScreen} />
+    <ProjectsStack.Screen name="Maintenance" component={MaintenanceScreen} />
+    <ProjectsStack.Screen name="MonthlyReview" component={MonthlyReviewScreen} />
+    <ProjectsStack.Screen name="NaturalLanguageInput" component={NaturalLanguageInputScreen} />
+    <ProjectsStack.Screen name="NotificationPreferences" component={NotificationPreferencesScreen} />
+    <ProjectsStack.Screen name="OfflineMode" component={OfflineModeScreen} />
+    <ProjectsStack.Screen name="OwnershipTransfer" component={OwnershipTransferScreen} />
+    <ProjectsStack.Screen name="PreferencesBehavior" component={PreferencesBehaviorScreen} />
+    <ProjectsStack.Screen name="PriorityStatus" component={PriorityStatusScreen} />
+    <ProjectsStack.Screen name="ProjectTimeline" component={ProjectTimelineScreen} />
+    <ProjectsStack.Screen name="ProtocolPaused" component={ProtocolPausedScreen} />
+    <ProjectsStack.Screen name="QuickCreate" component={QuickCreateScreen} />
+    <ProjectsStack.Screen name="ReflectionHistory" component={ReflectionHistoryScreen} />
+    <ProjectsStack.Screen name="SavedViews" component={SavedViewsScreen} />
+    <ProjectsStack.Screen name="SelectionProtocol" component={SelectionProtocolScreen} />
+    <ProjectsStack.Screen name="SmartViews" component={SmartViewsScreen} />
+    <ProjectsStack.Screen name="Splash" component={SplashScreen} />
+    <ProjectsStack.Screen name="SubtaskManagement" component={SubtaskManagementScreen} />
+    <ProjectsStack.Screen name="SyncConflictResolution" component={SyncConflictResolutionScreen} />
+    <ProjectsStack.Screen name="TableView" component={TableViewScreen} />
+    <ProjectsStack.Screen name="TagsManagement" component={TagsManagementScreen} />
+    <ProjectsStack.Screen name="TaskActivityHistory" component={TaskActivityHistoryScreen} />
+    <ProjectsStack.Screen name="TaskAssignment" component={TaskAssignmentScreen} />
+    <ProjectsStack.Screen name="TaskAttachments" component={TaskAttachmentsScreen} />
+    <ProjectsStack.Screen name="TaskComments" component={TaskCommentsScreen} />
+    <ProjectsStack.Screen name="TaskCompletionTrends" component={TaskCompletionTrendsScreen} />
+    <ProjectsStack.Screen name="TaskRecurrence" component={TaskRecurrenceScreen} />
+    <ProjectsStack.Screen name="TaskReflection" component={TaskReflectionScreen} />
+    <ProjectsStack.Screen name="TaskToGoalLinking" component={TaskToGoalLinkingScreen} />
+    <ProjectsStack.Screen name="TeamActivity" component={TeamActivityScreen} />
+    <ProjectsStack.Screen name="WeeklyReview" component={WeeklyReviewScreen} />
+    <ProjectsStack.Screen name="Welcome" component={WelcomeScreen} />
     <ProjectsStack.Screen name="TeamDashboard" component={TeamDashboardScreen} />
     <ProjectsStack.Screen name="PersonnelLedger" component={PersonnelLedgerScreen} />
   </ProjectsStack.Navigator>

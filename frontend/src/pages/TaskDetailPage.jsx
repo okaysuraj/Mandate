@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AppLayout from "../components/AppLayout";
 import { useParams, useNavigate } from "react-router";
-import axios from "axios";
+import { getTaskById } from "../services/taskService";
 import toast from "react-hot-toast";
 
 const TaskDetailPage = () => {
@@ -13,7 +13,7 @@ const TaskDetailPage = () => {
   useEffect(() => {
     const fetchTask = async () => {
       try {
-        const { data } = await axios.get(`/api/tasks/${id}`);
+        const data = await getTaskById(id);
         setTask(data.data || data);
       } catch (error) {
         console.error(error);

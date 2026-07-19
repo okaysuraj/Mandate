@@ -4,10 +4,9 @@ import {
   ActivityIndicator, Image 
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import axios from "axios";
 import { useAuth } from "../context/AuthContext";
-import { API_URL } from "../config";
 import { useTheme } from "../context/ThemeContext";
+import { getProjects } from "../services/projectService";
 
 const ProjectsScreen = ({ navigation }) => {
   const [projects, setProjects] = useState([]);
@@ -17,8 +16,8 @@ const ProjectsScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (user) {
-      axios.get(`${API_URL}/api/projects`, { params: { workspaceId: user.activeWorkspace } })
-        .then(res => setProjects(res.data || []))
+      getProjects({ workspaceId: user.activeWorkspace })
+        .then(data => setProjects(data || []))
         .catch(err => console.log("Failed to load projects", err))
         .finally(() => setLoading(false));
     }

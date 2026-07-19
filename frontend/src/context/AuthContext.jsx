@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import axios from "axios";
+import api from "../lib/axios";
 import { auth } from "../config/firebase";
 import { 
   signInWithEmailAndPassword, 
@@ -27,16 +27,14 @@ export const AuthProvider = ({ children }) => {
           await signOut(auth);
           setUser(null);
           localStorage.removeItem("userInfo");
-          delete axios.defaults.headers.common["Authorization"];
           setLoading(false);
           return;
         }
 
         try {
           const token = await firebaseUser.getIdToken();
-          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
           
-          const { data } = await axios.get("/api/auth/me");
+          const { data } = await api.get("/auth/me");
           setUser(data);
           localStorage.setItem("userInfo", JSON.stringify(data));
         } catch (error) {
@@ -45,7 +43,6 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser(null);
         localStorage.removeItem("userInfo");
-        delete axios.defaults.headers.common["Authorization"];
       }
       setLoading(false);
     });
@@ -62,10 +59,9 @@ export const AuthProvider = ({ children }) => {
     }
 
     const token = await userCredential.user.getIdToken();
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     
     // Use sync on login in case this is their first login after verifying email
-    const { data } = await axios.post("/api/auth/sync", { name: userCredential.user.displayName });
+    const { data } = await api.post("/auth/sync", { name: userCredential.user.displayName });
     setUser(data);
     localStorage.setItem("userInfo", JSON.stringify(data));
   };

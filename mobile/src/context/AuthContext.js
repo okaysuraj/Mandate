@@ -9,7 +9,8 @@ import {
   signOut, 
   onAuthStateChanged,
   sendEmailVerification,
-  updateProfile
+  updateProfile,
+  sendPasswordResetEmail
 } from "firebase/auth";
 
 const AuthContext = createContext();
@@ -85,6 +86,10 @@ export const AuthProvider = ({ children }) => {
     await signOut(auth);
   };
 
+  const resetPassword = async (email) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
   const updateUser = async (data) => {
     const updatedUser = { ...user, ...data };
     setUser(updatedUser);
@@ -92,7 +97,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, resetPassword, updateUser }}>
       {!loading && children}
     </AuthContext.Provider>
   );

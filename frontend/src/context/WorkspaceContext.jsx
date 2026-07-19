@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import { getWorkspaces, createWorkspace as apiCreateWorkspace, switchActiveWorkspace } from "../services/workspaceService";
 import { useAuth } from "./AuthContext";
 import toast from "react-hot-toast";
 
@@ -25,11 +25,11 @@ export const WorkspaceProvider = ({ children }) => {
 
   const fetchWorkspaces = async () => {
     try {
-      const { data } = await axios.get("/api/workspaces");
-      setWorkspaces(data);
+      const data = await getWorkspaces();
+      setWorkspaces(Array.isArray(data) ? data : []);
       
       if (user.activeWorkspace) {
-        const active = data.find(w => w._id === user.activeWorkspace);
+        const active = (Array.isArray(data) ? data : []).find(w => w._id === user.activeWorkspace);
         setActiveWorkspace(active || data[0]);
       } else if (data.length > 0) {
         setActiveWorkspace(data[0]);
@@ -43,7 +43,7 @@ export const WorkspaceProvider = ({ children }) => {
 
   const createWorkspace = async (name) => {
     try {
-      const { data } = await axios.post("/api/workspaces", { name });
+      const data = await apiCreateWorkspace({ name });
       setWorkspaces([...workspaces, data]);
       toast.success("Workspace created");
       return data;
@@ -55,11 +55,11 @@ export const WorkspaceProvider = ({ children }) => {
 
   const switchWorkspace = async (id) => {
     try {
-      const { data } = await axios.put(`/api/workspaces/${id}/active`);
+      const data = await switchActiveWorkspace(id);
       const newActive = workspaces.find(w => w._id === data.activeWorkspace);
       setActiveWorkspace(newActive);
       updateUser({ activeWorkspace: data.activeWorkspace });
-      toast.success(`Switched to ${newActive.name}`);
+      toast.success(`Switched to ${newActive?.name || 'workspace'}`);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to switch workspace");
     }

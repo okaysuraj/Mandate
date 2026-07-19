@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import AppLayout from "../components/AppLayout";
-import axios from "axios";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
+import { getProjects } from "../services/projectService";
 
 const ProjectsPage = () => {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const ProjectsPage = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const { data } = await axios.get("/api/projects", { params: { workspaceId: user?.activeWorkspace } });
+        const data = await getProjects({ workspaceId: user?.activeWorkspace });
         setProjects(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error(error);
@@ -241,12 +241,12 @@ const ProjectsPage = () => {
               <div key={project._id} className="flex items-start gap-md">
                 <div className={`w-2 h-2 rounded-full mt-2 ${project.priority === "urgent" ? "bg-error" : "bg-primary"}`}></div>
                 <div>
-                  <p className="text-sm font-bold">{task.title}</p>
-                  <p className="text-xs text-on-surface-variant truncate w-64">{task.description || "No description provided."}</p>
+                  <p className="text-sm font-bold">{project.title || project.name}</p>
+                  <p className="text-xs text-on-surface-variant truncate w-64">{project.description || "No description provided."}</p>
                 </div>
               </div>
             ))}
-            {tasks.filter(t => t.priority === "urgent" || t.priority === "high").length === 0 && (
+            {projects.filter(project => project.priority === "urgent" || project.priority === "high").length === 0 && (
               <p className="text-xs text-on-surface-variant">No critical timeline items found.</p>
             )}
           </div>

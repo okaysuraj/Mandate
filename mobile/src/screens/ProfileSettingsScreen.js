@@ -4,6 +4,7 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 
 const ToggleSwitch = ({ label, isEnabled, onToggle }) => {
   const { colors, typography } = useTheme();
@@ -24,6 +25,7 @@ const ToggleSwitch = ({ label, isEnabled, onToggle }) => {
 
 const ProfileSettingsScreen = ({ navigation }) => {
   const { colors, typography } = useTheme();
+  const { user } = useAuth();
   const [showKey, setShowKey] = useState(false);
 
   // Toggles
@@ -53,7 +55,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
         {/* Profile Header Module */}
         <View style={styles.profileHeader}>
           <View style={styles.profileInfo}>
-            <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>OPERATOR SETTINGS</Text>
+            <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{user?.name || "OPERATOR"} SETTINGS</Text>
             <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2, marginTop: 4 }]}>ID: MN-0982-X</Text>
           </View>
           <View style={[styles.avatar, { borderColor: colors.primary }]}>

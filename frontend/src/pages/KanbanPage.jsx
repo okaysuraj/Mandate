@@ -1,30 +1,22 @@
 import React, { useState, useEffect } from "react";
 import AppLayout from "../components/AppLayout";
 import KanbanBoard from "../components/KanbanBoard";
-import axios from "axios";
-import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
+import toast from "react-hot-toast";
+import { useDataStore } from "../store/useDataStore";
+import { deleteTask as apiDeleteTask } from "../services/taskService";
 
 const KanbanPage = () => {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { tasks, loading, loadTasks, moveTask } = useDataStore();
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const { data } = await axios.get("/api/tasks", { params: { limit: 100 } });
-        setTasks(data.data || []);
-      } catch (error) {
-        toast.error("Failed to load kanban tasks");
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (user) fetchTasks();
-  }, [user]);
+    if (user) {
+      loadTasks();
+    }
+  }, [user, loadTasks]);
 
   const handleEdit = (task) => {
     navigate(`/tasks/${task._id}`);
@@ -32,8 +24,8 @@ const KanbanPage = () => {
 
   const handleDelete = async (taskId) => {
     try {
-      await axios.delete(`/api/tasks/${taskId}`);
-      setTasks(tasks.filter(t => t._id !== taskId));
+      await apiDeleteTask(taskId);
+      loadTasks();
       toast.success("Task deleted");
     } catch (error) {
       toast.error("Failed to delete task");
@@ -42,8 +34,7 @@ const KanbanPage = () => {
 
   const handleStatusChange = async (taskId, newStatus) => {
     try {
-      await axios.put(`/api/tasks/${taskId}`, { status: newStatus });
-      setTasks(tasks.map(t => t._id === taskId ? { ...t, status: newStatus } : t));
+      await moveTask(taskId, newStatus);
     } catch (error) {
       toast.error("Failed to update status");
     }
@@ -96,7 +87,7 @@ const KanbanPage = () => {
           ) : (
             <KanbanBoard 
               tasks={tasks} 
-              setTasks={setTasks} 
+              setTasks={() => {}} // Local state override not needed since reorder calls loadTasks
               onEdit={handleEdit} 
               onDelete={handleDelete} 
               onStatusChange={handleStatusChange} 

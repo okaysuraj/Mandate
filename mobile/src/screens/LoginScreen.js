@@ -17,7 +17,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
 const LoginScreen = ({ navigation }) => {
-  const [employeeId, setEmployeeId] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -26,15 +26,13 @@ const LoginScreen = ({ navigation }) => {
   const { colors, typography, spacing, borderRadius } = useTheme();
 
   const handleLogin = async () => {
-    if (!employeeId || !password) return;
+    if (!email || !password) return;
     setLoading(true);
     try {
-      // In a real app, map employeeId to email if needed, or update backend to accept employeeId
-      // For now, assume employeeId is what login context expects, or format it as an email.
-      // Using employeeId directly for this UI migration.
-      await login(employeeId, password);
+      await login(email, password);
     } catch (error) {
-      // error handled in context
+      console.error(error);
+      alert(error.message);
     } finally {
       setLoading(false);
     }
@@ -94,9 +92,9 @@ const LoginScreen = ({ navigation }) => {
               {/* Employee ID Field */}
               <View style={styles.inputGroup}>
                 <View style={styles.labelRow}>
-                  <MaterialIcons name="badge" size={14} color={colors.secondary} />
+                  <MaterialIcons name="email" size={14} color={colors.secondary} />
                   <Text style={[typography.labelCaps, { color: colors.secondary, marginLeft: spacing.xs }]}>
-                    EMPLOYEE ID
+                    EMAIL ADDRESS
                   </Text>
                 </View>
                 <TextInput
@@ -112,11 +110,12 @@ const LoginScreen = ({ navigation }) => {
                       letterSpacing: 2
                     }
                   ]}
-                  placeholder="000-000-000"
+                  placeholder="operator@mandate.com"
                   placeholderTextColor={colors.outlineVariant}
-                  value={employeeId}
-                  onChangeText={setEmployeeId}
+                  value={email}
+                  onChangeText={setEmail}
                   autoCapitalize="none"
+                  keyboardType="email-address"
                 />
               </View>
 

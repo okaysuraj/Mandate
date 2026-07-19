@@ -1,29 +1,19 @@
 import React, { useState, useEffect } from "react";
 import AppLayout from "../components/AppLayout";
-import axios from "axios";
-import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
+import { useDataStore } from "../store/useDataStore";
 
 const TodayPage = () => {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { tasks, loading, loadTasks } = useDataStore();
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const { data } = await axios.get("/api/tasks", { params: { limit: 50 } });
-        setTasks(data.data || []);
-      } catch (error) {
-        toast.error("Failed to load tasks");
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (user) fetchTasks();
-  }, [user]);
+    if (user) {
+      loadTasks();
+    }
+  }, [user, loadTasks]);
 
   const today = new Date();
   const dayStr = today.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.');

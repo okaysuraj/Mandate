@@ -5,7 +5,8 @@ import { useAuth } from "../context/AuthContext";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { useSocket } from "../context/SocketContext";
 import { motion } from "framer-motion";
-import axios from "axios";
+import api from "../lib/axios";
+import { getCommentsForTask, addComment } from "../services/taskService";
 import toast from "react-hot-toast";
 import { X, Plus, MessageSquare, Paperclip, CheckSquare } from "lucide-react";
 
@@ -67,8 +68,8 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
   const fetchComments = async () => {
     if (!initialData?._id) return;
     try {
-      const { data } = await axios.get(`/api/comments/task/${initialData._id}`);
-      setComments(data);
+      const data = await getCommentsForTask(initialData._id);
+      setComments(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch comments", error);
     }
@@ -102,7 +103,7 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
     e.preventDefault();
     if (!newComment.trim() || !initialData) return;
     try {
-      const { data } = await axios.post(`/api/comments/task/${initialData._id}`, { content: newComment });
+      const data = await addComment(initialData._id, { content: newComment });
       setComments([data, ...comments]);
       setNewComment("");
     } catch (error) {
@@ -151,7 +152,7 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
     setUploading(true);
     try {
       // requires user authentication token in a real scenario
-      const { data } = await axios.post("/api/upload", formData, {
+      const { data } = await api.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       setAttachments([...attachments, data]);

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
-import axios from "axios";
+import api from "../lib/axios";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
+import { getTasks } from "../services/taskService";
 
 const InboxPage = () => {
   const { user } = useAuth();
@@ -15,12 +16,12 @@ const InboxPage = () => {
 
     const fetchInbox = async () => {
       try {
-        const [notificationsRes, tasksRes] = await Promise.all([
-          axios.get("/api/notifications"),
-          axios.get("/api/tasks", { params: { limit: 10 } }),
+        const [notificationsRes, tasksData] = await Promise.all([
+          api.get("/notifications"),
+          getTasks({ limit: 10 }),
         ]);
         setNotifications(notificationsRes.data || []);
-        setTasks(tasksRes.data?.data || []);
+        setTasks(Array.isArray(tasksData) ? tasksData : []);
       } catch (error) {
         console.error(error);
         toast.error("Failed to load inbox");
@@ -34,7 +35,7 @@ const InboxPage = () => {
 
   const markAllRead = async () => {
     try {
-      await axios.put("/api/notifications/read");
+      await api.put("/notifications/read");
       setNotifications((prev) => prev.map((item) => ({ ...item, isRead: true })));
       toast.success("Inbox updated");
     } catch (error) {
