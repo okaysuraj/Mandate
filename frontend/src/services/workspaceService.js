@@ -19,3 +19,8 @@ export const updateWorkspace = async (id, workspaceData) => {
   const { data } = await api.put(`/workspaces/${id}`, workspaceData);
   return data;
 };
+
+export const switchActiveWorkspace = async (workspaceId) => {
+  const { data } = await api.put(`/workspaces/${workspaceId}/active`);
+  return data;
+};
