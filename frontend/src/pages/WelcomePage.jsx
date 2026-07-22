@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import Footer from '../components/Footer';
 
 const WelcomePage = () => {
   const navigate = useNavigate();
@@ -257,21 +258,7 @@ const WelcomePage = () => {
         </form>
       </main>
 
-      {/* Footer */}
-      <footer className="w-full py-xl px-lg mt-auto flex flex-col md:flex-row justify-between items-center gap-md border-t border-outline-variant bg-surface-container-low relative z-10">
-        <div className="font-label-caps text-label-caps font-bold text-primary">
-          MANDATE
-        </div>
-        <div className="flex gap-lg">
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Privacy Policy</Link>
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Terms of Service</Link>
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Legal</Link>
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Security</Link>
-        </div>
-        <p className="font-label-caps text-label-caps text-on-surface-variant">
-          © 2024 MANDATE INDUSTRIAL SYSTEMS. ALL RIGHTS RESERVED.
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 };

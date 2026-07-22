@@ -43,7 +43,7 @@ export const addProject = async (req, res) => {
 // @access  Private
 export const updateProfile = async (req, res) => {
   try {
-    const { name, timezone, preferences } = req.body;
+    const { name, avatar, timezone, preferences } = req.body;
     
     const user = await User.findById(req.user.id);
     if (!user) {
@@ -51,6 +51,7 @@ export const updateProfile = async (req, res) => {
     }
 
     if (name !== undefined) user.name = name;
+    if (avatar !== undefined) user.avatar = avatar;
     if (timezone !== undefined) user.timezone = timezone;
     
     if (preferences) {
@@ -68,6 +69,7 @@ export const updateProfile = async (req, res) => {
       _id: user.id,
       name: user.name,
       email: user.email,
+      avatar: user.avatar,
       timezone: user.timezone,
       preferences: user.preferences,
       projects: user.projects,

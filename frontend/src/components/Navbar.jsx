@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { useState, useEffect, useRef } from "react";
+import NotificationBell from "./NotificationBell";
+import GlobalSearchBar from "./GlobalSearchBar";
 
-const Navbar = ({ variant = "app" }) => {
+const Navbar = ({ variant = "app", onToggleSidebar }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -71,16 +73,18 @@ const Navbar = ({ variant = "app" }) => {
                   {isDarkMode ? 'light_mode' : 'dark_mode'}
                 </span>
               </button>
-              <button className="p-sm rounded-full hover:bg-surface-container-low transition-colors duration-200">
-                <span className="material-symbols-outlined text-primary">notifications</span>
-              </button>
+              <NotificationBell />
               <div className="relative" ref={dropdownRef}>
                 <button 
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant"
+                  className="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant cursor-pointer"
                 >
-                  <div className="w-full h-full bg-surface-container-high flex items-center justify-center">
-                    <span className="material-symbols-outlined text-on-surface-variant text-[20px]">person</span>
+                  <div className="w-full h-full bg-surface-container-high flex items-center justify-center overflow-hidden">
+                    {user?.avatar ? (
+                      <img src={user.avatar} alt={user?.name || "User Avatar"} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="material-symbols-outlined text-on-surface-variant text-[20px]">person</span>
+                    )}
                   </div>
                 </button>
                 {dropdownOpen && (
@@ -125,42 +129,35 @@ const Navbar = ({ variant = "app" }) => {
     );
   }
 
-  // App variant — top bar for pages with sidebar or top+sidebar layout
+  // App variant — locked top bar for pages with sidebar layout
   return (
-    <header className="flex justify-between items-center px-lg w-full h-16 sticky top-0 z-50 bg-background border-b border-surface-variant">
-      <div className="flex items-center gap-md">
-        <span className="font-display-lg text-headline-lg font-black tracking-tighter text-primary">MANDATE</span>
-        <div className="hidden md:flex gap-md ml-lg">
-          <nav className="flex gap-gutter">
-            <Link to="/dashboard" className="text-primary font-bold border-b-2 border-primary py-4 cursor-pointer transition-all duration-150">Command</Link>
-            <Link to="/projects" className="text-on-surface-variant font-medium hover:text-primary py-4 transition-all duration-150">Fleet</Link>
-            <Link to="/goals" className="text-on-surface-variant font-medium hover:text-primary py-4 transition-all duration-150">Resources</Link>
-            <Link to="/settings" className="text-on-surface-variant font-medium hover:text-primary py-4 transition-all duration-150">Safety</Link>
-          </nav>
-        </div>
+    <header className="fixed top-0 left-0 right-0 h-16 z-50 bg-background border-b border-surface-variant flex justify-between items-center px-lg">
+      <div className="flex items-center gap-sm">
+        <button 
+          onClick={onToggleSidebar}
+          className="p-sm rounded-md hover:bg-surface-container-low text-primary transition-colors cursor-pointer flex items-center justify-center active:scale-95"
+          title="Toggle Sidebar"
+        >
+          <span className="material-symbols-outlined text-[24px]">menu</span>
+        </button>
+        <Link to="/" className="font-display-lg text-headline-lg font-black tracking-tighter text-primary hover:opacity-90 transition-opacity">
+          MANDATE
+        </Link>
       </div>
-      <div className="flex items-center gap-md">
-        <div className="hidden md:flex items-center bg-surface-container-low px-md py-sm rounded-full">
-          <span className="material-symbols-outlined text-outline text-[18px]">search</span>
-          <input className="bg-transparent border-none focus:ring-0 font-label-sm text-sm ml-sm w-48 outline-none placeholder:text-outline" placeholder="Global Search" type="text" />
-        </div>
-        <div className="flex items-center gap-sm">
-          <button 
-            onClick={toggleDarkMode}
-            className="p-sm rounded-full hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80"
-          >
-            <span className="material-symbols-outlined text-primary">{isDarkMode ? 'light_mode' : 'dark_mode'}</span>
-          </button>
-          <button className="p-sm rounded-full hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80">
-            <span className="material-symbols-outlined text-primary">terminal</span>
-          </button>
-          <button className="p-sm rounded-full hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80">
-            <span className="material-symbols-outlined text-primary">settings</span>
-          </button>
-          <button className="p-sm rounded-full hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80">
-            <span className="material-symbols-outlined text-primary">notifications</span>
-          </button>
-        </div>
+
+      {/* Global Search Bar taking ~50% width */}
+      <GlobalSearchBar />
+
+      {/* Right controls: ONLY Dark Mode toggle and Notification Icon */}
+      <div className="flex items-center gap-sm">
+        <button 
+          onClick={toggleDarkMode}
+          className="p-sm rounded-full hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80 flex items-center justify-center"
+          title="Toggle Theme"
+        >
+          <span className="material-symbols-outlined text-primary">{isDarkMode ? 'light_mode' : 'dark_mode'}</span>
+        </button>
+        <NotificationBell />
       </div>
     </header>
   );

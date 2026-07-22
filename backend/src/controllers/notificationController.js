@@ -22,3 +22,21 @@ export const markAsRead = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+export const deleteNotification = async (req, res) => {
+  try {
+    await Notification.deleteOne({ _id: req.params.id, user: req.user.id });
+    res.json({ message: "Notification deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export const clearAllNotifications = async (req, res) => {
+  try {
+    await Notification.deleteMany({ user: req.user.id });
+    res.json({ message: "All notifications cleared" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};

@@ -1,7 +1,8 @@
-<h1 align="center">🏢 Mandate - Enterprise Team Workspace</h1>
+<h1 align="center">🏢 Mandate - Your Classic ToDo App</h1>
 
 <p align="center">
-  <strong>The ultimate MERN stack task management, calendar, and collaboration platform.</strong>
+  <strong>The ultimate MERN stack task management, calendar, and collaboration platform.</strong><br/>
+  <a href="https://mandateapp.netlify.app"><strong>🔴 Live Demo</strong></a>
 </p>
 
 ## ✨ Highlights
@@ -15,17 +16,6 @@ Mandate goes beyond simple to-do lists, providing a comprehensive, real-time wor
 - 📅 **Integrated Calendar:** Manage events, meetings, and deadlines in a sleek monthly interface.
 - 🧪 **Fully Tested:** Comprehensive automated backend API and frontend Playwright E2E test suites.
 - 🎨 **Premium UI/UX:** Responsive, dark-mode enabled interface built with Tailwind CSS, DaisyUI, and Framer Motion.
-
----
-
-## 📖 Documentation
-
-For detailed technical specifications, APIs, and deployment instructions, see our comprehensive `docs/` folder:
-
-- [Architecture Overview](docs/ARCHITECTURE.md) - System design and database schema.
-- [API Reference](docs/API_REFERENCE.md) - REST endpoints and WebSocket events.
-- [Testing Guide](docs/TESTING.md) - Running unit, integration, and E2E tests.
-- [Deployment Guide](docs/DEPLOYMENT.md) - Step-by-step production hosting via Netlify and Render.
 
 ---
 
@@ -43,7 +33,6 @@ npm install
 # Create a .env file with:
 # PORT=5001
 # MONGO_URI=your_mongo_connection_string
-# JWT_SECRET=your_secret_key
 
 npm run dev
 ```
@@ -94,7 +83,6 @@ This guide details how to deploy the Mandate platform in a robust production env
    - **Start Command:** `npm start` (Make sure `start` is mapped to `node src/server.js` in `backend/package.json`)
 5. **Environment Variables:**
    - `MONGO_URI` = `<Your MongoDB String>`
-   - `JWT_SECRET` = `<Generate a secure random string>`
    - `PORT` = `10000`
 6. Click **Deploy**. Once finished, copy the provided `onrender.com` URL.
 

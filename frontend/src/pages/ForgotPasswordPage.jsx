@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import Footer from "../components/Footer";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
@@ -143,17 +144,7 @@ const ForgotPasswordPage = () => {
         </div>
       </main>
 
-      {/* Footer Component Logic */}
-      <footer className="w-full py-xl px-lg mt-auto flex flex-col md:flex-row justify-between items-center gap-md bg-surface-container-low border-t border-outline-variant">
-        <div className="font-label-caps text-label-caps font-bold text-primary tracking-widest">MANDATE</div>
-        <div className="flex gap-lg">
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline decoration-1 transition-all duration-300">Privacy Policy</Link>
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline decoration-1 transition-all duration-300">Terms of Service</Link>
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline decoration-1 transition-all duration-300">Legal</Link>
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline decoration-1 transition-all duration-300">Security</Link>
-        </div>
-        <div className="font-label-caps text-label-caps text-on-surface-variant">© 2024 MANDATE INDUSTRIAL SYSTEMS. ALL RIGHTS RESERVED.</div>
-      </footer>
+      <Footer />
     </div>
   );
 };

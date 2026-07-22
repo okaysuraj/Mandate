@@ -199,7 +199,7 @@ const AutomationsPage = () => {
                 <tbody className="divide-y divide-outline-variant/30">
                   {automations.map((automation, idx) => (
                     <tr key={automation._id} className="hover:bg-surface-container-low transition-colors group">
-                      <td className="px-md py-md text-primary font-bold text-sm">#AC-{(automation._id || String(idx)).substring(0,4).toUpperCase()}</td>
+                      <td className="px-md py-md text-primary font-bold text-sm">#AC-{String(automation._id || idx).slice(0, 4).toUpperCase()}</td>
                       <td className="px-md py-md">
                         <div className="font-bold text-sm uppercase">{automation.name}</div>
                         <div className="text-[10px] text-on-surface-variant opacity-60 font-label-caps mt-1">ACTION: {automation.action} -&gt; {automation.actionValue}</div>

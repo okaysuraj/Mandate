@@ -151,7 +151,7 @@ const TeamSettingsPage = () => {
                   {criticalTasks.length > 0 ? (
                     criticalTasks.map((task, idx) => (
                       <tr key={task._id || idx} className="group hover:bg-surface-container-low transition-colors">
-                        <td className="py-md font-label-sm text-label-sm opacity-60">#{String(task._id).substring(18).toUpperCase()}</td>
+                        <td className="py-md font-label-sm text-label-sm opacity-60">#{String(task._id || task.id || idx).slice(-6).toUpperCase()}</td>
                         <td className="py-md font-bold truncate max-w-[150px]">{task.title}</td>
                         <td className="py-md">
                           <span className={`px-md py-xs rounded-full font-label-caps text-[9px] font-bold ${task.status === 'completed' ? 'bg-tertiary-container text-on-tertiary-container' : 'bg-surface-container-high'}`}>

@@ -8,18 +8,16 @@ const api = axios.create({
   baseURL: BASE_URL,
 });
 
-api.interceptors.request.use(
-  async (config) => {
-    const user = auth.currentUser;
-    if (user) {
-      const token = await user.getIdToken();
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+const attachAuthToken = async (config) => {
+  const user = auth.currentUser;
+  if (user) {
+    const token = await user.getIdToken();
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+};
+
+api.interceptors.request.use(attachAuthToken, (error) => Promise.reject(error));
+axios.interceptors.request.use(attachAuthToken, (error) => Promise.reject(error));
 
 export default api;

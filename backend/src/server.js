@@ -20,6 +20,7 @@ import goalRoutes from "./routes/goalRoutes.js";
 import automationRoutes from "./routes/automationRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import stripeRoutes from "./routes/stripeRoutes.js";
+import searchRoutes from "./routes/searchRoutes.js";
 import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import { initReminderService } from "./services/reminderService.js";
@@ -96,6 +97,7 @@ app.use("/api/goals", goalRoutes);
 app.use("/api/automations", automationRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/stripe", stripeRoutes);
+app.use("/api/search", searchRoutes);
 
 app.get("/", (req, res) => {
   res.send("Mandate API is running...");

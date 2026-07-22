@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AppLayout from "../components/AppLayout";
-import axios from "axios";
+import api from "../lib/axios";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
@@ -16,7 +16,7 @@ const HomePage = () => {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get("/api/tasks", { params: { limit: 100 } });
+      const { data } = await api.get("/tasks", { params: { limit: 100 } });
       setTasks(data.data || []);
       
       // const burnoutRes = await axios.get("/api/ai/burnout");

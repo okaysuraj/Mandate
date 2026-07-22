@@ -1,5 +1,10 @@
 import { Route, Routes } from "react-router";
 
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
+import LegalPage from "./pages/LegalPage";
+import SecurityPage from "./pages/SecurityPage";
+
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -129,6 +134,10 @@ const App = () => {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/" element={<LandingPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/legal" element={<LegalPage />} />
+        <Route path="/security" element={<SecurityPage />} />
         
         {/* Protected Core Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />

@@ -149,7 +149,7 @@ const CalendarPage = () => {
                 <div className="py-md border-b border-surface-variant">
                   <div className="flex items-center gap-sm mb-xs">
                     <span className="px-sm py-1 bg-primary text-on-primary text-[10px] font-label-caps rounded-sm">MANDATE</span>
-                    <span className="font-label-sm text-label-sm text-on-surface-variant">ID: {String(selectedTasks[0].task._id).substring(18).toUpperCase()}</span>
+                    <span className="font-label-sm text-label-sm text-on-surface-variant">ID: {String(selectedTasks[0]?.task?._id || selectedTasks[0]?.task?.id || "0000").slice(-6).toUpperCase()}</span>
                   </div>
                   <h4 className="font-headline-lg text-primary text-xl">{selectedTasks[0].label}</h4>
                 </div>

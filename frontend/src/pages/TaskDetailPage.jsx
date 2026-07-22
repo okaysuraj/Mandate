@@ -66,7 +66,7 @@ const TaskDetailPage = () => {
                 Initiated: {new Date(task.createdAt || Date.now()).toLocaleDateString('en-GB', { month: 'short', day: '2-digit', year: 'numeric' })} | 08:42 UTC
               </span>
             </div>
-            <h2 className="font-display-lg text-display-lg text-primary uppercase">MND-{task._id.substring(task._id.length - 4)}</h2>
+            <h2 className="font-display-lg text-display-lg text-primary uppercase">MND-{String(task._id || task.id || "0000").slice(-4).toUpperCase()}</h2>
             <p className="font-headline-lg text-headline-lg text-on-surface-variant max-w-2xl">{task.title}</p>
             {task.description && <p className="font-body-md text-on-surface-variant mt-sm max-w-3xl">{task.description}</p>}
           </div>
@@ -234,7 +234,7 @@ const TaskDetailPage = () => {
         <div className="bg-surface border border-outline-variant h-[400px] relative overflow-hidden group">
           <div className="absolute top-lg left-lg z-10 p-md bg-surface/80 backdrop-blur-md border border-outline-variant max-w-xs">
             <p className="font-label-caps text-label-caps mb-xs">Spatial Context</p>
-            <p className="font-label-sm text-label-sm text-on-surface-variant">Real-time overlay of Mandate MND-{task._id.substring(task._id.length - 4)} across Facility West. Hover for node details.</p>
+            <p className="font-label-sm text-label-sm text-on-surface-variant">Real-time overlay of Mandate MND-{String(task._id || task.id || "0000").slice(-4).toUpperCase()} across Facility West. Hover for node details.</p>
           </div>
           <div className="w-full h-full bg-surface-container-low flex items-center justify-center">
             <div className="w-full h-full bg-cover bg-center grayscale opacity-60 mix-blend-multiply group-hover:scale-105 transition-transform duration-1000" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80')" }}></div>

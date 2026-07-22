@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    avatar: {
+      type: String,
+      default: "",
+    },
     timezone: {
       type: String,
       default: "UTC",

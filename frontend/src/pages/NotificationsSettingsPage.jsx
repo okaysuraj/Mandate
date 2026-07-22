@@ -15,33 +15,33 @@ const NotificationsSettingsPage = () => {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl space-y-lg">
+      <div className="max-w-4xl pt-xl md:pt-2xl space-y-xl pb-2xl">
         <div>
-          <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Communication</p>
-          <h1 className="font-headline-lg text-headline-lg text-primary">Notifications</h1>
+          <p className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest mb-xs">Preferences</p>
+          <h1 className="font-headline-lg text-headline-lg text-primary font-black uppercase">Notification Preferences</h1>
         </div>
 
-        <div className="bg-surface-container-lowest border border-outline-variant p-lg space-y-md">
+        <div className="bg-surface-container-lowest border border-outline-variant p-xl space-y-lg">
           {[
-            { key: "email", label: "Email updates", description: "Receive transactional and weekly summary emails." },
-            { key: "push", label: "Push notifications", description: "Alerts on mobile and desktop." },
-            { key: "digest", label: "Daily digest", description: "A concise recap of your agenda each morning." },
+            { key: "email", label: "Email Updates", description: "Receive task assignments, mentions, and weekly summary emails." },
+            { key: "push", label: "Push Notifications", description: "Receive instant alert notifications on mobile and desktop." },
+            { key: "digest", label: "Daily Summary Email", description: "A concise morning recap of your due tasks and daily agenda." },
           ].map((item) => (
             <div key={item.key} className="flex items-center justify-between border-b border-outline-variant pb-md">
               <div>
                 <p className="font-body-md font-bold text-primary">{item.label}</p>
-                <p className="text-on-surface-variant">{item.description}</p>
+                <p className="text-on-surface-variant text-sm">{item.description}</p>
               </div>
               <button
                 onClick={() => toggle(item.key)}
-                className={`px-md py-2 rounded-full ${options[item.key] ? "bg-primary text-on-primary" : "border border-outline-variant"}`}
+                className={`px-md py-2 rounded-full font-label-caps text-xs transition-colors cursor-pointer ${options[item.key] ? "bg-primary text-on-primary" : "border border-outline-variant text-on-surface-variant"}`}
               >
                 {options[item.key] ? "On" : "Off"}
               </button>
             </div>
           ))}
-          <button onClick={() => toast.success("Notification settings saved")} className="bg-primary text-on-primary px-md py-2 rounded-full">
-            Save preferences
+          <button onClick={() => toast.success("Notification preferences saved")} className="bg-primary text-on-primary px-xl py-md rounded-full font-label-caps text-label-caps hover:opacity-90 cursor-pointer">
+            Save Preferences
           </button>
         </div>
       </div>

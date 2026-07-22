@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
+import Footer from "../components/Footer";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +18,7 @@ const LoginPage = () => {
       await login(email, password);
       navigate("/dashboard");
     } catch (err) {
-      // error handled in auth context
+      toast.error(err.message || "Failed to log in");
     } finally {
       setLoading(false);
     }
@@ -31,7 +33,7 @@ const LoginPage = () => {
             <div className="relative z-10">
               <h1 className="font-display-lg text-display-lg text-primary mb-md tracking-tighter">MANDATE</h1>
               <p className="font-body-md text-body-md text-on-surface-variant max-w-md">
-                High-precision industrial infrastructure management. Secure access point for authorized personnel only. Ensure your credentials remain confidential.
+                Ensure your credentials remain confidential.
               </p>
             </div>
             {/* Abstract Technical Visual */}
@@ -43,13 +45,6 @@ const LoginPage = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent"></div>
             </div>
             <div className="flex justify-between items-end relative z-10 mt-md">
-              <div className="flex gap-sm">
-                <span className="font-label-caps text-label-caps px-sm py-xs bg-primary text-on-primary rounded-sm">V.4.2.0</span>
-                <span className="font-label-caps text-label-caps px-sm py-xs border border-outline text-on-surface-variant rounded-sm">SECURE_NODE</span>
-              </div>
-              <div className="font-label-caps text-label-caps text-on-surface-variant tracking-widest">
-                INDUSTRIAL SYSTEMS
-              </div>
             </div>
           </div>
 
@@ -57,7 +52,7 @@ const LoginPage = () => {
           <div className="col-span-12 md:col-span-5 bg-surface-container-lowest border border-outline-variant rounded-lg p-lg md:p-xl flex flex-col justify-center relative">
             <div className="mb-xl">
               <h2 className="font-headline-lg text-headline-lg text-primary mb-xs font-bold tracking-tight">Login</h2>
-              <p className="font-body-md text-body-md text-on-surface-variant">Enter your workstation details.</p>
+              <p className="font-body-md text-body-md text-on-surface-variant">Enter your credentials</p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-lg">
               <div className="space-y-xs group">
@@ -65,14 +60,14 @@ const LoginPage = () => {
                   htmlFor="email"
                   className="font-label-caps text-label-caps text-secondary transition-colors group-focus-within:text-primary"
                 >
-                  Employee Email
+                  User Email
                 </label>
                 <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="operator@mandate.systems"
+                  placeholder="username@email.com"
                   className="w-full bg-transparent border-b border-surface-dim py-[12px] font-label-sm text-label-sm text-primary placeholder:text-outline-variant focus:outline-none focus:border-primary focus:border-b-2 transition-all rounded-none"
                   required
                 />
@@ -112,7 +107,7 @@ const LoginPage = () => {
                     </>
                   ) : (
                     <>
-                      ACCESS SYSTEM
+                      Login
                       <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                     </>
                   )}
@@ -123,34 +118,21 @@ const LoginPage = () => {
               <div className="flex items-center gap-sm p-md bg-surface-container-low rounded-md border border-outline-variant/30">
                 <span className="material-symbols-outlined text-on-tertiary-container" style={{ fontVariationSettings: "'FILL' 1" }}>verified_user</span>
                 <div>
-                  <p className="font-label-caps text-label-caps text-primary leading-none">Encrypted Session</p>
-                  <p className="font-label-sm text-label-sm text-on-surface-variant mt-1">End-to-end TLS 1.3 protocol active.</p>
+                  <p className="font-label-caps text-label-caps text-primary leading-none">Secure Session | AES-256 Encryption</p>
                 </div>
               </div>
             </div>
             <div className="mt-lg text-center">
               <span className="font-label-sm text-label-sm text-on-surface-variant">
                 No credentials?{" "}
-                <Link to="/register" className="text-primary font-bold hover:underline">REQUEST ACCESS</Link>
+                <Link to="/register" className="text-primary font-bold hover:underline">Signup Here</Link>
               </span>
             </div>
           </div>
         </div>
       </main>
 
-      {/* Footer Component Integration */}
-      <footer className="w-full py-xl px-lg mt-auto flex flex-col md:flex-row justify-between items-center gap-md bg-surface-container-low border-t border-outline-variant">
-        <div className="font-label-caps text-label-caps font-bold text-primary tracking-widest">MANDATE</div>
-        <div className="flex gap-lg">
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline decoration-1 transition-all duration-300">Privacy Policy</Link>
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline decoration-1 transition-all duration-300">Terms of Service</Link>
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline decoration-1 transition-all duration-300">Legal</Link>
-          <Link to="#" className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline decoration-1 transition-all duration-300">Security</Link>
-        </div>
-        <div className="font-label-caps text-label-caps text-on-surface-variant">
-          © 2024 MANDATE INDUSTRIAL SYSTEMS. ALL RIGHTS RESERVED.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
