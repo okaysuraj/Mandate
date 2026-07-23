@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>The ultimate MERN stack task management, calendar, and collaboration platform.</strong><br/>
-  <a href="https://mandateapp.netlify.app"><strong>🔴 Live Demo</strong></a>
+  <a href="https://mandateapp.netlify.app"><strong>https://mandateapp.netlify.app</strong></a>
 </p>
 
 ## ✨ Highlights
