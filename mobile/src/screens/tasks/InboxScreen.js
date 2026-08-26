@@ -7,54 +7,14 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 import { useDataStore } from "../../store/useDataStore";
 
-const MOCK_MESSAGES = [
-  {
-    id: '1',
-    type: 'PROTOCOL ALERT',
-    typeColor: 'error',
-    time: '08:42 AM',
-    title: 'Kernel Integrity Shift Detected',
-    snippet: 'Telemetry report #9928 indicates a non-standard entropy shift in Sector 7-B. Immediate verification required.',
-    senderIcon: 'bolt',
-    sender: 'SYSTEM MONITOR',
-    read: false,
-    content: {
-      location: 'SECTOR 7-B CORE',
-      log: '[08:42:00] LOG: START KERNEL_SCAN\n[08:42:01] ERR: ENTROPY_VAL_LIMIT_EXCEEDED\n[08:42:01] ADDR: 0x7FF-0000-A21\n[08:42:01] STATE: CRITICAL_SHIFTER\n[08:42:01] DUMP: 44 f3 a2 b1 00 ff ee ...'
-    }
-  },
-  {
-    id: '2',
-    type: 'TEAM MENTION',
-    typeColor: 'onTertiaryContainer',
-    time: 'YESTERDAY',
-    title: 'Asset Reallocation: Forge-9',
-    snippet: '@User, please confirm the throughput adjustments for the automated smelting units before the shift end.',
-    senderAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDSXLajf-zKXTbqNtN7mMfIpCNIgluEFxTCve7nWjKIG6EVvGMgm9ELkwZDJdmZj2F487vIWxG4F_Z8N-SGDHZOr5hV3FSew9yN4twhG5JzYfD628IvLl386NdRIxuhooNfwiGoA0ryr6rcGMGrPmubeupEPftm-O1KvSeGnOqX7w7ypP0aDaHtPZ7nNT6ctKv2OJ4OUMDYETHTHW_nQc2HJ1OUFktLsuDvI4cAsEKxlOsABpy1FMeseQ',
-    sender: 'SARAH CHEN',
-    read: true,
-  },
-  {
-    id: '3',
-    type: 'SYSTEM UPDATE',
-    typeColor: 'secondary',
-    time: 'YESTERDAY',
-    title: 'Weekly Diagnostics Summary',
-    snippet: 'All primary systems operating within nominal parameters. 3 secondary nodes scheduled for maintenance.',
-    senderIcon: 'settings',
-    sender: 'CORE OS',
-    read: true,
-  }
-];
-
 const InboxScreen = ({ navigation }) => {
   const { colors, typography, spacing, borderRadius } = useTheme();
   const { notifications } = useDataStore(state => state);
   const [selectedFilter, setSelectedFilter] = useState('ALL');
   const [selectedMessage, setSelectedMessage] = useState(null);
-
-  // Use store notifications if available, else fallback to mock for UI dev
-  const displayMessages = notifications?.length > 0 ? notifications : MOCK_MESSAGES;
+  
+  // Use store notifications natively
+  const displayMessages = notifications || [];
 
   const filters = ['ALL', 'ALERTS', 'MENTIONS', 'SYSTEM'];
 

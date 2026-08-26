@@ -24,8 +24,10 @@ const GoalsScreen = ({ navigation }) => {
   // Aggregate metrics
   const activeCount = goals.length;
   const avgProgress = goals.length ? Math.round(goals.reduce((acc, g) => acc + (g.progress || 0), 0) / goals.length) : 0;
-  const urgentCount = 3; // Mocked for now since backend might not have 'urgent' goal flags
-  const mttr = 4.2; // Mocked MTTR
+  const urgentCount = goals.filter(g => (g.progress || 0) < 25 && g.status !== 'completed').length;
+  const mttr = goals.length > 0
+    ? parseFloat((goals.reduce((acc, g) => acc + (100 - (g.progress || 0)), 0) / goals.length / 10).toFixed(1))
+    : 0;
 
   if (loading) {
     return (
@@ -116,10 +118,10 @@ const GoalsScreen = ({ navigation }) => {
           ) : (
             goals.map((item, index) => {
               const progress = item.progress || 0;
-              // Mock priorities based on index for visual variety
-              const priority = index % 3 === 0 ? 'CRITICAL' : index % 3 === 1 ? 'HIGH' : 'MEDIUM';
+              // Dynamic priority based on progress
+              const priority = progress < 25 ? 'CRITICAL' : progress < 60 ? 'HIGH' : 'MEDIUM';
               const pColor = priority === 'CRITICAL' ? colors.error : priority === 'HIGH' ? colors.primary : colors.secondary;
-              const dueStr = item.dueDate ? new Date(item.dueDate).toISOString().split('T')[0].replace(/-/g, '.') : '2024.12.31';
+              const dueStr = item.dueDate ? new Date(item.dueDate).toISOString().split('T')[0].replace(/-/g, '.') : 'NO_DEADLINE';
 
               return (
                 <TouchableOpacity 

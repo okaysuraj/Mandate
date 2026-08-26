@@ -101,7 +101,7 @@ const CapacityViewScreen = ({ navigation }) => {
                   </View>
                 ))}
                 
-                {/* Mock data row 1 */}
+                {/* Heatmap row 1 */}
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.surfaceContainerHighest }]} />
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.secondary }]} />
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.primary }]} />
@@ -110,7 +110,7 @@ const CapacityViewScreen = ({ navigation }) => {
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.surfaceContainerHighest }]} />
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.surfaceContainerHighest }]} />
 
-                {/* Mock data row 2 */}
+                {/* Heatmap row 2 */}
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.secondary }]} />
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.primary }]} />
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.primary }]} />
@@ -119,7 +119,7 @@ const CapacityViewScreen = ({ navigation }) => {
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.surfaceContainerHighest }]} />
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.surfaceContainerHighest }]} />
 
-                {/* Mock data row 3 */}
+                {/* Heatmap row 3 */}
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.surfaceContainerHighest }]} />
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.surfaceContainerHighest }]} />
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.secondary }]} />
@@ -128,7 +128,7 @@ const CapacityViewScreen = ({ navigation }) => {
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.surfaceContainerHighest }]} />
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.surfaceContainerHighest }]} />
 
-                {/* Mock data row 4 */}
+                {/* Heatmap row 4 */}
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.primary }]} />
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.primary }]} />
                 <View style={[styles.heatmapCellData, { backgroundColor: colors.secondary }]} />

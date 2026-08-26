@@ -4,12 +4,6 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router";
 import { useDataStore } from "../../store/useDataStore";
 
-const DEFAULT_TODAY_TASKS = [
-  { _id: "650a11111111111111111101", title: "API Gateway Authentication Protocol", status: "in-progress", priority: "urgent", description: "Configure OAuth2 token verification across microservices", dueDate: new Date().toISOString() },
-  { _id: "650a11111111111111111102", title: "Database Indexing Optimization", status: "pending", priority: "high", description: "Add compound index to task schema for query acceleration", dueDate: new Date(Date.now() + 3600000).toISOString() },
-  { _id: "650a11111111111111111103", title: "Global Search Dynamic Debounce", status: "completed", priority: "medium", description: "Tune input debouncing to 200ms for smooth live search", dueDate: new Date(Date.now() + 7200000).toISOString() },
-];
-
 const TodayPage = () => {
   const { tasks, loading, loadTasks } = useDataStore();
   const { user } = useAuth();
@@ -21,7 +15,7 @@ const TodayPage = () => {
     }
   }, [user, loadTasks]);
 
-  const activeTasks = Array.isArray(tasks) && tasks.length > 0 ? tasks : DEFAULT_TODAY_TASKS;
+  const activeTasks = Array.isArray(tasks) ? tasks : [];
 
   const today = new Date();
   const dayStr = today.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.');

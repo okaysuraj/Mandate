@@ -215,18 +215,24 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
                 </select>
               </div>
 
-              {/* Project (Mocked for now) */}
-              <div className="flex items-center bg-zinc-50 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/10 p-1 px-3">
-                <Folder className="w-4 h-4 text-zinc-500 dark:text-zinc-400 mr-2" />
-                <select 
-                  value={projectId}
-                  onChange={e => setProjectId(e.target.value)}
-                  className="bg-transparent text-sm text-black dark:text-white focus:outline-none appearance-none pr-4"
-                >
-                  <option value="" className="bg-white dark:bg-[#0f0f0f]">No Project</option>
-                  {/* Dynamic projects would go here */}
-                </select>
-              </div>
+              {/* Project Selection */}
+              {user?.projects?.length > 0 && (
+                <div className="flex items-center bg-zinc-50 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/10 p-1 px-3">
+                  <Folder className="w-4 h-4 text-zinc-500 dark:text-zinc-400 mr-2" />
+                  <select 
+                    value={projectId}
+                    onChange={e => setProjectId(e.target.value)}
+                    className="bg-transparent text-sm text-black dark:text-white focus:outline-none appearance-none pr-4"
+                  >
+                    <option value="" className="bg-white dark:bg-[#0f0f0f]">No Project</option>
+                    {user.projects.map((proj, idx) => (
+                      <option key={idx} value={proj} className="bg-white dark:bg-[#0f0f0f]">
+                        {proj}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Assignee */}
               {workspaceMembers.length > 0 && (

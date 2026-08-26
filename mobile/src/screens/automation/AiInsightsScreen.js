@@ -1,27 +1,53 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image 
+  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Animated, ActivityIndicator 
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence } from 'react-native-reanimated';
+import { useDataStore } from "../../store/useDataStore";
+import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
+import { API_URL } from "../../config/config";
 
 const AiInsightsScreen = ({ navigation }) => {
   const { colors, typography } = useTheme();
+  const { user } = useAuth();
+  const { tasks } = useDataStore(state => state);
+  
+  const [insightData, setInsightData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Pulse effect for live indicator
-  const liveOpacity = useSharedValue(0.7);
+  const liveOpacity = useRef(new Animated.Value(0.7)).current;
+
   useEffect(() => {
-    liveOpacity.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1000 }),
-        withTiming(0.7, { duration: 1000 })
-      ),
-      -1,
-      true
-    );
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(liveOpacity, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        Animated.timing(liveOpacity, { toValue: 0.7, duration: 1000, useNativeDriver: true }),
+      ])
+    ).start();
   }, []);
-  const animatedLiveStyle = useAnimatedStyle(() => ({ opacity: liveOpacity.value }));
+
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        const { data } = await axios.get(`${API_URL}/api/ai/detect-burnout`);
+        setInsightData(data);
+      } catch (error) {
+        console.warn('Failed to fetch AI insights', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user) fetchInsights();
+  }, [user]);
+
+  const bottleneckTasks = tasks.filter(t => (t.priority === 'urgent' || t.priority === 'high') && t.status !== 'completed').slice(0, 3);
+  
+  // Calculate dynamic consistency score based on completed tasks
+  const completedCount = tasks.filter(t => t.status === 'completed').length;
+  const consistencyScore = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 100;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -29,7 +55,7 @@ const AiInsightsScreen = ({ navigation }) => {
       <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
         <View style={styles.headerLeft}>
           <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
-            <MaterialIcons name="account-circle" size={24} color={colors.primary} />
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
           <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 8 }]}>
             MANDATE
@@ -49,7 +75,7 @@ const AiInsightsScreen = ({ navigation }) => {
               <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>SYSTEM STATUS</Text>
               <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '700', letterSpacing: -0.5 }]}>Executive Report</Text>
             </View>
-            <Animated.View style={[styles.liveBadge, { backgroundColor: colors.tertiaryFixed }, animatedLiveStyle]}>
+            <Animated.View style={[styles.liveBadge, { backgroundColor: colors.tertiaryFixed, opacity: liveOpacity }]}>
               <MaterialIcons name="bolt" size={14} color={colors.onTertiaryContainer} />
               <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginLeft: 4 }]}>Live</Text>
             </Animated.View>
@@ -57,140 +83,85 @@ const AiInsightsScreen = ({ navigation }) => {
           <View style={[styles.divider, { backgroundColor: colors.outlineVariant, marginTop: 16 }]} />
         </View>
 
-        {/* Bento Grid: Main Dashboard Modules */}
-        <View style={styles.grid}>
-          
-          {/* Consistency Score Gauge */}
-          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, alignItems: 'center' }]}>
-            <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2, marginBottom: 24 }]}>CONSISTENCY_SCORE</Text>
-            
-            {/* Custom gauge using views and borders */}
-            <View style={styles.gaugeContainer}>
-              <View style={[styles.gaugeBg, { borderColor: colors.surfaceContainerLow }]} />
-              <View style={[styles.gaugeFill, { borderColor: colors.primary, transform: [{ rotate: '115deg' }] }]} />
-            </View>
-
-            <View style={styles.scoreText}>
-              <Text style={[{ fontFamily: 'HankenGrotesk-ExtraBold', fontSize: 48, color: colors.primary }]}>84</Text>
-              <Text style={[typography.headlineLgMobile, { color: colors.onPrimaryContainer, marginTop: 12, marginLeft: 2 }]}>%</Text>
-            </View>
-            <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 8 }]}>+2.4% from peak interval</Text>
-          </View>
-
-          {/* Bottleneck Alerts List */}
-          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <View style={styles.bentoHeader}>
-              <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2 }]}>BOTTLENECK ALERTS</Text>
-              <MaterialIcons name="warning" size={20} color={colors.error} />
-            </View>
-
-            <View style={styles.alertsList}>
-              <View style={styles.alertItem}>
-                <View style={[styles.alertMarker, { backgroundColor: colors.error }]} />
-                <View>
-                  <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700', fontSize: 13 }]}>Node 04 Latency Spike</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 2 }]}>Region: North-East Hub [480ms]</Text>
-                </View>
-              </View>
-
-              <View style={styles.alertItem}>
-                <View style={[styles.alertMarker, { backgroundColor: colors.secondary }]} />
-                <View>
-                  <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700', fontSize: 13 }]}>Queue Overflow Threshold</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 2 }]}>Sub-system: Transaction Engine</Text>
-                </View>
-              </View>
-            </View>
-
-            <TouchableOpacity style={[styles.actionBtn, { borderColor: colors.outlineVariant }]}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>VIEW TOPOLOGY</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Throughput Forecast Histogram */}
-          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2, marginBottom: 24 }]}>THROUGHPUT FORECAST</Text>
-            
-            <View style={styles.histogramContainer}>
-              <View style={[styles.bar, { backgroundColor: colors.primaryContainer, height: '20%' }]} />
-              <View style={[styles.bar, { backgroundColor: colors.primaryContainer, height: '35%' }]} />
-              <View style={[styles.bar, { backgroundColor: colors.primaryContainer, height: '60%' }]} />
-              <View style={[styles.bar, { backgroundColor: colors.primary, height: '85%' }]} />
-              <View style={[styles.bar, { backgroundColor: colors.primaryContainer, height: '70%' }]} />
-              <View style={[styles.bar, { backgroundColor: colors.primaryContainer, height: '55%' }]} />
-              <View style={[styles.bar, { backgroundColor: colors.primaryContainer, height: '40%' }]} />
-              <View style={[styles.bar, { backgroundColor: colors.primaryContainer, height: '30%' }]} />
-            </View>
-
-            <View style={styles.timeLabels}>
-              <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>0600h</Text>
-              <Text style={[typography.labelSm, { color: colors.primary, fontSize: 10, fontWeight: '700' }]}>1200h</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>1800h</Text>
-            </View>
-
-            <View style={styles.histogramFooter}>
-              <Text style={[typography.labelSm, { color: colors.primary, fontSize: 13 }]}>
-                Peak: <Text style={{ fontWeight: '700' }}>12.4 GB/s</Text>
-              </Text>
-              <MaterialIcons name="trending-up" size={16} color={colors.secondary} />
-            </View>
-          </View>
-
-          {/* Active Subsystems Status */}
-          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2, marginBottom: 24 }]}>ACTIVE SUBSYSTEMS</Text>
-            
-            <View style={styles.subsystemsGrid}>
+        {loading ? (
+          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
+        ) : (
+          <View style={styles.grid}>
+            {/* Consistency Score Gauge */}
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, alignItems: 'center' }]}>
+              <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2, marginBottom: 24 }]}>CONSISTENCY_SCORE</Text>
               
-              <View style={[styles.subsystemCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                <View style={styles.subsystemHeader}>
-                  <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>AUTH</Text>
-                  <View style={[styles.statusDot, { backgroundColor: colors.tertiaryFixedDim }]} />
-                </View>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 18, fontWeight: '700' }]}>OK</Text>
+              <View style={styles.gaugeContainer}>
+                <View style={[styles.gaugeBg, { borderColor: colors.surfaceContainerLow }]} />
+                <View style={[styles.gaugeFill, { borderColor: colors.primary, transform: [{ rotate: `${45 + (consistencyScore * 1.8)}deg` }] }]} />
               </View>
 
-              <View style={[styles.subsystemCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                <View style={styles.subsystemHeader}>
-                  <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>CORE</Text>
-                  <View style={[styles.statusDot, { backgroundColor: colors.tertiaryFixedDim }]} />
+              <View style={styles.scoreText}>
+                <Text style={[{ fontSize: 48, fontWeight: '900', color: colors.primary }]}>{consistencyScore}</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.onPrimaryContainer, marginTop: 12, marginLeft: 2 }]}>%</Text>
+              </View>
+              <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 8 }]}>Based on {tasks.length} total tasks</Text>
+            </View>
+
+            {/* AI Burnout Report */}
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+              <View style={styles.bentoHeader}>
+                <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2 }]}>BURNOUT PREDICTION</Text>
+                <MaterialIcons name={insightData?.burnoutRisk === 'High' ? "warning" : "health-and-safety"} size={20} color={insightData?.burnoutRisk === 'High' ? colors.error : colors.tertiaryFixedDim} />
+              </View>
+              
+              <View style={{ marginBottom: 16 }}>
+                <Text style={[typography.labelSm, { color: colors.secondary }]}>RISK LEVEL</Text>
+                <Text style={[typography.headlineLgMobile, { color: insightData?.burnoutRisk === 'High' ? colors.error : colors.primary, fontWeight: '900', textTransform: 'uppercase' }]}>
+                  {insightData?.burnoutRisk || 'UNKNOWN'}
+                </Text>
+              </View>
+              
+              <Text style={[typography.bodyMd, { color: colors.primary, lineHeight: 22 }]}>
+                {insightData?.advice || "Insufficient data to provide workflow advice."}
+              </Text>
+              
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: colors.outlineVariant }}>
+                <View>
+                  <Text style={[typography.labelCaps, { color: colors.secondary }]}>EST. WORKLOAD</Text>
+                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>{insightData?.estimatedMinutes || 0} mins</Text>
                 </View>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 18, fontWeight: '700' }]}>OK</Text>
+                <View>
+                  <Text style={[typography.labelCaps, { color: colors.secondary }]}>TASKS TODAY</Text>
+                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>{insightData?.tasksCount || 0}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Bottleneck Alerts List */}
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+              <View style={styles.bentoHeader}>
+                <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2 }]}>BOTTLENECK ALERTS</Text>
+                <MaterialIcons name="crisis-alert" size={20} color={bottleneckTasks.length > 0 ? colors.error : colors.secondary} />
               </View>
 
-              <View style={[styles.subsystemCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                <View style={styles.subsystemHeader}>
-                  <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>EDGE</Text>
-                  <View style={[styles.statusDot, { backgroundColor: colors.error }]} />
-                </View>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 18, fontWeight: '700' }]}>WRN</Text>
+              <View style={styles.alertsList}>
+                {bottleneckTasks.length === 0 ? (
+                  <Text style={[typography.labelSm, { color: colors.secondary }]}>No critical bottlenecks detected.</Text>
+                ) : (
+                  bottleneckTasks.map((t, idx) => (
+                    <View key={t._id || idx} style={styles.alertItem}>
+                      <View style={[styles.alertMarker, { backgroundColor: colors.error }]} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700', fontSize: 13 }]} numberOfLines={1}>{t.title}</Text>
+                        <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 2 }]}>Status: {t.status}</Text>
+                      </View>
+                    </View>
+                  ))
+                )}
               </View>
 
-              <View style={[styles.subsystemCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                <View style={styles.subsystemHeader}>
-                  <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>DB</Text>
-                  <View style={[styles.statusDot, { backgroundColor: colors.tertiaryFixedDim }]} />
-                </View>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 18, fontWeight: '700' }]}>OK</Text>
-              </View>
-
+              <TouchableOpacity onPress={() => navigation.navigate("Kanban")} style={[styles.actionBtn, { borderColor: colors.outlineVariant }]}>
+                <Text style={[typography.labelCaps, { color: colors.secondary }]}>VIEW TOPOLOGY</Text>
+              </TouchableOpacity>
             </View>
           </View>
-
-          {/* Industrial Aesthetic Placeholder Image */}
-          <View style={[styles.imageCard, { borderColor: colors.outlineVariant }]}>
-            <View style={[styles.imageOverlay, { backgroundColor: `${colors.primary}1A` }]} />
-            <Image 
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCK4MGVsgMhUzYvj1nATvZrrLaD39vxxhGInN4Ty1dminBKlW_WM5xkH8L7zlaGl1ovwjNqBox9vQkfr5R6fnzUw3HKy6fV73zyqnHsusnDwVRV1euC7PnBfR1UewzUuEEhIFcNiQYxob6qE31rXlJOscVbXgfccqCKgOD2BsH-q0Pg6a5E39szmvLcEn_SseDdaMlyDi21wTEsmxWeLXOZ0kieNSCl9WEOUMba76TSV0ZJTw1PPy8L5w' }}
-              style={styles.image}
-            />
-            <View style={styles.imageLabel}>
-              <Text style={[typography.labelCaps, { color: '#fff', fontSize: 10 }]}>DC-NV-01_CAM</Text>
-            </View>
-          </View>
-
-        </View>
-
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -300,80 +271,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 24,
-  },
-  histogramContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: 128,
-  },
-  bar: {
-    width: 16,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-  },
-  timeLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  histogramFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  subsystemsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  subsystemCard: {
-    flex: 1,
-    minWidth: '45%',
-    padding: 16,
-    borderWidth: 1,
-    borderRadius: 8,
-    gap: 8,
-  },
-  subsystemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  imageCard: {
-    height: 160,
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-    position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1,
-  },
-  imageLabel: {
-    position: 'absolute',
-    bottom: 16,
-    left: 16,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    zIndex: 2,
   }
 });
 

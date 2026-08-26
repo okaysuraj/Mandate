@@ -24,9 +24,11 @@ const ProjectsScreen = ({ navigation }) => {
   }, [user]);
 
   const renderProjectItem = ({ item, index }) => {
-    // Mock health index for visual parity if not provided
-    const health = item.healthIndex || (index % 3 === 0 ? 92 : index % 3 === 1 ? 45 : 100);
-    const status = item.status || (index % 3 === 0 ? 'Active' : index % 3 === 1 ? 'Stalled' : 'Archived');
+    // Calculate health index from task completion data if available
+    const totalTasks = (item.taskCount || 0);
+    const completedTasks = (item.completedTaskCount || 0);
+    const health = item.healthIndex || (totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 50);
+    const status = item.status || (health >= 90 ? 'Stable' : health >= 50 ? 'Active' : 'At Risk');
     
     let statusBg = colors.surfaceContainerHigh;
     let statusText = colors.onSurfaceVariant;
@@ -109,11 +111,7 @@ const ProjectsScreen = ({ navigation }) => {
       </View>
 
       <FlatList 
-        data={projects.length > 0 ? projects : [
-          { _id: 'prj1', name: 'Helios Turbine Assembly', status: 'Active', healthIndex: 92 },
-          { _id: 'prj2', name: 'Titan Refinery Optimization', status: 'Stalled', healthIndex: 45 },
-          { _id: 'prj3', name: 'Cybernetic Hub Infrastructure', status: 'Archived', healthIndex: 100 }
-        ]} // Fallback data to match visual spec if none from DB
+        data={projects}
         keyExtractor={item => item._id}
         contentContainerStyle={styles.content}
         ListHeaderComponent={

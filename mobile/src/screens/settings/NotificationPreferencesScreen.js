@@ -1,25 +1,49 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
+import { API_URL } from '../../config/config';
 
 const NotificationPreferencesScreen = ({ navigation }) => {
   const { colors, typography, spacing, borderRadius } = useTheme();
+  const { user } = useAuth();
 
-  const [criticalPriority, setCriticalPriority] = useState(true);
-  const [standardSync, setStandardSync] = useState(false);
+  const [notificationLevel, setNotificationLevel] = useState(user?.preferences?.notifications || 'normal');
+  const [workStart, setWorkStart] = useState(user?.preferences?.workHours?.start || '09:00');
+  const [workEnd, setWorkEnd] = useState(user?.preferences?.workHours?.end || '17:00');
+  
+  const [isSaving, setIsSaving] = useState(false);
+
+  const savePreferences = async (level, start, end) => {
+    setIsSaving(true);
+    try {
+      await axios.put(`${API_URL}/api/users/profile`, {
+        preferences: {
+          ...user?.preferences,
+          notifications: level,
+          workHours: { start, end }
+        }
+      });
+      setNotificationLevel(level);
+      setWorkStart(start);
+      setWorkEnd(end);
+    } catch (error) {
+      console.error('Failed to update notification preferences', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* TopAppBar */}
       <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.outlineVariant }]}>
         <View style={styles.headerLeft}>
-          <View style={[styles.avatarContainer, { borderColor: colors.outlineVariant }]}>
-            <Image 
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBgZhVIFRmZLlsVwlBqQqOZWS6xoEj3x7wdkwvNybKQaReCAglQvXI3nT9U9NOpM7iIM1wGHdaicwnZMcsg0uD__HdgeGQkQHbm90KeishIayzKpCC3-ZqZsjwrHnLWRKezMrXEa_Nix9ztd2IM7reZhLciBuNCloYCKAQyW_Sq6WkBL_AFGRP3-xriMG-1l7lBz_qJYPAI9DZSCBrOew3Qe79jLKdp7zAJ-oe2jQpRcNBTtihT1u7Ntg' }}
-              style={styles.avatarImg}
-            />
-          </View>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
+          </TouchableOpacity>
           <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 8 }]}>MANDATE</Text>
         </View>
         <TouchableOpacity style={styles.iconBtn}>
@@ -32,151 +56,96 @@ const NotificationPreferencesScreen = ({ navigation }) => {
         {/* Header Section */}
         <View style={styles.section}>
           <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 }]}>System Configuration</Text>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 8 }]}>Global Preferences</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 8 }]}>Global Notifications</Text>
           <Text style={[typography.bodyMd, { color: colors.secondary }]}>Calibrate notification density and delivery protocols across all operational channels.</Text>
         </View>
 
-        {/* Mandate Transitions */}
+        {/* Mandate Transitions (Notification Level) */}
         <View style={styles.section}>
           <View style={styles.sectionHeaderBetween}>
-            <Text style={[typography.labelCaps, { color: colors.primary }]}>Mandate Transitions</Text>
-            <View style={[styles.autoSyncBadge, { backgroundColor: 'rgba(0, 33, 8, 0.1)' }]}>
-              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>AUTO_SYNC</Text>
-            </View>
+            <Text style={[typography.labelCaps, { color: colors.primary }]}>VERBOSITY LEVEL</Text>
+            {isSaving && (
+              <ActivityIndicator size="small" color={colors.primary} />
+            )}
           </View>
 
           <View style={styles.cardsList}>
-            {/* Card 1 */}
-            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <View style={styles.cardHeaderRow}>
-                <View>
-                  <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>Critical Priority</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}>Direct bypass for all quiet hours</Text>
-                </View>
-                <TouchableOpacity 
-                  style={[styles.toggleTrack, criticalPriority ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outlineVariant, borderWidth: 1 }]}
-                  onPress={() => setCriticalPriority(!criticalPriority)}
-                >
-                  <View style={[styles.toggleThumb, criticalPriority ? { backgroundColor: '#ffffff', alignSelf: 'flex-end' } : { backgroundColor: colors.outline, alignSelf: 'flex-start' }]} />
-                </TouchableOpacity>
-              </View>
+            {['strict', 'normal', 'light'].map((level) => {
+              const isActive = notificationLevel === level;
               
-              <View style={styles.tagsRow}>
-                <View style={[styles.tag, { borderColor: colors.outlineVariant }]}>
-                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>HAPTIC: HIGH</Text>
-                </View>
-                <View style={[styles.tag, { borderColor: colors.outlineVariant }]}>
-                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>AUDIO: OVERRIDE</Text>
-                </View>
-              </View>
-            </View>
+              let title, desc, tag1, tag2;
+              if (level === 'strict') {
+                title = 'Critical Priority (Strict)';
+                desc = 'Direct bypass for all quiet hours. High verbosity.';
+                tag1 = 'HAPTIC: HIGH';
+                tag2 = 'AUDIO: OVERRIDE';
+              } else if (level === 'normal') {
+                title = 'Standard Sync (Normal)';
+                desc = 'Batch delivery based on standard operating logic.';
+                tag1 = 'HAPTIC: NORMAL';
+                tag2 = 'AUDIO: STANDARD';
+              } else {
+                title = 'Minimal Alerts (Light)';
+                desc = 'Only urgent notifications are pushed. Low verbosity.';
+                tag1 = 'HAPTIC: OFF';
+                tag2 = 'AUDIO: OFF';
+              }
 
-            {/* Card 2 */}
-            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <View style={styles.cardHeaderRow}>
-                <View>
-                  <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>Standard Sync</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}>Batch delivery every 15 minutes</Text>
+              return (
+                <View key={level} style={[styles.bentoCard, { backgroundColor: isActive ? colors.surfaceContainerLow : colors.surfaceContainerLowest, borderColor: isActive ? colors.primary : colors.outlineVariant }]}>
+                  <View style={styles.cardHeaderRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[typography.headlineLgMobile, { fontSize: 18, color: isActive ? colors.primary : colors.secondary }]}>{title}</Text>
+                      <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4 }]}>{desc}</Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={[styles.toggleTrack, isActive ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outlineVariant, borderWidth: 1 }]}
+                      onPress={() => savePreferences(level, workStart, workEnd)}
+                    >
+                      <View style={[styles.toggleThumb, isActive ? { backgroundColor: '#ffffff', alignSelf: 'flex-end' } : { backgroundColor: colors.outline, alignSelf: 'flex-start' }]} />
+                    </TouchableOpacity>
+                  </View>
+                  
+                  <View style={styles.tagsRow}>
+                    <View style={[styles.tag, { borderColor: colors.outlineVariant }]}>
+                      <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>{tag1}</Text>
+                    </View>
+                    <View style={[styles.tag, { borderColor: colors.outlineVariant }]}>
+                      <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>{tag2}</Text>
+                    </View>
+                  </View>
                 </View>
-                <TouchableOpacity 
-                  style={[styles.toggleTrack, standardSync ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outlineVariant, borderWidth: 1 }]}
-                  onPress={() => setStandardSync(!standardSync)}
-                >
-                  <View style={[styles.toggleThumb, standardSync ? { backgroundColor: '#ffffff', alignSelf: 'flex-end' } : { backgroundColor: colors.outline, alignSelf: 'flex-start' }]} />
-                </TouchableOpacity>
-              </View>
-            </View>
+              );
+            })}
           </View>
         </View>
 
-        {/* Quiet Hours Scheduling Chart */}
+        {/* Work Hours Scheduling */}
         <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           <View style={styles.quietHeaderRow}>
             <View style={styles.quietHeaderLeft}>
-              <MaterialIcons name="bedtime" size={20} color={colors.primary} />
-              <Text style={[typography.labelCaps, { color: colors.primary, marginLeft: 8 }]}>Quiet Hours</Text>
+              <MaterialIcons name="work-history" size={20} color={colors.primary} />
+              <Text style={[typography.labelCaps, { color: colors.primary, marginLeft: 8 }]}>Work Hours (Active Range)</Text>
             </View>
-            <Text style={[typography.labelSm, { color: colors.primary, fontFamily: 'monospace' }]}>22:00 — 06:00</Text>
           </View>
 
-          {/* Visual Schedule Chart Mock */}
-          <View style={styles.chartContainer}>
-            <View style={[styles.chartBarsBg, { backgroundColor: colors.surfaceContainer }]}>
-              <View style={[styles.chartBar, { backgroundColor: colors.primaryFixedDim, height: '40%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primaryFixedDim, height: '35%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primaryFixedDim, height: '30%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primary, height: '10%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primary, height: '5%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primary, height: '5%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primary, height: '5%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primary, height: '5%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primary, height: '5%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primary, height: '10%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primaryFixedDim, height: '45%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primaryFixedDim, height: '60%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primaryFixedDim, height: '80%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primaryFixedDim, height: '90%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primaryFixedDim, height: '85%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primaryFixedDim, height: '70%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primaryFixedDim, height: '50%' }]} />
-              <View style={[styles.chartBar, { backgroundColor: colors.primaryFixedDim, height: '40%' }]} />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 }}>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: 8 }]}>START TIME</Text>
+              <View style={[styles.timeInputBox, { borderColor: colors.outlineVariant }]}>
+                <Text style={[typography.bodyMd, { color: colors.primary }]}>{workStart}</Text>
+              </View>
             </View>
-            <View style={styles.chartLabels}>
-              <Text style={[typography.labelSm, { fontSize: 10, color: colors.outline }]}>00:00</Text>
-              <Text style={[typography.labelSm, { fontSize: 10, color: colors.outline }]}>12:00</Text>
-              <Text style={[typography.labelSm, { fontSize: 10, color: colors.outline }]}>23:59</Text>
+            <View style={{ flex: 1, marginLeft: 8 }}>
+              <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: 8 }]}>END TIME</Text>
+              <View style={[styles.timeInputBox, { borderColor: colors.outlineVariant }]}>
+                <Text style={[typography.bodyMd, { color: colors.primary }]}>{workEnd}</Text>
+              </View>
             </View>
           </View>
 
           <View style={[styles.quietFooter, { borderTopColor: colors.outlineVariant }]}>
-            <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary }]}>Weekend override enabled</Text>
-            <TouchableOpacity>
-              <Text style={[typography.labelSm, { color: colors.primary, textDecorationLine: 'underline' }]}>Edit Schedule</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Channel Matrix */}
-        <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: 16 }]}>Channel Matrix</Text>
-          
-          <View style={[styles.tableContainer, { borderColor: colors.outlineVariant }]}>
-            {/* Table Header */}
-            <View style={[styles.tableRow, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant }]}>
-              <View style={styles.tableCol1}><Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary }]}>Source</Text></View>
-              <View style={styles.tableColIcon}><Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary, textAlign: 'center' }]}>Push</Text></View>
-              <View style={styles.tableColIcon}><Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary, textAlign: 'center' }]}>SMS</Text></View>
-              <View style={styles.tableColIcon}><Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary, textAlign: 'center' }]}>Log</Text></View>
-            </View>
-            
-            {/* Table Rows */}
-            <View style={[styles.tableRow, { borderBottomColor: colors.outlineVariant }]}>
-              <View style={styles.tableCol1}><Text style={[typography.labelSm, { fontWeight: 'bold' }]}>Network</Text></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="check-circle" size={16} color={colors.primary} /></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="radio-button-unchecked" size={16} color={colors.outlineVariant} /></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="check-circle" size={16} color={colors.primary} /></View>
-            </View>
-
-            <View style={[styles.tableRow, { borderBottomColor: colors.outlineVariant }]}>
-              <View style={styles.tableCol1}><Text style={[typography.labelSm, { fontWeight: 'bold' }]}>Terminal</Text></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="check-circle" size={16} color={colors.primary} /></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="check-circle" size={16} color={colors.primary} /></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="check-circle" size={16} color={colors.primary} /></View>
-            </View>
-
-            <View style={[styles.tableRow, { borderBottomColor: colors.outlineVariant }]}>
-              <View style={styles.tableCol1}><Text style={[typography.labelSm, { fontWeight: 'bold' }]}>Security</Text></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="check-circle" size={16} color={colors.primary} /></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="check-circle" size={16} color={colors.primary} /></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="check-circle" size={16} color={colors.primary} /></View>
-            </View>
-
-            <View style={[styles.tableRow]}>
-              <View style={styles.tableCol1}><Text style={[typography.labelSm, { fontWeight: 'bold' }]}>Marketing</Text></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="radio-button-unchecked" size={16} color={colors.outlineVariant} /></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="radio-button-unchecked" size={16} color={colors.outlineVariant} /></View>
-              <View style={styles.tableColIcon}><MaterialIcons name="check-circle" size={16} color={colors.primary} /></View>
-            </View>
+            <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary }]}>Push notifications are suppressed outside these hours unless priority is Strict.</Text>
           </View>
         </View>
 
@@ -193,25 +162,6 @@ const NotificationPreferencesScreen = ({ navigation }) => {
 
       </ScrollView>
 
-      {/* Bottom Nav */}
-      <View style={[styles.bottomNav, { backgroundColor: colors.surface, borderTopColor: colors.outlineVariant }]}>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="track-changes" size={24} color={colors.secondary} />
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>GOALS</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="hub" size={24} color={colors.secondary} />
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>NETWORK</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="terminal" size={24} color={colors.secondary} />
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>LOGS</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItemActive, { borderTopColor: colors.primary }]}>
-          <MaterialIcons name="settings-input-component" size={24} color={colors.primary} />
-          <Text style={[typography.labelCaps, { color: colors.primary, marginTop: 4 }]}>CONFIG</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -230,17 +180,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 1,
-  },
-  avatarImg: {
-    width: '100%',
-    height: '100%',
-  },
   iconBtn: {
     width: 40,
     height: 40,
@@ -250,9 +189,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flexGrow: 1,
-    padding: 24, // px-gutter
-    paddingBottom: 100,
-    gap: 32, // space-y-lg
+    padding: 24, 
+    paddingBottom: 40,
+    gap: 32, 
   },
   section: {
     gap: 16,
@@ -263,24 +202,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  autoSyncBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
   cardsList: {
-    gap: 8,
+    gap: 12,
   },
   bentoCard: {
     borderWidth: 1,
     borderRadius: 8,
-    padding: 32, // p-lg
+    padding: 24, 
   },
   cardHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16, // mb-md
+    marginBottom: 16, 
   },
   toggleTrack: {
     width: 48,
@@ -308,34 +242,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   quietHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  chartContainer: {
-    height: 128, // h-32
-    marginBottom: 16,
-  },
-  chartBarsBg: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    borderRadius: 4,
-    padding: 4,
-    gap: 2,
-  },
-  chartBar: {
-    flex: 1,
-    borderRadius: 2,
-  },
-  chartLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-    paddingHorizontal: 8,
+  timeInputBox: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
   },
   quietFooter: {
     flexDirection: 'row',
@@ -344,64 +261,20 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     borderTopWidth: 1,
   },
-  tableContainer: {
-    borderWidth: 1,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  tableRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-  },
-  tableCol1: {
-    flex: 2,
-    padding: 8, // p-sm
-  },
-  tableColIcon: {
-    flex: 1,
-    padding: 8,
-    alignItems: 'center',
-  },
   dangerSection: {
-    paddingTop: 32,
+    paddingTop: 16,
   },
   dangerBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16, // p-md
+    padding: 16, 
     borderWidth: 1,
     borderRadius: 8,
   },
   dangerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 64,
-    borderTopWidth: 1,
-    zIndex: 50,
-  },
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 8,
-  },
-  navItemActive: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 8,
-    borderTopWidth: 2,
   }
 });
 

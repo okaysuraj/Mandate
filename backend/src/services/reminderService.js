@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import Todo from "../models/Todo.js";
+import Task from "../models/Task.js";
 import Notification from "../models/Notification.js";
 import { Server } from "socket.io";
 
@@ -13,48 +13,43 @@ export const initReminderService = (io) => {
       // For simplicity in this demo, we'll just check tasks due exactly in 15 mins (rounded to minute)
       const in15Mins = new Date(now.getTime() + 15 * 60000);
       
-      const upcomingTodos = await Todo.find({
+      const upcomingTasks = await Task.find({
         status: { $ne: "completed" },
-        isDeleted: false,
         dueDate: {
           $gte: new Date(in15Mins.setSeconds(0, 0)),
           $lte: new Date(in15Mins.setSeconds(59, 999))
         }
       });
 
-      for (const todo of upcomingTodos) {
+      for (const task of upcomingTasks) {
         // Create notification for the creator
         const notification = await Notification.create({
-          user: todo.user,
+          user: task.creatorId,
           title: "Upcoming Deadline",
-          message: `Task "${todo.title}" is due in 15 minutes!`,
+          message: `Task "${task.title}" is due in 15 minutes!`,
           type: "reminder",
-          relatedEntityId: todo._id,
-          workspaceId: todo.workspaceId
+          relatedEntityId: task._id,
+          workspaceId: task.workspaceId
         });
 
         // Broadcast to specific user room if we were tracking individual user rooms,
         // but since we track workspaces, broadcast to workspace
         if (io) {
-          io.to(todo.workspaceId?.toString()).emit("notification_created", notification);
+          io.to(task.workspaceId?.toString()).emit("notification_created", notification);
         }
 
-        // Create notifications for assignees
-        if (todo.assignees && todo.assignees.length > 0) {
-          for (const assigneeId of todo.assignees) {
-            if (assigneeId.toString() !== todo.user.toString()) {
-              const assigneeNotif = await Notification.create({
-                user: assigneeId,
-                title: "Upcoming Deadline",
-                message: `Task "${todo.title}" assigned to you is due in 15 minutes!`,
-                type: "reminder",
-                relatedEntityId: todo._id,
-                workspaceId: todo.workspaceId
-              });
-              if (io) {
-                io.to(todo.workspaceId?.toString()).emit("notification_created", assigneeNotif);
-              }
-            }
+        // Create notification for assignee if different from creator
+        if (task.assigneeId && task.assigneeId.toString() !== task.creatorId.toString()) {
+          const assigneeNotif = await Notification.create({
+            user: task.assigneeId,
+            title: "Upcoming Deadline",
+            message: `Task "${task.title}" assigned to you is due in 15 minutes!`,
+            type: "reminder",
+            relatedEntityId: task._id,
+            workspaceId: task.workspaceId
+          });
+          if (io) {
+            io.to(task.workspaceId?.toString()).emit("notification_created", assigneeNotif);
           }
         }
       }

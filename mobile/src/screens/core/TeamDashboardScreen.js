@@ -5,20 +5,17 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import Svg, { Path } from "react-native-svg";
 import { useTheme } from "../../context/ThemeContext";
+import { useAuth } from "../../context/AuthContext";
+import { useDataStore } from "../../store/useDataStore";
 
 const TeamDashboardScreen = ({ navigation }) => {
   const { colors, typography } = useTheme();
+  const { user } = useAuth();
+  const tasks = useDataStore(state => state.tasks);
 
-  // Mock realtime active count
-  const [activeCount, setActiveCount] = useState(24);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const delta = Math.random() > 0.5 ? 1 : -1;
-      setActiveCount(prev => Math.max(18, Math.min(32, prev + delta)));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  // Calculate active count from real task data
+  const activeTasks = tasks.filter(t => t.status !== 'completed').length;
+  const completedTasks = tasks.filter(t => t.status === 'completed').length;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -53,12 +50,12 @@ const TeamDashboardScreen = ({ navigation }) => {
           </View>
           <View style={styles.splitRow}>
             <View style={[styles.splitCol, { borderLeftColor: colors.primary }]}>
-              <Text style={[{ fontFamily: 'HankenGrotesk-ExtraBold', fontSize: 40, color: colors.primary, lineHeight: 40 }]}>{activeCount}</Text>
+              <Text style={[{ fontFamily: 'HankenGrotesk-ExtraBold', fontSize: 40, color: colors.primary, lineHeight: 40 }]}>{String(activeTasks).padStart(2, '0')}</Text>
               <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>ACTIVE</Text>
             </View>
             <View style={[styles.splitCol, { borderLeftColor: colors.outlineVariant }]}>
-              <Text style={[{ fontFamily: 'HankenGrotesk-ExtraBold', fontSize: 40, color: colors.outline, lineHeight: 40 }]}>08</Text>
-              <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>IDLE</Text>
+              <Text style={[{ fontFamily: 'HankenGrotesk-ExtraBold', fontSize: 40, color: colors.outline, lineHeight: 40 }]}>{String(completedTasks).padStart(2, '0')}</Text>
+              <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>COMPLETED</Text>
             </View>
           </View>
         </View>

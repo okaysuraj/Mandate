@@ -1,11 +1,23 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useDataStore } from '../../store/useDataStore';
+import { useAuth } from '../../context/AuthContext';
 
 const BacklogScreen = ({ navigation }) => {
   const { colors, typography, spacing, borderRadius } = useTheme();
   const [activeFilter, setActiveFilter] = useState('ALL TASKS');
+  const [search, setSearch] = useState('');
+  
+  const { tasks, loading, loadTasks } = useDataStore(state => state);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      loadTasks();
+    }
+  }, [user, loadTasks]);
 
   const renderFilterChip = (label, isActive) => (
     <TouchableOpacity
@@ -26,6 +38,33 @@ const BacklogScreen = ({ navigation }) => {
       </Text>
     </TouchableOpacity>
   );
+
+  const filteredTasks = tasks.filter(t => {
+    if (search && !t.title.toLowerCase().includes(search.toLowerCase()) && !(t.description && t.description.toLowerCase().includes(search.toLowerCase()))) {
+      return false;
+    }
+    if (activeFilter === 'PENDING' && t.status !== 'pending') return false;
+    if (activeFilter === 'IN-PROGRESS' && t.status !== 'in-progress') return false;
+    if (activeFilter === 'FAILED' && t.status !== 'failed') return false; // Assuming failed is a status
+    return true;
+  });
+
+  const getStatusColor = (status) => {
+    if (status === 'completed') return colors.onTertiaryContainer;
+    if (status === 'in-progress') return colors.tertiaryFixedDim;
+    if (status === 'failed') return colors.error;
+    return colors.outline;
+  };
+
+  const getPriorityBadge = (priority) => {
+    if (priority === 'urgent' || priority === 'high') {
+      return { bg: colors.errorContainer, text: colors.onErrorContainer, label: 'CRITICAL' };
+    }
+    if (priority === 'low') {
+      return { bg: colors.surfaceContainerHigh, text: colors.secondary, label: 'LOW' };
+    }
+    return { bg: colors.surfaceContainerHigh, text: colors.secondary, label: 'NORMAL' };
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
@@ -50,13 +89,13 @@ const BacklogScreen = ({ navigation }) => {
             {/* System Load */}
             <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
               <View style={styles.statTop}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, textTransform: 'uppercase' }]}>System Load</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, textTransform: 'uppercase' }]}>Active Load</Text>
                 <MaterialIcons name="bolt" size={18} color={colors.onTertiaryContainer} />
               </View>
               <View>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>78.4%</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{tasks.filter(t => t.status === 'in-progress').length}</Text>
                 <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainerHigh, marginTop: spacing.xs }]}>
-                  <View style={[styles.progressBarFill, { backgroundColor: colors.primary, width: '78.4%' }]} />
+                  <View style={[styles.progressBarFill, { backgroundColor: colors.primary, width: `${Math.min(100, (tasks.filter(t => t.status === 'in-progress').length / (tasks.length || 1)) * 100)}%` }]} />
                 </View>
               </View>
             </View>
@@ -64,14 +103,14 @@ const BacklogScreen = ({ navigation }) => {
             {/* Operators */}
             <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
               <View style={styles.statTop}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, textTransform: 'uppercase' }]}>Operators</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, textTransform: 'uppercase' }]}>Total Tasks</Text>
                 <MaterialIcons name="group" size={18} color={colors.secondary} />
               </View>
               <View>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>12</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{tasks.length}</Text>
                 <View style={styles.standbyRow}>
-                  <View style={[styles.dot, { backgroundColor: colors.onTertiaryContainer }]} />
-                  <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginLeft: 4 }]}>3 STANDBY</Text>
+                  <View style={[styles.dot, { backgroundColor: colors.error }]} />
+                  <Text style={[typography.labelSm, { color: colors.error, marginLeft: 4 }]}>{tasks.filter(t => t.priority === 'urgent' || t.priority === 'high').length} CRITICAL</Text>
                 </View>
               </View>
             </View>
@@ -85,6 +124,8 @@ const BacklogScreen = ({ navigation }) => {
                 style={[styles.searchInput, typography.labelSm, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant, color: colors.primary }]}
                 placeholder="SEARCH TASK LEDGER..."
                 placeholderTextColor={colors.secondary}
+                value={search}
+                onChangeText={setSearch}
               />
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterContainer}>
@@ -96,100 +137,41 @@ const BacklogScreen = ({ navigation }) => {
           <View>
             <View style={styles.ledgerHeader}>
               <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2 }]}>TASK LEDGER</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary }]}>42 TOTAL</Text>
+              <Text style={[typography.labelSm, { color: colors.secondary }]}>{filteredTasks.length} TOTAL</Text>
             </View>
 
-            {/* Task Item 1 */}
-            <View style={[styles.taskCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
-              <View style={styles.taskTop}>
-                <View>
-                  <Text style={[typography.labelSm, { color: colors.secondary, opacity: 0.6 }]}>UID: MDT-902-A</Text>
-                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>Pressure Valve Calibration</Text>
-                </View>
-                <View style={[styles.priorityBadge, { backgroundColor: colors.errorContainer }]}>
-                  <Text style={[typography.labelCaps, { color: colors.onErrorContainer, fontSize: 10 }]}>URGENT</Text>
-                </View>
-              </View>
-              <View style={[styles.taskBottom, { borderTopColor: colors.surfaceContainerHigh }]}>
-                <View style={styles.statusRow}>
-                  <View style={[styles.statusDot, { backgroundColor: colors.tertiaryFixedDim }]} />
-                  <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginLeft: spacing.sm }]}>ACTIVE</Text>
-                </View>
-                <View style={styles.avatarsRow}>
-                  <View style={[styles.avatarRound, { backgroundColor: colors.surfaceDim, borderColor: colors.surfaceContainerLowest }]} />
-                  <View style={[styles.avatarRound, styles.avatarOverlap, { backgroundColor: colors.surfaceDim, borderColor: colors.surfaceContainerLowest }]} />
-                </View>
-              </View>
-            </View>
-
-            {/* Task Item 2 */}
-            <View style={[styles.taskCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
-              <View style={styles.taskTop}>
-                <View>
-                  <Text style={[typography.labelSm, { color: colors.secondary, opacity: 0.6 }]}>UID: MDT-774-B</Text>
-                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>Coolant Intake Inspection</Text>
-                </View>
-                <View style={[styles.priorityBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
-                  <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>NORMAL</Text>
-                </View>
-              </View>
-              <View style={[styles.taskBottom, { borderTopColor: colors.surfaceContainerHigh }]}>
-                <View style={styles.statusRow}>
-                  <View style={[styles.statusDot, { backgroundColor: colors.outline }]} />
-                  <Text style={[typography.labelSm, { color: colors.secondary, marginLeft: spacing.sm }]}>QUEUED</Text>
-                </View>
-                <View style={styles.avatarsRow}>
-                  <View style={[styles.avatarRound, { backgroundColor: colors.surfaceDim, borderColor: colors.surfaceContainerLowest }]} />
-                </View>
-              </View>
-            </View>
-
-            {/* Task Item 3 */}
-            <View style={[styles.taskCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
-              <View style={styles.taskTop}>
-                <View>
-                  <Text style={[typography.labelSm, { color: colors.secondary, opacity: 0.6 }]}>UID: MDT-112-C</Text>
-                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>Relay Logic Diagnostic</Text>
-                </View>
-                <View style={[styles.priorityBadge, { backgroundColor: colors.errorContainer }]}>
-                  <Text style={[typography.labelCaps, { color: colors.onErrorContainer, fontSize: 10 }]}>CRITICAL</Text>
-                </View>
-              </View>
-              <View style={[styles.taskBottom, { borderTopColor: colors.surfaceContainerHigh }]}>
-                <View style={styles.statusRow}>
-                  <View style={[styles.statusDot, { backgroundColor: colors.error }]} />
-                  <Text style={[typography.labelSm, { color: colors.error, marginLeft: spacing.sm }]}>STALLED</Text>
-                </View>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontStyle: 'italic' }]}>UNASSIGNED</Text>
-              </View>
-            </View>
-
-            {/* Visualization Bento */}
-            <View style={[styles.vizBento, { backgroundColor: colors.primary, borderRadius: borderRadius.lg }]}>
-              <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>THROUGHPUT RATIO</Text>
-              <Text style={[typography.displayLg, { color: colors.onPrimary, fontSize: 48, fontWeight: '900', marginVertical: spacing.sm }]}>0.992</Text>
-              <Text style={[typography.labelSm, { color: colors.onPrimary, opacity: 0.7 }]}>OPERATIONAL EFFICIENCY WITHIN OPTIMAL RANGE FOR SECTOR 7B.</Text>
-            </View>
-
-            {/* Task Item 4 */}
-            <View style={[styles.taskCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
-              <View style={styles.taskTop}>
-                <View>
-                  <Text style={[typography.labelSm, { color: colors.secondary, opacity: 0.6 }]}>UID: MDT-440-X</Text>
-                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>Turbine Blade Resurfacing</Text>
-                </View>
-                <View style={[styles.priorityBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
-                  <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>LOW</Text>
-                </View>
-              </View>
-              <View style={[styles.taskBottom, { borderTopColor: colors.surfaceContainerHigh }]}>
-                <View style={styles.statusRow}>
-                  <View style={[styles.statusDot, { backgroundColor: colors.onTertiaryContainer }]} />
-                  <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginLeft: spacing.sm }]}>COMPLETE</Text>
-                </View>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>08:45 AM</Text>
-              </View>
-            </View>
+            {loading ? (
+              <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 32 }} />
+            ) : filteredTasks.length === 0 ? (
+              <Text style={[typography.labelSm, { color: colors.secondary, textAlign: 'center', marginTop: 32 }]}>NO TASKS FOUND</Text>
+            ) : (
+              filteredTasks.map((task, i) => {
+                const priority = getPriorityBadge(task.priority);
+                
+                return (
+                  <View key={task._id || i} style={[styles.taskCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
+                    <View style={styles.taskTop}>
+                      <View style={{ flex: 1, paddingRight: 8 }}>
+                        <Text style={[typography.labelSm, { color: colors.secondary, opacity: 0.6 }]}>UID: MDT-{String(task._id).substring(0,6).toUpperCase() || 'XXX'}</Text>
+                        <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]} numberOfLines={2}>{task.title}</Text>
+                      </View>
+                      <View style={[styles.priorityBadge, { backgroundColor: priority.bg }]}>
+                        <Text style={[typography.labelCaps, { color: priority.text, fontSize: 10 }]}>{priority.label}</Text>
+                      </View>
+                    </View>
+                    <View style={[styles.taskBottom, { borderTopColor: colors.surfaceContainerHigh }]}>
+                      <View style={styles.statusRow}>
+                        <View style={[styles.statusDot, { backgroundColor: getStatusColor(task.status) }]} />
+                        <Text style={[typography.labelSm, { color: getStatusColor(task.status), marginLeft: spacing.sm, textTransform: 'uppercase' }]}>{task.status || 'UNKNOWN'}</Text>
+                      </View>
+                      <View style={styles.avatarsRow}>
+                        <View style={[styles.avatarRound, { backgroundColor: colors.surfaceDim, borderColor: colors.surfaceContainerLowest }]} />
+                      </View>
+                    </View>
+                  </View>
+                );
+              })
+            )}
 
           </View>
         </View>

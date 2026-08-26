@@ -1,53 +1,49 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
-
-const timelineData = [
-  {
-    id: 'e1',
-    type: 'CRITICAL',
-    typeColor: 'error',
-    icon: 'warning',
-    time: '09:12:44',
-    title: 'CORE_KERNEL_PANIC: SECTOR_4',
-    desc: 'Automated bypass protocol initiated after unauthorized access attempt on main gateway. Secondary cooling systems engaged.',
-    iconBg: 'errorContainer'
-  },
-  {
-    id: 'e2',
-    type: 'MODIFICATION',
-    typeColor: 'onSecondaryContainer',
-    icon: 'edit-document',
-    time: '08:45:12',
-    title: 'CONFIG_UPDATE: PERMISSIONS',
-    desc: 'Operator J. ARCHER modified access levels for sub-grid 09. Verification token: #99402.',
-    iconBg: 'secondaryContainer'
-  },
-  {
-    id: 'e3',
-    type: 'ROUTINE',
-    typeColor: 'onSurfaceVariant',
-    icon: 'sync',
-    time: '08:00:00',
-    title: 'SYSTEM_CHECK: COMPLETED',
-    desc: 'Global diagnostics completed across all active nodes. 0 anomalies detected. Latency optimized to 4ms.',
-    iconBg: 'surfaceContainer'
-  },
-  {
-    id: 'e4',
-    type: 'MODIFICATION',
-    typeColor: 'onSecondaryContainer',
-    icon: 'upload-file',
-    time: '07:22:15',
-    title: 'FIRMWARE_PUSH: NODE_X',
-    desc: 'Automated update of firmware version 1.4.2 to isolated research cluster. Integrity verified.',
-    iconBg: 'secondaryContainer'
-  }
-];
+import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
+import { API_URL } from '../../config';
 
 const TaskActivityHistoryScreen = () => {
   const { colors, typography, spacing, borderRadius } = useTheme();
+  const { user } = useAuth();
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      axios.get(`${API_URL}/api/activities`, { params: { workspaceId: user.activeWorkspace } })
+        .then(res => setActivities(res.data || []))
+        .catch(err => console.log('Error fetching activities:', err))
+        .finally(() => setLoading(false));
+    }
+  }, [user]);
+
+  // Helper to format activity into a timeline item
+  const formatActivity = (activity) => {
+    const actionMap = {
+      created: { type: 'CREATION', icon: 'add-circle', color: 'primary', bg: 'primaryContainer' },
+      updated: { type: 'MODIFICATION', icon: 'edit', color: 'onSecondaryContainer', bg: 'secondaryContainer' },
+      completed: { type: 'COMPLETION', icon: 'check-circle', color: 'primary', bg: 'surfaceContainerHigh' },
+      deleted: { type: 'DELETION', icon: 'delete', color: 'error', bg: 'errorContainer' }
+    };
+    const mapped = actionMap[activity.action] || { type: 'ROUTINE', icon: 'sync', color: 'onSurfaceVariant', bg: 'surfaceContainer' };
+    
+    return {
+      id: activity._id,
+      type: mapped.type,
+      typeColor: mapped.color,
+      icon: mapped.icon,
+      time: new Date(activity.createdAt).toLocaleTimeString([], { hour12: false }),
+      title: `${activity.entityType.toUpperCase()} ${activity.action.toUpperCase()}`,
+      desc: `Entity ID: ${activity.entityId}`,
+      iconBg: mapped.bg
+    };
+  };
+
+  const timelineData = activities.map(formatActivity);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
@@ -110,7 +106,12 @@ const TaskActivityHistoryScreen = () => {
           <View style={styles.timelineWrapper}>
             <View style={[styles.timelineLine, { backgroundColor: colors.surfaceVariant }]} />
             
-            {timelineData.map((item) => {
+            {loading ? (
+              <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
+            ) : timelineData.length === 0 ? (
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, marginTop: 20, textAlign: 'center' }]}>No recent activity found.</Text>
+            ) : (
+              timelineData.map((item) => {
               const iconColor = colors[item.typeColor] || colors.primary;
               const badgeBg = colors[item.iconBg] || colors.surfaceContainer;
               
@@ -131,13 +132,15 @@ const TaskActivityHistoryScreen = () => {
                   </View>
                 </View>
               );
-            })}
+            }))}
 
-            <View style={styles.feedEnd}>
-              <View style={[styles.endDot, { backgroundColor: colors.outlineVariant }]} />
-              <View style={[styles.endDot, { backgroundColor: colors.outlineVariant }]} />
-              <View style={[styles.endDot, { backgroundColor: colors.outlineVariant }]} />
-            </View>
+            {!loading && timelineData.length > 0 && (
+              <View style={styles.feedEnd}>
+                <View style={[styles.endDot, { backgroundColor: colors.outlineVariant }]} />
+                <View style={[styles.endDot, { backgroundColor: colors.outlineVariant }]} />
+                <View style={[styles.endDot, { backgroundColor: colors.outlineVariant }]} />
+              </View>
+            )}
 
           </View>
         </View>

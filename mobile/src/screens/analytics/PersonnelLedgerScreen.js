@@ -1,27 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, TextInput 
+  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, TextInput, Animated 
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence } from 'react-native-reanimated';
 
 const PersonnelLedgerScreen = ({ navigation }) => {
   const { colors, typography } = useTheme();
 
   // Pulse animation for system active dot
-  const opacity = useSharedValue(0.4);
+  const opacity = useRef(new Animated.Value(0.4)).current;
   useEffect(() => {
-    opacity.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1000 }),
-        withTiming(0.4, { duration: 1000 })
-      ),
-      -1,
-      true
-    );
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.4, duration: 1000, useNativeDriver: true }),
+      ])
+    ).start();
   }, []);
-  const animatedDotStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -44,7 +40,7 @@ const PersonnelLedgerScreen = ({ navigation }) => {
         <View style={styles.pageHeader}>
           <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '800' }]}>Personnel Ledger</Text>
           <View style={styles.statusIndicator}>
-            <Animated.View style={[styles.pulseDot, { backgroundColor: colors.tertiaryFixedDim }, animatedDotStyle]} />
+            <Animated.View style={[styles.pulseDot, { backgroundColor: colors.tertiaryFixedDim, opacity }]} />
             <Text style={[typography.labelCaps, { color: colors.secondary, marginLeft: 8 }]}>SYSTEM ACTIVE // ENCRYPTED ACCESS</Text>
           </View>
         </View>
