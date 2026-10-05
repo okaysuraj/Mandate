@@ -4,120 +4,141 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Design System: CSS Custom Properties ── */
+/* ─────────────────────────────────────────────────────
+   MANDATE — Industrial Design System
+   Sharp edges. High contrast. No squircles.
+   ───────────────────────────────────────────────────── */
+
+/* ── Light Mode — refined neutral canvas, crisp boundaries, high-contrast typography ── */
 :root {
-  /* Light Mode Tokens */
-  --surface-container-high: #e7e8ea;
-  --background: #f9f9fb;
-  --secondary-fixed-dim: #c6c6c8;
-  --on-tertiary-fixed-variant: #00531e;
-  --on-primary-container: #858383;
-  --on-error-container: #93000a;
-  --outline-variant: #c4c7c7;
-  --on-tertiary-fixed: #002108;
-  --primary-fixed: #e5e2e1;
-  --surface-container-highest: #e1e2e4;
-  --surface-dim: #d9dadc;
-  --on-secondary-fixed-variant: #454749;
-  --primary-fixed-dim: #c8c6c5;
-  --inverse-primary: #c8c6c5;
-  --on-secondary: #ffffff;
-  --on-primary-fixed-variant: #474746;
-  --primary: #000000;
-  --tertiary: #000000;
-  --on-secondary-container: #616365;
-  --on-surface-variant: #444748;
-  --surface-variant: #e1e2e4;
-  --on-tertiary: #ffffff;
-  --on-surface: #191c1e;
-  --outline: #747878;
-  --tertiary-fixed: #69ff87;
-  --inverse-on-surface: #f0f1f3;
-  --on-primary-fixed: #1c1b1b;
-  --error-container: #ffdad6;
-  --primary-container: #1c1b1b;
-  --secondary: #5d5e60;
-  --on-error: #ffffff;
-  --surface: #f9f9fb;
-  --surface-tint: #5f5e5e;
-  --inverse-surface: #2e3132;
-  --surface-container-low: #f3f3f5;
-  --on-tertiary-container: #00983d;
-  --on-primary: #ffffff;
-  --error: #ba1a1a;
-  --tertiary-fixed-dim: #3ce36a;
-  --tertiary-container: #002108;
+  color-scheme: light;
+  --background: #eef2f6;
+  --surface: #ffffff;
   --surface-container-lowest: #ffffff;
-  --secondary-container: #dfdfe1;
-  --surface-bright: #f9f9fb;
-  --on-secondary-fixed: #1a1c1d;
-  --secondary-fixed: #e2e2e4;
-  --on-background: #191c1e;
-  --surface-container: #edeef0;
+  --surface-container-low: #f6f8fb;
+  --surface-container: #e2e7ef;
+  --surface-container-high: #cbd5e1;
+  --surface-container-highest: #94a3b8;
+  --surface-dim: #dfe4ed;
+  --surface-bright: #ffffff;
+  --surface-variant: #f0f3f8;
+
+  --on-background: #090d16;
+  --on-surface: #090d16;
+  --on-surface-variant: #334155;
+  --outline: #475569;
+  --outline-variant: #cbd5e1;
+
+  --primary: #090d16;
+  --on-primary: #ffffff;
+  --primary-container: #e2e7ef;
+  --on-primary-container: #090d16;
+  --primary-fixed: #e2e7ef;
+  --primary-fixed-dim: #cbd5e1;
+  --on-primary-fixed: #090d16;
+  --on-primary-fixed-variant: #1e293b;
+  --inverse-primary: #94a3b8;
+  --inverse-surface: #090d16;
+  --inverse-on-surface: #f8fafc;
+
+  --secondary: #334155;
+  --on-secondary: #ffffff;
+  --secondary-container: #e2e7ef;
+  --on-secondary-container: #090d16;
+  --secondary-fixed: #e2e7ef;
+  --secondary-fixed-dim: #cbd5e1;
+  --on-secondary-fixed: #090d16;
+  --on-secondary-fixed-variant: #1e293b;
+
+  --tertiary: #047857;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #ecfdf5;
+  --on-tertiary-container: #064e3b;
+  --tertiary-fixed: #047857;
+  --tertiary-fixed-dim: #059669;
+  --on-tertiary-fixed: #022c22;
+  --on-tertiary-fixed-variant: #064e3b;
+
+  --error: #dc2626;
+  --on-error: #ffffff;
+  --error-container: #fef2f2;
+  --on-error-container: #991b1b;
+
+  --surface-tint: #475569;
 }
 
+/* ── Dark Mode — refined greyish slate (WhatsApp Web inspired), calm and soft on eyes ── */
 .dark {
-  --surface-container-high: #282828;
-  --background: #0a0a0a;
-  --secondary-fixed-dim: #c6c6c8;
-  --on-tertiary-fixed-variant: #00531e;
-  --on-primary-container: #1c1b1b;
-  --on-error-container: #ffdad6;
-  --outline-variant: #444748;
-  --on-tertiary-fixed: #002108;
-  --primary-fixed: #e5e2e1;
-  --surface-container-highest: #333333;
-  --surface-dim: #111111;
-  --on-secondary-fixed-variant: #454749;
-  --primary-fixed-dim: #c8c6c5;
-  --inverse-primary: #000000;
-  --on-secondary: #ffffff;
-  --on-primary-fixed-variant: #474746;
-  --primary: #ffffff;
-  --tertiary: #ffffff;
-  --on-secondary-container: #e2e2e4;
-  --on-surface-variant: #c4c7c7;
-  --surface-variant: #2c2c2c;
+  color-scheme: dark;
+  --background: #111b21;
+  --surface: #202c33;
+  --surface-container-lowest: #202c33;
+  --surface-container-low: #182229;
+  --surface-container: #222e35;
+  --surface-container-high: #2a3942;
+  --surface-container-highest: #374248;
+  --surface-dim: #111b21;
+  --surface-bright: #2a3942;
+  --surface-variant: #1c272e;
+
+  --on-background: #e9edef;
+  --on-surface: #e9edef;
+  --on-surface-variant: #aebac1;
+  --outline: #8696a0;
+  --outline-variant: #2a3942;
+
+  --primary: #e9edef;
+  --on-primary: #111b21;
+  --primary-container: #2a3942;
+  --on-primary-container: #e9edef;
+  --primary-fixed: #2a3942;
+  --primary-fixed-dim: #374248;
+  --on-primary-fixed: #e9edef;
+  --on-primary-fixed-variant: #d1d7db;
+  --inverse-primary: #222e35;
+  --inverse-surface: #e9edef;
+  --inverse-on-surface: #111b21;
+
+  --secondary: #aebac1;
+  --on-secondary: #111b21;
+  --secondary-container: #222e35;
+  --on-secondary-container: #e9edef;
+  --secondary-fixed: #2a3942;
+  --secondary-fixed-dim: #374248;
+  --on-secondary-fixed: #e9edef;
+  --on-secondary-fixed-variant: #d1d7db;
+
+  --tertiary: #00a884;
   --on-tertiary: #ffffff;
-  --on-surface: #f9f9fb;
-  --outline: #444748;
-  --tertiary-fixed: #69ff87;
-  --inverse-on-surface: #2e3132;
-  --on-primary-fixed: #1c1b1b;
-  --error-container: #93000a;
-  --primary-container: #e5e2e1;
-  --secondary: #c6c6c8;
-  --on-error: #ffffff;
-  --surface: #0a0a0a;
-  --surface-tint: #c8c6c5;
-  --inverse-surface: #f0f1f3;
-  --surface-container-low: #141414;
-  --on-tertiary-container: #3ce36a;
-  --on-primary: #000000;
-  --error: #ba1a1a;
-  --tertiary-fixed-dim: #3ce36a;
-  --tertiary-container: #002108;
-  --surface-container-lowest: #000000;
-  --secondary-container: #2e3132;
-  --surface-bright: #1c1c1c;
-  --on-secondary-fixed: #1a1c1d;
-  --secondary-fixed: #e2e2e4;
-  --on-background: #f9f9fb;
-  --surface-container: #1c1c1c;
+  --tertiary-container: #0b3d33;
+  --on-tertiary-container: #25d366;
+  --tertiary-fixed: #00a884;
+  --tertiary-fixed-dim: #059669;
+  --on-tertiary-fixed: #022c22;
+  --on-tertiary-fixed-variant: #25d366;
+
+  --error: #f15c6d;
+  --on-error: #450a0a;
+  --error-container: #3c1e22;
+  --on-error-container: #fca5a5;
+
+  --surface-tint: #8696a0;
 }
 
 /* ── Base Layer ── */
 @layer base {
   html {
     scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
   }
+
   body {
-    @apply bg-surface text-on-surface antialiased;
+    @apply bg-background text-on-surface antialiased;
     font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  
+
   ::selection {
     @apply bg-primary text-on-primary;
   }
@@ -125,82 +146,85 @@
 
 /* ── Component Layer ── */
 @layer components {
-  /* Material Symbols default settings */
+  /* Material Symbols — slightly heavier for industrial feel */
   .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
   }
 
-  /* Bento Card — the core card primitive */
+  /* Bento Card — refined industrial card */
   .bento-card {
     background-color: var(--surface-container-lowest);
-    border: 1px solid var(--surface-dim);
-    transition: border-color 0.2s ease, transform 0.2s ease;
+    border: 1px solid var(--outline-variant);
+    border-radius: 8px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .bento-card:hover {
-    border-color: var(--primary);
-    transform: translateY(-2px);
+    border-color: var(--outline);
   }
 
   /* Bento Grid — 12-col responsive grid */
   .bento-grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: 24px;
+    gap: 12px;
   }
   @media (max-width: 768px) {
     .bento-grid {
       grid-template-columns: 1fr;
+      gap: 12px;
     }
   }
 
-  /* Industrial Input */
+  /* Industrial Input — sleek, bordered */
   .mandate-input {
-    @apply w-full px-md py-sm bg-transparent border border-outline-variant rounded-md font-body-md text-body-md text-on-surface transition-all;
+    @apply w-full px-md py-sm bg-surface-container-lowest border border-outline-variant font-body-md text-body-md text-on-surface rounded-md transition-all;
   }
   .mandate-input:focus {
-    @apply outline-none border-primary;
-    border-width: 2px;
+    @apply outline-none border-primary ring-1 ring-primary;
+  }
+  .mandate-input::placeholder {
+    @apply text-outline;
   }
 
-  /* Primary Button — pill shape */
+  /* Primary Button — tactile, clean micro-radius */
   .mandate-btn-primary {
-    @apply px-xl py-md bg-primary text-on-primary rounded-full font-label-caps text-label-caps tracking-widest;
-    @apply hover:opacity-90 active:scale-95 transition-all duration-200;
+    @apply px-xl py-md bg-primary text-on-primary font-label-caps text-label-caps tracking-widest uppercase rounded-md shadow-sm;
+    @apply hover:opacity-90 active:scale-[0.98] transition-all duration-150 cursor-pointer;
   }
 
   /* Secondary/Ghost Button */
   .mandate-btn-secondary {
-    @apply px-xl py-md bg-transparent border border-outline text-primary rounded-full font-label-caps text-label-caps tracking-widest;
-    @apply hover:bg-surface-container-low transition-all duration-200;
+    @apply px-xl py-md bg-transparent border border-outline text-on-surface font-label-caps text-label-caps tracking-widest uppercase rounded-md;
+    @apply hover:bg-surface-container-low active:scale-[0.98] transition-all duration-150 cursor-pointer;
   }
 
-  /* Status chips */
+  /* Status chips — pill */
   .status-chip {
-    @apply inline-flex items-center gap-sm px-md py-xs rounded-full font-label-caps text-label-caps;
+    @apply inline-flex items-center gap-sm px-3 py-1 font-label-caps text-[10px] uppercase rounded-full font-bold tracking-wider;
   }
   .status-chip-active {
-    @apply bg-tertiary-container text-on-tertiary-container;
+    @apply bg-tertiary-container text-on-tertiary-container border border-outline-variant;
   }
   .status-chip-pending {
-    @apply bg-surface-container-high text-on-surface-variant;
+    @apply bg-surface-container text-on-surface-variant border border-outline-variant;
   }
   .status-chip-warning {
-    @apply bg-error-container text-error;
+    @apply bg-error-container text-error border border-error;
   }
   .status-chip-complete {
-    @apply bg-on-tertiary-container text-white;
+    @apply bg-primary-container text-on-primary-container border border-outline-variant;
   }
 
   /* Settings Grid */
   .settings-grid {
     display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 64px;
+    grid-template-columns: 260px 1fr;
+    gap: 48px;
   }
   @media (max-width: 768px) {
     .settings-grid {
       grid-template-columns: 1fr;
-      gap: 32px;
+      gap: 24px;
     }
   }
 
@@ -208,26 +232,41 @@
   .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    grid-auto-rows: minmax(120px, auto);
+    grid-auto-rows: minmax(100px, auto);
+  }
+  @media (max-width: 768px) {
+    .calendar-grid {
+      grid-auto-rows: minmax(72px, auto);
+    }
   }
 }
 
-/* ── Custom Scrollbar ── */
+/* ── Scrollbar — thin, industrial ── */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: var(--surface);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--surface-dim);
-  border-radius: 3px;
+  background: var(--outline-variant);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--outline);
 }
 
-/* ── Custom Animations ── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+}
+
+/* ── Animations ── */
 @keyframes scan {
   0% { transform: translateY(-100vh); }
   100% { transform: translateY(100vh); }
@@ -235,20 +274,19 @@
 
 .scanline {
   width: 100%;
-  height: 2px;
-  background: rgba(0, 0, 0, 0.03);
+  height: 1px;
+  background: rgba(0, 0, 0, 0.04);
   position: absolute;
   top: 0;
   left: 0;
   pointer-events: none;
-  animation: scan 8s linear infinite;
+  animation: scan 10s linear infinite;
 }
-
 .dark .scanline {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-/* Chart line animation */
+/* Chart line */
 .chart-line {
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
@@ -265,31 +303,34 @@
 
 /* Timer glow */
 .timer-glow {
-  filter: drop-shadow(0 0 10px rgba(0,0,0,0.05));
+  filter: drop-shadow(0 0 8px rgba(0,0,0,0.06));
 }
 .dark .timer-glow {
-  filter: drop-shadow(0 0 10px rgba(255,255,255,0.05));
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.04));
 }
 
 /* Task detail expand */
 .task-detail {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease-out;
+  transition: max-height 0.2s ease-out;
 }
 .task-card:hover .task-detail,
 .task-card.expanded .task-detail {
   max-height: 200px;
 }
 
-/* Custom scrollbar — thin variant */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+/* ── Mobile touch improvements ── */
+@media (max-width: 768px) {
+  .mandate-btn-primary,
+  .mandate-btn-secondary {
+    min-height: 44px;
+  }
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+
+/* ── Focus visible for accessibility ── */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--surface-dim);
-  border-radius: 2px;
-}
+

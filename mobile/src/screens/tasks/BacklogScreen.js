@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
@@ -39,15 +39,17 @@ const BacklogScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
-  const filteredTasks = tasks.filter(t => {
-    if (search && !t.title.toLowerCase().includes(search.toLowerCase()) && !(t.description && t.description.toLowerCase().includes(search.toLowerCase()))) {
-      return false;
-    }
-    if (activeFilter === 'PENDING' && t.status !== 'pending') return false;
-    if (activeFilter === 'IN-PROGRESS' && t.status !== 'in-progress') return false;
-    if (activeFilter === 'FAILED' && t.status !== 'failed') return false; // Assuming failed is a status
-    return true;
-  });
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(t => {
+      if (search && !t.title.toLowerCase().includes(search.toLowerCase()) && !(t.description && t.description.toLowerCase().includes(search.toLowerCase()))) {
+        return false;
+      }
+      if (activeFilter === 'PENDING' && t.status !== 'pending') return false;
+      if (activeFilter === 'IN-PROGRESS' && t.status !== 'in-progress') return false;
+      if (activeFilter === 'COMPLETED' && t.status !== 'completed') return false;
+      return true;
+    });
+  }, [tasks, search, activeFilter]);
 
   const getStatusColor = (status) => {
     if (status === 'completed') return colors.onTertiaryContainer;

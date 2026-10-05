@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
-import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import { API_URL } from "../../config";
 import { useTheme } from "../../context/ThemeContext";
+import api from "../../services/api";
 
 const DocsScreen = ({ navigation }) => {
   const [docs, setDocs] = useState([]);
@@ -13,9 +12,9 @@ const DocsScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (user) {
-      axios.get(`${API_URL}/api/documents`, { params: { workspaceId: user.activeWorkspace } })
-        .then(res => setDocs(res.data || res.data.data || []))
-        .catch(err => console.log(err))
+      api.get("/documents", { params: { workspaceId: user.activeWorkspace } })
+        .then(res => setDocs(res.data || res.data?.data || []))
+        .catch(err => console.log("Failed to load documents", err))
         .finally(() => setLoading(false));
     }
   }, [user]);

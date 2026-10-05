@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Slider
+  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";

@@ -4,9 +4,12 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
+import api from "../../services/api";
+import { useDataStore } from "../../store/useDataStore";
 
 const LockInScreen = ({ navigation }) => {
   const { colors, typography, spacing } = useTheme();
+  const { tasks, loadTasks } = useDataStore((state) => state);
   
   const [commitState, setCommitState] = useState('idle'); // idle, locking, locked
   const [totalSeconds, setTotalSeconds] = useState((18 * 3600) + (42 * 60)); // 18:42:00
@@ -15,13 +18,15 @@ const LockInScreen = ({ navigation }) => {
   const shimmerAnim = React.useRef(new Animated.Value(0)).current;
   
   useEffect(() => {
-    Animated.loop(
+    const shimmer = Animated.loop(
       Animated.timing(shimmerAnim, {
         toValue: 1,
         duration: 2000,
-        useNativeDriver: false, // backgroundColor doesn't support native driver
+        useNativeDriver: false,
       })
-    ).start();
+    );
+    shimmer.start();
+    return () => shimmer.stop();
   }, [shimmerAnim]);
 
   useEffect(() => {
@@ -38,15 +43,33 @@ const LockInScreen = ({ navigation }) => {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
-  const handleCommit = () => {
+  const handleCommit = async () => {
     if (commitState !== 'idle') return;
     setCommitState('locking');
-    setTimeout(() => {
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const taskIds = (tasks || [])
+        .filter(t => t.status !== 'completed' && t.status !== 'archived')
+        .slice(0, 5)
+        .map(t => t._id || t.id);
+      
+      if (taskIds.length > 0) {
+        await api.post('/planning/lock', {
+          date: todayStr,
+          taskIds: taskIds
+        });
+      }
       setCommitState('locked');
       setTimeout(() => {
         navigation.goBack();
-      }, 1500);
-    }, 2000);
+      }, 1200);
+    } catch (e) {
+      console.warn('Planning lock sync', e);
+      setCommitState('locked');
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1200);
+    }
   };
 
   const getButtonBg = () => {

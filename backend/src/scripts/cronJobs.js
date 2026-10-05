@@ -57,12 +57,12 @@ cron.schedule("0 0 * * *", async () => {
       if (!userId) continue;
 
       await Notification.create({
-        userId,
+        user: userId,
         title: "Deadline Approaching",
         message: `Task "${task.title}" is due soon.`,
         type: "reminder",
-        relatedId: task._id,
-        relatedModel: "Task"
+        relatedEntityId: task._id,
+        workspaceId: task.workspaceId
       });
       console.log(`Created deadline warning for: ${task.title}`);
 

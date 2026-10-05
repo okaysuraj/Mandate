@@ -7,18 +7,31 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import * as Font from "expo-font";
 import { MaterialIcons } from "@expo/vector-icons";
+import { isRunningInExpoGo } from "expo";
+import Constants from "expo-constants";
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 import axios from 'axios';
 import { API_URL } from "./src/config";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// expo-notifications native module is NOT available inside Expo Go (SDK 53+).
+// We lazily require() the module only when running in a development/production build.
+let Notifications = null;
+if (!isRunningInExpoGo()) {
+  try {
+    Notifications = require('expo-notifications');
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+  } catch (err) {
+    console.warn('[Notifications] Setup failed:', err);
+  }
+} else {
+  console.log('[Notifications] Skipped: expo-notifications is not available in Expo Go. Use a development build for push notifications.');
+}
 
 // Fonts
 import {
@@ -161,10 +174,15 @@ const TabIcon = ({ label, focused, iconName, colors }) => (
   <View style={[styles.tabIconContainer, focused && { borderTopColor: colors.primary, borderTopWidth: 2 }]}>
     <MaterialIcons
       name={iconName}
-      size={24}
+      size={22}
       color={focused ? colors.primary : colors.secondary}
     />
-    <Text style={[styles.tabLabel, { color: focused ? colors.primary : colors.secondary }]}>
+    <Text
+      style={[styles.tabLabel, { color: focused ? colors.primary : colors.secondary }]}
+      numberOfLines={1}
+      ellipsizeMode="tail"
+      allowFontScaling={false}
+    >
       {label}
     </Text>
   </View>
@@ -302,6 +320,8 @@ const MainTabs = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        freezeOnBlur: true,
+        lazy: true,
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopWidth: 1,
@@ -370,6 +390,7 @@ const AuthStack = () => (
     <Stack.Screen name="Login" component={LoginScreen} />
     <Stack.Screen name="Register" component={RegisterScreen} />
     <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+    <Stack.Screen name="Pricing" component={PricingScreen} />
   </Stack.Navigator>
 );
 
@@ -379,44 +400,62 @@ const RootNavigator = () => {
 
   useEffect(() => {
     if (user) {
-      registerForPushNotificationsAsync().then(token => {
-        if (token) {
-          axios.post(`${API_URL}/api/users/push-token`, { expoPushToken: token })
-            .catch(err => console.error('Failed to register push token', err));
-        }
-      });
+      registerForPushNotificationsAsync()
+        .then(token => {
+          if (token) {
+            axios.post(`${API_URL}/api/users/push-token`, { expoPushToken: token })
+              .catch(err => console.error('Failed to register push token', err));
+          }
+        })
+        .catch(err => console.warn('[Notifications] Token registration failed:', err));
     }
   }, [user]);
 
   async function registerForPushNotificationsAsync() {
-    let token;
-
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-      });
+    // expo-notifications native module is not available in Expo Go (SDK 53+).
+    if (!Notifications || isRunningInExpoGo()) {
+      console.log('[Notifications] Push notifications skipped: not available in this runtime.');
+      return null;
     }
 
-    if (Device.isDevice) {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-      if (finalStatus !== 'granted') {
-        console.log('Failed to get push token for push notification!');
-        return;
-      }
-      token = (await Notifications.getExpoPushTokenAsync({ projectId: 'YOUR_EXPO_PROJECT_ID_HERE' })).data;
-    } else {
-      console.log('Must use physical device for Push Notifications');
-    }
+    try {
+      let token;
 
-    return token;
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
+        });
+      }
+
+      if (Device.isDevice) {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+        if (finalStatus !== 'granted') {
+          console.log('Failed to get push token for push notification!');
+          return null;
+        }
+
+        const projectId =
+          Constants?.expoConfig?.extra?.eas?.projectId ??
+          Constants?.easConfig?.projectId;
+
+        token = (await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined)).data;
+      } else {
+        console.log('Must use physical device for Push Notifications');
+      }
+
+      return token;
+    } catch (error) {
+      console.warn('[Notifications] Push notification registration error:', error?.message || error);
+      return null;
+    }
   }
   
   return (
@@ -479,8 +518,8 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontFamily: "JetBrainsMono-Medium",
-    fontSize: 10,
-    letterSpacing: 0, // 0em in web
+    fontSize: 8.5,
+    letterSpacing: -0.2,
     marginTop: 2,
     textTransform: "uppercase",
   },

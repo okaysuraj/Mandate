@@ -36,7 +36,7 @@ const taskSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "in-progress", "completed", "archived"],
+      enum: ["pending", "in-progress", "validation", "completed", "archived"],
       default: "pending",
     },
     priority: {
@@ -98,7 +98,9 @@ const taskSchema = new mongoose.Schema(
 
 taskSchema.index({ creatorId: 1, status: 1 });
 taskSchema.index({ dueDate: 1 });
-taskSchema.index({ workspaceId: 1 });
+taskSchema.index({ workspaceId: 1, status: 1 });
+taskSchema.index({ parentTaskId: 1 });
+taskSchema.index({ assigneeId: 1 });
 
 const Task = mongoose.model("Task", taskSchema);
 export default Task;

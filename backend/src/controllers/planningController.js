@@ -14,8 +14,8 @@ export const getSuggestions = async (req, res) => {
 
     // Active tasks for user
     const query = { 
-      creatorId: req.user.id,
-      status: { $in: ["todo", "active", "blocked"] }
+      $or: [{ creatorId: req.user.id }, { assigneeId: req.user.id }],
+      status: { $in: ["pending", "in-progress"] }
     };
 
     const tasks = await Task.find(query);
@@ -33,12 +33,12 @@ export const getSuggestions = async (req, res) => {
           suggestions.overdue.push(task);
         } else if (task.dueDate >= today && task.dueDate < tomorrow) {
           suggestions.dueToday.push(task);
-        } else if (task.priority === "high") {
+        } else if (task.priority === "high" || task.priority === "urgent") {
           suggestions.highPriority.push(task);
         } else {
           suggestions.others.push(task);
         }
-      } else if (task.priority === "high") {
+      } else if (task.priority === "high" || task.priority === "urgent") {
         suggestions.highPriority.push(task);
       } else {
         suggestions.others.push(task);
@@ -48,6 +48,26 @@ export const getSuggestions = async (req, res) => {
     res.status(200).json(suggestions);
   } catch (error) {
     console.error("Error in getSuggestions", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// @desc    Get locked daily mandate for a date
+// @route   GET /api/planning/daily
+// @access  Private
+export const getDailyMandate = async (req, res) => {
+  try {
+    const date = req.query.date || new Date().toISOString().split("T")[0];
+    const dailyMandate = await DailyMandate.findOne({ userId: req.user.id, date })
+      .populate("tasks");
+
+    if (!dailyMandate) {
+      return res.status(200).json({ date, locked: false, tasks: [] });
+    }
+
+    res.status(200).json({ ...dailyMandate.toObject(), locked: true });
+  } catch (error) {
+    console.error("Error in getDailyMandate", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -86,13 +106,14 @@ export const lockDailyMandate = async (req, res) => {
       });
     }
 
-    // Optionally update task statuses to active
+    // Update task statuses to in-progress
     await Task.updateMany(
-      { _id: { $in: taskIds } },
-      { $set: { status: "active", startDate: new Date() } }
+      { _id: { $in: taskIds }, status: { $ne: "completed" } },
+      { $set: { status: "in-progress", startDate: new Date() } }
     );
 
-    res.status(200).json(dailyMandate);
+    const populated = await DailyMandate.findById(dailyMandate._id).populate("tasks");
+    res.status(200).json({ ...populated.toObject(), locked: true });
   } catch (error) {
     console.error("Error in lockDailyMandate", error);
     res.status(500).json({ message: "Internal server error" });

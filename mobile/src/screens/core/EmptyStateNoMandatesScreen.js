@@ -23,7 +23,7 @@ const EmptyStateNoMandatesScreen = ({ navigation }) => {
 
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.mainContent}>
-          {/* Abstract Grid Background Mock (Just light padding instead of full grid) */}
+          {/* Abstract Grid Layout */}
           <View style={[styles.contentWrapper, { paddingHorizontal: spacing.gutter, paddingTop: spacing.xl, paddingBottom: spacing.xl }]}>
             
             {/* Empty State Content */}

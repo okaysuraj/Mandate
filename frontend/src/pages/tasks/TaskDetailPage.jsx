@@ -1,20 +1,59 @@
 import React, { useState, useEffect } from "react";
 import AppLayout from "../../components/layout/AppLayout";
 import { useParams, useNavigate } from "react-router";
-import { getTaskById } from "../../services/taskService";
+import { getTaskById, updateTask, deleteTask, getCommentsForTask, addComment, createTask, getTasks } from "../../services/taskService";
 import toast from "react-hot-toast";
 
 const TaskDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
+  // Editable fields
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("pending");
+  const [priority, setPriority] = useState("medium");
+  const [dueDate, setDueDate] = useState("");
+  
+  // Subtasks & Comments
+  const [subtasks, setSubtasks] = useState([]);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
 
   useEffect(() => {
-    const fetchTask = async () => {
+    const fetchTaskData = async () => {
       try {
+        setLoading(true);
         const data = await getTaskById(id);
-        setTask(data.data || data);
+        const t = data.data || data;
+        setTask(t);
+        setTitle(t.title || "");
+        setDescription(t.description || t.content || "");
+        setStatus(t.status || "pending");
+        setPriority(t.priority || "medium");
+        setDueDate(t.dueDate ? new Date(t.dueDate).toISOString().split("T")[0] : "");
+
+        // Fetch subtasks
+        try {
+          const subtaskRes = await getTasks({ parentTaskId: id });
+          setSubtasks(subtaskRes.data || (Array.isArray(subtaskRes) ? subtaskRes : []));
+        } catch (e) {
+          console.warn("Could not load subtasks", e);
+        }
+
+        // Fetch comments
+        try {
+          const commentsRes = await getCommentsForTask(id);
+          setComments(Array.isArray(commentsRes) ? commentsRes : []);
+        } catch (e) {
+          console.warn("Could not load comments", e);
+        }
       } catch (error) {
         console.error(error);
         toast.error("Failed to load task details");
@@ -22,14 +61,103 @@ const TaskDetailPage = () => {
         setLoading(false);
       }
     };
-    if (id) fetchTask();
+
+    if (id) fetchTaskData();
   }, [id]);
+
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
+    try {
+      setSaving(true);
+      const updated = await updateTask(id, {
+        title,
+        description,
+        status,
+        priority,
+        dueDate: dueDate ? new Date(dueDate) : null
+      });
+      setTask(updated);
+      toast.success("Mandate updated successfully");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update mandate");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleStatusChange = async (newStatus) => {
+    setStatus(newStatus);
+    try {
+      const updated = await updateTask(id, { status: newStatus });
+      setTask(updated);
+      toast.success(`Status updated to ${newStatus}`);
+    } catch (err) {
+      toast.error("Status update failed");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to terminate this mandate?")) return;
+    try {
+      await deleteTask(id);
+      toast.success("Mandate deleted");
+      navigate("/tasks");
+    } catch (err) {
+      toast.error("Failed to delete mandate");
+    }
+  };
+
+  const handleAddSubtask = async (e) => {
+    e.preventDefault();
+    if (!newSubtaskTitle.trim()) return;
+    try {
+      const newSub = await createTask({
+        title: newSubtaskTitle.trim(),
+        parentTaskId: id,
+        workspaceId: task.workspaceId,
+        priority: "medium",
+        status: "pending"
+      });
+      setSubtasks([...subtasks, newSub]);
+      setNewSubtaskTitle("");
+      toast.success("Subtask added");
+    } catch (err) {
+      toast.error("Failed to add subtask");
+    }
+  };
+
+  const handleToggleSubtask = async (subtaskId, currentStatus) => {
+    const nextStatus = currentStatus === "completed" ? "pending" : "completed";
+    try {
+      await updateTask(subtaskId, { status: nextStatus });
+      setSubtasks(subtasks.map(s => s._id === subtaskId ? { ...s, status: nextStatus } : s));
+    } catch (err) {
+      toast.error("Failed to toggle subtask");
+    }
+  };
+
+  const handleAddComment = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    try {
+      setPostingComment(true);
+      const created = await addComment(id, { content: newComment.trim() });
+      setComments([created, ...comments]);
+      setNewComment("");
+      toast.success("Comment posted");
+    } catch (err) {
+      toast.error("Failed to post comment");
+    } finally {
+      setPostingComment(false);
+    }
+  };
 
   if (loading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center h-full font-label-caps text-label-caps text-on-surface-variant">
-          LOADING TELEMETRY...
+        <div className="flex items-center justify-center h-full font-mono text-sm tracking-widest text-on-surface-variant animate-pulse">
+          INITIALIZING MANDATE TELEMETRY...
         </div>
       </AppLayout>
     );
@@ -38,215 +166,284 @@ const TaskDetailPage = () => {
   if (!task) {
     return (
       <AppLayout>
-        <div className="flex flex-col items-center justify-center h-full gap-md">
-          <span className="font-label-caps text-label-caps text-error">CRITICAL ERROR: RECORD NOT FOUND</span>
-          <button onClick={() => navigate(-1)} className="px-lg py-sm border border-outline text-primary font-label-caps rounded-full hover:bg-surface-container-low transition-colors">
-            RETURN TO DIRECTIVES
+        <div className="flex flex-col items-center justify-center h-full gap-4">
+          <span className="font-mono text-xs font-bold text-red-500 uppercase tracking-widest">CRITICAL: DIRECTIVE NOT FOUND</span>
+          <button onClick={() => navigate(-1)} className="px-6 py-2 border border-outline text-primary text-xs font-bold tracking-widest uppercase rounded hover:bg-surface-container-low transition-colors">
+            RETURN TO COMMAND
           </button>
         </div>
       </AppLayout>
     );
   }
 
-  const progress = task.status === 'completed' ? 100 : task.status === 'in-progress' ? 84.2 : 12.5;
+  const completedSubtasksCount = subtasks.filter(s => s.status === "completed").length;
+  const progressPercent = subtasks.length > 0 
+    ? Math.round((completedSubtasksCount / subtasks.length) * 100)
+    : (status === "completed" ? 100 : status === "in-progress" ? 50 : 0);
 
   return (
     <AppLayout>
-      <div className="flex-1 flex flex-col gap-lg pb-xl w-full">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-md">
+      <div className="flex-1 flex flex-col gap-6 pb-12 w-full max-w-6xl mx-auto">
+        
+        {/* Top Header Bar */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-outline-variant pb-6">
           <div>
-            <div className="flex items-center gap-sm mb-xs">
-              <span className={`font-label-caps text-label-caps px-sm py-xs rounded-sm ${
-                task.status === 'completed' ? 'bg-primary-container text-on-primary-container' : 'bg-primary text-on-primary'
-              }`}>
-                {task.status === 'completed' ? 'COMPLETED' : 'ACTIVE'}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+              <span className="font-mono text-xs px-2.5 py-1 bg-surface-container-high border border-outline-variant text-on-surface font-bold rounded-lg uppercase">
+                #MND-{String(task._id).slice(-4).toUpperCase()}
               </span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant uppercase">
-                Initiated: {new Date(task.createdAt || Date.now()).toLocaleDateString('en-GB', { month: 'short', day: '2-digit', year: 'numeric' })} | 08:42 UTC
+              <span className={`text-[10px] font-mono font-bold tracking-wider uppercase px-2.5 py-1 rounded-full border ${
+                status === "completed" ? "bg-tertiary-container text-on-tertiary-container border-outline-variant" :
+                status === "in-progress" ? "bg-surface-container-highest text-primary border-primary" :
+                status === "archived" ? "bg-surface-container-high text-on-surface-variant border-outline-variant" :
+                "bg-secondary-container text-on-secondary-container border-outline-variant"
+              }`}>
+                {status}
+              </span>
+              <span className="text-xs text-on-surface-variant font-mono">
+                CREATED: {new Date(task.createdAt || Date.now()).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
               </span>
             </div>
-            <h2 className="font-display-lg text-display-lg text-primary uppercase">MND-{String(task._id || task.id || "0000").slice(-4).toUpperCase()}</h2>
-            <p className="font-headline-lg text-headline-lg text-on-surface-variant max-w-2xl">{task.title}</p>
-            {task.description && <p className="font-body-md text-on-surface-variant mt-sm max-w-3xl">{task.description}</p>}
+            <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-on-surface font-sans">
+              {title}
+            </h1>
           </div>
-          <div className="flex gap-sm">
-            <button className="px-md py-sm border border-outline text-primary rounded-full font-label-sm flex items-center gap-sm hover:bg-surface-container-low transition-all">
-              <span className="material-symbols-outlined text-[18px]">share</span>
-              Export Manifest
+
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <button 
+              type="button" 
+              onClick={handleSave} 
+              disabled={saving}
+              className="px-5 py-2.5 bg-primary text-on-primary text-xs font-mono font-bold uppercase tracking-wider rounded-lg hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+            >
+              {saving ? "SAVING..." : "SAVE MANDATE"}
             </button>
             <button 
-              onClick={() => navigate(`/focus/${task._id}`)}
-              className="px-md py-sm bg-primary text-on-primary rounded-full font-label-sm flex items-center gap-sm hover:opacity-90 active:scale-95 transition-all"
+              type="button" 
+              onClick={handleDelete} 
+              className="px-4 py-2.5 border border-error text-error bg-error-container/30 hover:bg-error-container text-xs font-mono font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[18px]">bolt</span>
-              Execute Override
+              DELETE
             </button>
           </div>
         </div>
 
-        {/* Bento Grid - Telemetry & Status */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
-          {/* Main Status Visualizer */}
-          <div className="md:col-span-8 bg-surface border border-outline-variant p-lg flex flex-col justify-between relative overflow-hidden group">
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-xl">
+        {/* Main Grid: Parameters on Left, Subtasks & Comments on Right */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+          
+          {/* Left Column (7 cols): Parameters & Directives */}
+          <div className="lg:col-span-7 flex flex-col gap-6">
+            
+            {/* Directive Details Card */}
+            <div className="bg-surface-container-lowest border border-outline-variant p-5 sm:p-6 rounded-xl shadow-sm space-y-4">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-on-surface-variant">DIRECTIVE PARAMETERS</h2>
+              
+              <div>
+                <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">MANDATE TITLE</label>
+                <input 
+                  type="text" 
+                  value={title} 
+                  onChange={(e) => setTitle(e.target.value)} 
+                  className="w-full bg-surface-container-low border border-outline-variant px-3.5 py-2.5 text-sm text-on-surface rounded-lg focus:outline-none focus:border-primary font-sans transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">INSTRUCTIONS & CONTEXT</label>
+                <textarea 
+                  rows={5} 
+                  value={description} 
+                  onChange={(e) => setDescription(e.target.value)} 
+                  placeholder="Specify operating procedures, criteria for completion, or dependencies..."
+                  className="w-full bg-surface-container-low border border-outline-variant p-3.5 text-sm text-on-surface rounded-lg focus:outline-none focus:border-primary font-sans resize-y transition-colors leading-relaxed placeholder:text-on-surface-variant/50"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-1">
                 <div>
-                  <p className="font-label-caps text-label-caps text-on-surface-variant mb-xs">Operational Progress</p>
-                  <span className="text-[48px] font-bold leading-tight">{progress.toFixed(1)}%</span>
+                  <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">STATUS</label>
+                  <select 
+                    value={status} 
+                    onChange={(e) => handleStatusChange(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant px-3 py-2 text-xs font-bold text-on-surface rounded-lg uppercase focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="in-progress">In-Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="archived">Archived</option>
+                  </select>
                 </div>
-                <div className="text-right">
-                  <p className="font-label-caps text-label-caps text-on-surface-variant mb-xs">Priority Index</p>
-                  <span className="font-label-sm text-label-sm bg-surface-container-high px-sm py-1 rounded uppercase">{task.priority || "MEDIUM"}</span>
+
+                <div>
+                  <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">PRIORITY</label>
+                  <select 
+                    value={priority} 
+                    onChange={(e) => setPriority(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant px-3 py-2 text-xs font-bold text-on-surface rounded-lg uppercase focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">TARGET DEADLINE</label>
+                  <input 
+                    type="date" 
+                    value={dueDate} 
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant px-3 py-2 text-xs text-on-surface rounded-lg focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                  />
                 </div>
               </div>
+            </div>
+
+            {/* Operational Progress Bar Card */}
+            <div className="bg-surface-container-lowest border border-outline-variant p-5 sm:p-6 rounded-xl shadow-sm">
+              <div className="flex justify-between items-center mb-2.5">
+                <span className="text-xs font-mono font-bold uppercase tracking-widest text-on-surface-variant">EXECUTION VELOCITY</span>
+                <span className="font-mono text-sm font-bold text-on-surface">{progressPercent}%</span>
+              </div>
+              <div className="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden">
+                <div 
+                  className="bg-primary h-full transition-all duration-300 rounded-full"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-on-surface-variant mt-2.5 font-mono">
+                {completedSubtasksCount} of {subtasks.length} subtasks completed.
+              </p>
+            </div>
+
+            {/* Attachments Section */}
+            {task.attachments && task.attachments.length > 0 && (
+              <div className="bg-surface-container-lowest border border-outline-variant p-5 sm:p-6 rounded-xl shadow-sm space-y-3">
+                <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-on-surface-variant">ATTACHED MANIFESTS</h2>
+                <div className="space-y-2">
+                  {task.attachments.map((att, idx) => {
+                    const downloadUrl = att.url?.startsWith("http")
+                      ? att.url
+                      : `${(import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")}${att.url?.startsWith("/") ? "" : "/"}${att.url}`;
+                    return (
+                      <div key={idx} className="flex justify-between items-center bg-surface-container-low border border-outline-variant p-3 rounded-lg">
+                        <span className="text-xs font-mono text-on-surface truncate max-w-xs">{att.name}</span>
+                        <a 
+                          href={downloadUrl} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="text-xs font-bold font-mono text-primary hover:underline uppercase tracking-wider"
+                        >
+                          ACCESS FILE
+                        </a>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column (5 cols): Subtasks & Live Communications */}
+          <div className="lg:col-span-5 flex flex-col gap-6">
+            
+            {/* Subtasks Section */}
+            <div className="bg-surface-container-lowest border border-outline-variant p-5 sm:p-6 rounded-xl shadow-sm space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-on-surface-variant">SUBTASK PHASES</h2>
+                <span className="text-xs font-mono font-bold text-on-surface">{completedSubtasksCount}/{subtasks.length}</span>
+              </div>
+
+              {/* Add Subtask Input */}
+              <form onSubmit={handleAddSubtask} className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={newSubtaskTitle} 
+                  onChange={(e) => setNewSubtaskTitle(e.target.value)} 
+                  placeholder="Append operational subtask..."
+                  className="flex-1 bg-surface-container-low border border-outline-variant px-3 py-2 text-xs text-on-surface rounded-lg focus:outline-none focus:border-primary placeholder:text-on-surface-variant/50 transition-colors"
+                />
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 bg-primary text-on-primary text-xs font-mono font-bold uppercase tracking-wider rounded-lg hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm"
+                >
+                  ADD
+                </button>
+              </form>
+
+              {/* Subtasks List */}
+              <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
+                {subtasks.length === 0 ? (
+                  <p className="text-xs text-on-surface-variant font-mono italic">No subtask phases initialized.</p>
+                ) : (
+                  subtasks.map((sub) => (
+                    <div 
+                      key={sub._id} 
+                      onClick={() => handleToggleSubtask(sub._id, sub.status)}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        sub.status === "completed" 
+                          ? "bg-surface-container-low/60 border-outline-variant/60 opacity-60 line-through" 
+                          : "bg-surface-container-low border-outline-variant hover:border-primary"
+                      }`}
+                    >
+                      <input 
+                        type="checkbox" 
+                        checked={sub.status === "completed"} 
+                        onChange={() => {}} 
+                        className="rounded cursor-pointer text-primary focus:ring-primary w-4 h-4"
+                      />
+                      <span className="text-xs font-mono text-on-surface flex-1">{sub.title}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Real Communications / Comments Stream */}
+            <div className="bg-surface-container-lowest border border-outline-variant p-5 sm:p-6 rounded-xl shadow-sm space-y-4">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-on-surface-variant">MISSION LOGS & COMMUNICATIONS</h2>
               
-              {/* Mini Charts Simulation */}
-              <div className="flex items-end gap-1 h-32 w-full mb-md">
-                <div className="bg-primary-container w-full h-[60%] opacity-20"></div>
-                <div className="bg-primary w-full h-[70%]"></div>
-                <div className="bg-primary w-full h-[45%]"></div>
-                <div className="bg-primary-container w-full h-[90%] opacity-20"></div>
-                <div className="bg-primary w-full h-[85%]"></div>
-                <div className="bg-primary w-full h-[30%]"></div>
-                <div className="bg-primary w-full h-[65%]"></div>
-                <div className="bg-primary-container w-full h-[40%] opacity-20"></div>
-                <div className="bg-primary w-full h-[75%]"></div>
-                <div className="bg-primary w-full h-[55%]"></div>
-                <div className="bg-primary w-full h-[95%]"></div>
-                <div className="bg-primary-container w-full h-[10%] opacity-20"></div>
-              </div>
-              
-              <div className="flex justify-between font-label-sm text-on-surface-variant text-[10px] uppercase tracking-wider">
-                <span>00:00</span>
-                <span>Phase 02: Thermal Mapping</span>
-                <span>Current</span>
+              <form onSubmit={handleAddComment} className="flex flex-col gap-2">
+                <textarea 
+                  rows={2}
+                  value={newComment} 
+                  onChange={(e) => setNewComment(e.target.value)} 
+                  placeholder="Record an operational log or update..."
+                  className="w-full bg-surface-container-low border border-outline-variant p-3 text-xs text-on-surface rounded-lg focus:outline-none focus:border-primary placeholder:text-on-surface-variant/50 transition-colors resize-y"
+                />
+                <div className="flex justify-end">
+                  <button 
+                    type="submit" 
+                    disabled={postingComment || !newComment.trim()}
+                    className="px-4 py-2 bg-primary text-on-primary text-xs font-mono font-bold uppercase tracking-wider rounded-lg hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                  >
+                    {postingComment ? "TRANSMITTING..." : "POST LOG"}
+                  </button>
+                </div>
+              </form>
+
+              <div className="space-y-3 max-h-80 overflow-y-auto pr-1 custom-scrollbar">
+                {comments.length === 0 ? (
+                  <p className="text-xs text-on-surface-variant font-mono italic">No log communications recorded yet.</p>
+                ) : (
+                  comments.map((c) => (
+                    <div key={c._id} className="bg-surface-container-low border border-outline-variant p-3.5 rounded-lg space-y-1">
+                      <div className="flex justify-between items-center text-[10px] text-on-surface-variant font-mono">
+                        <span className="font-bold text-on-surface">{c.user?.name || "OPERATIVE"}</span>
+                        <span>{new Date(c.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      <p className="text-xs text-on-surface font-sans leading-relaxed">{c.content}</p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
-            {/* Subtle Background Grid Pattern */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+
           </div>
 
-          {/* Environmental Telemetry */}
-          <div className="md:col-span-4 grid grid-cols-1 gap-gutter">
-            <div className="bg-surface border border-outline-variant p-lg flex flex-col justify-between">
-              <div className="flex justify-between items-center mb-md">
-                <span className="font-label-caps text-label-caps text-on-surface-variant">Core Temp</span>
-                <span className="material-symbols-outlined text-tertiary">thermostat</span>
-              </div>
-              <div>
-                <span className="text-headline-lg font-bold">42.8°C</span>
-                <p className="text-label-sm text-on-tertiary-container mt-xs flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">trending_up</span>
-                  +0.4% Nominal
-                </p>
-              </div>
-            </div>
-            
-            <div className="bg-surface border border-outline-variant p-lg flex flex-col justify-between">
-              <div className="flex justify-between items-center mb-md">
-                <span className="font-label-caps text-label-caps text-on-surface-variant">Pressure Differential</span>
-                <span className="material-symbols-outlined text-primary">compress</span>
-              </div>
-              <div>
-                <span className="text-headline-lg font-bold">1,014 hPa</span>
-                <p className="text-label-sm text-on-surface-variant mt-xs">Stable Environment</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Active Operators */}
-          <div className="md:col-span-4 bg-surface border border-outline-variant p-lg">
-            <h3 className="font-label-caps text-label-caps text-primary mb-lg">Active Operators (3)</h3>
-            <div className="space-y-md">
-              <div className="flex items-center gap-md p-sm hover:bg-surface-container-low transition-all cursor-pointer border border-transparent hover:border-outline-variant">
-                <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-bold text-sm">VK</div>
-                <div className="flex-1">
-                  <p className="font-label-sm text-label-sm font-bold">V. Kholodov</p>
-                  <p className="text-[10px] text-on-surface-variant uppercase">Remote Pilot • Node 04</p>
-                </div>
-                <div className="w-2 h-2 rounded-full bg-tertiary-fixed-dim shadow-[0_0_8px_#3ce36a]"></div>
-              </div>
-              <div className="flex items-center gap-md p-sm hover:bg-surface-container-low transition-all cursor-pointer border border-transparent hover:border-outline-variant">
-                <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-bold text-sm">AC</div>
-                <div className="flex-1">
-                  <p className="font-label-sm text-label-sm font-bold">A. Chen</p>
-                  <p className="text-[10px] text-on-surface-variant uppercase">Data Architect • Node 12</p>
-                </div>
-                <div className="w-2 h-2 rounded-full bg-tertiary-fixed-dim shadow-[0_0_8px_#3ce36a]"></div>
-              </div>
-              <div className="flex items-center gap-md p-sm hover:bg-surface-container-low transition-all cursor-pointer border border-transparent hover:border-outline-variant">
-                <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-bold text-sm">MJ</div>
-                <div className="flex-1">
-                  <p className="font-label-sm text-label-sm font-bold">M. Jenson</p>
-                  <p className="text-[10px] text-on-surface-variant uppercase">Site Field Tech • Area G</p>
-                </div>
-                <div className="w-2 h-2 rounded-full bg-surface-dim"></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Operational Log */}
-          <div className="md:col-span-8 bg-surface border border-outline-variant p-lg">
-            <div className="flex justify-between items-center mb-lg">
-              <h3 className="font-label-caps text-label-caps text-primary">Operational Log</h3>
-              <div className="flex gap-sm">
-                <button className="material-symbols-outlined text-on-surface-variant text-sm border border-outline-variant p-xs">filter_list</button>
-                <button className="material-symbols-outlined text-on-surface-variant text-sm border border-outline-variant p-xs">search</button>
-              </div>
-            </div>
-            
-            <div className="space-y-0 max-h-[320px] overflow-y-auto custom-scrollbar pr-sm">
-              <div className="grid grid-cols-12 gap-md py-sm border-b border-surface-container-high items-center">
-                <span className="col-span-2 font-label-sm text-on-surface-variant">09:14:02</span>
-                <span className="col-span-2 font-label-caps text-[10px] text-tertiary">SYSTEM</span>
-                <p className="col-span-8 font-label-sm text-on-surface">Thermal sensor calibration sequence initiated successfully.</p>
-              </div>
-              <div className="grid grid-cols-12 gap-md py-sm border-b border-surface-container-high items-center bg-surface-container-lowest">
-                <span className="col-span-2 font-label-sm text-on-surface-variant">09:12:45</span>
-                <span className="col-span-2 font-label-caps text-[10px] text-primary">CHEN</span>
-                <p className="col-span-8 font-label-sm text-on-surface">Manual override of Zone B relay accepted. Latency within specs (14ms).</p>
-              </div>
-              <div className="grid grid-cols-12 gap-md py-sm border-b border-surface-container-high items-center">
-                <span className="col-span-2 font-label-sm text-on-surface-variant">09:10:11</span>
-                <span className="col-span-2 font-label-caps text-[10px] text-error">ALARM</span>
-                <p className="col-span-8 font-label-sm text-on-surface">Minor oscillation detected in Cooling Unit 03. Auto-balancing active.</p>
-              </div>
-              <div className="grid grid-cols-12 gap-md py-sm border-b border-surface-container-high items-center">
-                <span class="col-span-2 font-label-sm text-on-surface-variant">09:05:33</span>
-                <span class="col-span-2 font-label-caps text-[10px] text-tertiary">SYSTEM</span>
-                <p class="col-span-8 font-label-sm text-on-surface">Asset verification for inventory batch #902-X complete. No discrepancies.</p>
-              </div>
-              <div className="grid grid-cols-12 gap-md py-sm border-b border-surface-container-high items-center">
-                <span className="col-span-2 font-label-sm text-on-surface-variant">08:58:20</span>
-                <span className="col-span-2 font-label-caps text-[10px] text-primary">KHOLODOV</span>
-                <p className="col-span-8 font-label-sm text-on-surface">Node 04 link stabilized. Remote pilot authorization granted.</p>
-              </div>
-            </div>
-            
-            <div className="mt-md flex justify-center">
-              <button className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-all">View Full Operational History</button>
-            </div>
-          </div>
         </div>
 
-        {/* Visual Context Map/Diagram Placeholder */}
-        <div className="bg-surface border border-outline-variant h-[400px] relative overflow-hidden group">
-          <div className="absolute top-lg left-lg z-10 p-md bg-surface/80 backdrop-blur-md border border-outline-variant max-w-xs">
-            <p className="font-label-caps text-label-caps mb-xs">Spatial Context</p>
-            <p className="font-label-sm text-label-sm text-on-surface-variant">Real-time overlay of Mandate MND-{String(task._id || task.id || "0000").slice(-4).toUpperCase()} across Facility West. Hover for node details.</p>
-          </div>
-          <div className="w-full h-full bg-surface-container-low flex items-center justify-center">
-            <div className="w-full h-full bg-cover bg-center grayscale opacity-60 mix-blend-multiply group-hover:scale-105 transition-transform duration-1000" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80')" }}></div>
-          </div>
-          {/* Interactive Markers simulated */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/3 left-1/2 w-4 h-4 bg-tertiary rounded-full animate-ping opacity-50"></div>
-            <div className="absolute top-1/3 left-1/2 w-2 h-2 bg-tertiary rounded-full"></div>
-            <div className="absolute top-2/3 left-1/4 w-2 h-2 bg-primary rounded-full"></div>
-            <div className="absolute top-1/4 left-3/4 w-2 h-2 bg-primary rounded-full"></div>
-          </div>
-        </div>
       </div>
     </AppLayout>
   );

@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
-import axios from "axios";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
-import { API_URL } from "../../config";
 import { useTheme } from "../../context/ThemeContext";
+import api from "../../services/api";
 
 const NotificationCenterScreen = ({ navigation }) => {
   const [notifications, setNotifications] = useState([]);
@@ -17,10 +16,10 @@ const NotificationCenterScreen = ({ navigation }) => {
 
     const fetchNotifications = async () => {
       try {
-        const { data } = await axios.get(`${API_URL}/api/notifications`);
+        const { data } = await api.get("/notifications");
         setNotifications(data || []);
       } catch (error) {
-        console.log(error);
+        console.log("Failed to fetch notifications", error);
       } finally {
         setLoading(false);
       }

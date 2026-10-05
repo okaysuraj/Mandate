@@ -5,7 +5,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* ── Light Mode Defaults ── */
+        /* All colors reference CSS custom properties for theme switching */
         "surface-container-high": "var(--surface-container-high)",
         "background": "var(--background)",
         "secondary-fixed-dim": "var(--secondary-fixed-dim)",
@@ -54,10 +54,17 @@ export default {
         "on-background": "var(--on-background)",
         "surface-container": "var(--surface-container)",
       },
+      /* Refined Industrial: micro-radii for cards/inputs, full-pill for chips/avatars */
       borderRadius: {
-        DEFAULT: "1rem",
-        lg: "2rem",
-        xl: "3rem",
+        none: "0px",
+        xs: "2px",
+        sm: "4px",
+        DEFAULT: "6px",
+        md: "8px",
+        lg: "12px",
+        xl: "16px",
+        "2xl": "20px",
+        "3xl": "24px",
         full: "9999px",
       },
       spacing: {
@@ -69,25 +76,31 @@ export default {
         gutter: "24px",
         xl: "64px",
         xs: "4px",
+        "2xl": "96px",
       },
       fontFamily: {
-        "headline-lg-mobile": ["Hanken Grotesk", "sans-serif"],
-        "label-caps": ["JetBrains Mono", "monospace"],
-        "body-md": ["Hanken Grotesk", "sans-serif"],
-        "headline-lg": ["Hanken Grotesk", "sans-serif"],
-        "display-lg": ["Hanken Grotesk", "sans-serif"],
-        "label-sm": ["JetBrains Mono", "monospace"],
+        "headline-lg-mobile": ["'Hanken Grotesk'", "system-ui", "sans-serif"],
+        "label-caps": ["'JetBrains Mono'", "monospace"],
+        "body-md": ["'Hanken Grotesk'", "system-ui", "sans-serif"],
+        "headline-lg": ["'Hanken Grotesk'", "system-ui", "sans-serif"],
+        "display-lg": ["'Hanken Grotesk'", "system-ui", "sans-serif"],
+        "label-sm": ["'JetBrains Mono'", "monospace"],
+        mono: ["'JetBrains Mono'", "monospace"],
+        sans: ["'Hanken Grotesk'", "system-ui", "sans-serif"],
       },
       fontSize: {
-        "headline-lg-mobile": ["24px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "700" }],
-        "label-caps": ["11px", { lineHeight: "1.4", letterSpacing: "0.1em", fontWeight: "600" }],
-        "body-md": ["16px", { lineHeight: "1.6", letterSpacing: "0em", fontWeight: "400" }],
-        "headline-lg": ["32px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "700" }],
-        "display-lg": ["64px", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "800" }],
+        "headline-lg-mobile": ["20px", { lineHeight: "1.25", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "label-caps": ["11px", { lineHeight: "1.4", letterSpacing: "0.12em", fontWeight: "600" }],
+        "body-md": ["15px", { lineHeight: "1.6", letterSpacing: "0em", fontWeight: "400" }],
+        "headline-lg": ["clamp(22px, 3.5vw, 32px)", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "display-lg": ["clamp(28px, 5vw, 48px)", { lineHeight: "1.1", letterSpacing: "-0.03em", fontWeight: "800" }],
         "label-sm": ["12px", { lineHeight: "1.4", letterSpacing: "0em", fontWeight: "500" }],
       },
       animation: {
         'spin-slow': 'spin 8s linear infinite',
+      },
+      screens: {
+        'xs': '480px',
       },
     },
   },

@@ -1,206 +1,170 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import React, { useEffect } from 'react';
+import { 
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, 
+  SafeAreaView, ActivityIndicator, RefreshControl 
+} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useDataStore } from '../../store/useDataStore';
 
 const CriticalAlertsScreen = ({ navigation }) => {
-  const { colors, typography, spacing, borderRadius } = useTheme();
+  const { colors, typography, spacing } = useTheme();
+  const { tasks, loading, loadTasks } = useDataStore((state) => state);
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
+
+  const now = new Date();
+  const overdueTasks = tasks.filter((t) => t.dueDate && new Date(t.dueDate) < now && t.status !== 'done');
+  const urgentTasks = tasks.filter((t) => t.priority === 'urgent' && t.status !== 'done');
+  
+  // Unique critical tasks combining overdue and urgent
+  const criticalMap = new Map();
+  overdueTasks.forEach((t) => criticalMap.set(t._id, { ...t, alertType: 'OVERDUE' }));
+  urgentTasks.forEach((t) => {
+    if (!criticalMap.has(t._id)) {
+      criticalMap.set(t._id, { ...t, alertType: 'URGENT' });
+    }
+  });
+  const criticalList = Array.from(criticalMap.values());
+
+  const activeTasksCount = tasks.filter((t) => t.status !== 'done').length;
+  const loadPercentage = tasks.length > 0 ? Math.round((activeTasksCount / tasks.length) * 100) : 0;
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.surface }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.surfaceDim, backgroundColor: colors.surface }]}>
+      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity>
-            <MaterialIcons name="menu" size={24} color={colors.primary} />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 8 }}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: spacing.sm }]}>MANDATE</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1 }]}>
+            CRITICAL ALERTS
+          </Text>
         </View>
-        <TouchableOpacity>
-          <MaterialIcons name="account-circle" size={24} color={colors.primary} />
+        <TouchableOpacity onPress={() => loadTasks()}>
+          <MaterialIcons name="refresh" size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={[styles.mainContent, { paddingHorizontal: spacing.gutter, paddingTop: 20 }]}>
-          
+      <ScrollView 
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={loadTasks} tintColor={colors.primary} />
+        }
+      >
+        <View style={styles.mainContent}>
           {/* System Critical Alert Header */}
           <View style={styles.alertHeaderRow}>
-            <View style={[styles.alertBadge, { backgroundColor: 'rgba(186, 26, 26, 0.2)' }]}>
-              <Text style={[typography.labelCaps, { color: colors.error }]}>SYSTEM CRITICAL ALERT</Text>
+            <View style={[styles.alertBadge, { backgroundColor: criticalList.length > 0 ? colors.errorContainer : colors.primaryContainer }]}>
+              <Text style={[typography.labelCaps, { color: criticalList.length > 0 ? colors.onErrorContainer : colors.onPrimaryContainer, fontSize: 10 }]}>
+                {criticalList.length > 0 ? 'ATTENTION REQUIRED' : 'SYSTEM NOMINAL'}
+              </Text>
             </View>
-            <Text style={[typography.labelSm, { color: colors.secondary }]}>REF: SEC-9941</Text>
+            <Text style={[typography.labelSm, { color: colors.secondary }]}>
+              {criticalList.length} TOTAL ISSUES
+            </Text>
           </View>
 
-          {/* High-Impact Mobile Cards */}
+          {/* High-Impact Metrics */}
           <View style={styles.bentoGrid}>
             <View style={styles.row}>
               <View style={[styles.bentoCardHalf, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderLeftWidth: 4, borderLeftColor: colors.error }]}>
                 <Text style={[typography.labelCaps, { color: colors.secondary }]}>OVERDUE</Text>
                 <View>
-                  <Text style={[typography.displayLg, { color: colors.error, fontSize: 40, lineHeight: 40 }]}>14</Text>
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Critical Tasks</Text>
+                  <Text style={[typography.displayLg, { color: colors.error, fontSize: 36, lineHeight: 40 }]}>
+                    {overdueTasks.length}
+                  </Text>
+                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Mandates</Text>
                 </View>
               </View>
+
               <View style={[styles.bentoCardHalf, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderLeftWidth: 4, borderLeftColor: colors.primary }]}>
-                <Text style={[typography.labelCaps, { color: colors.secondary }]}>AT-RISK</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary }]}>CRITICAL PRIORITY</Text>
                 <View>
-                  <Text style={[typography.displayLg, { color: colors.primary, fontSize: 40, lineHeight: 40 }]}>08</Text>
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Mandates</Text>
+                  <Text style={[typography.displayLg, { color: colors.primary, fontSize: 36, lineHeight: 40 }]}>
+                    {urgentTasks.length}
+                  </Text>
+                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Active Tasks</Text>
                 </View>
               </View>
             </View>
 
             <View style={[styles.bentoCardFull, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderLeftWidth: 4, borderLeftColor: colors.secondary }]}>
               <View>
-                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.xs }]}>RESOURCE LOAD</Text>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>94.2% Peak</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>ACTIVE WORKLOAD</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{loadPercentage}% Active</Text>
               </View>
-              <View style={styles.chartMockup}>
-                {/* SVG alternative */}
-                <View style={[styles.donutOuter, { borderColor: colors.surfaceContainerHighest }]}>
-                  <View style={[styles.donutInner, { borderColor: colors.primary, borderTopColor: 'transparent', transform: [{ rotate: '45deg' }] }]} />
-                </View>
+              <View style={[styles.loadTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
+                <View style={[styles.loadFill, { width: `${loadPercentage}%`, backgroundColor: colors.primary }]} />
               </View>
             </View>
           </View>
 
           {/* Urgent Queue */}
-          <View style={{ marginTop: spacing.xl, marginBottom: spacing.lg }}>
+          <View style={{ marginTop: 24, marginBottom: 16 }}>
             <View style={styles.sectionHeaderRow}>
               <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>Urgent Queue</Text>
-              <TouchableOpacity>
-                <Text style={[typography.labelSm, { color: colors.secondary, textDecorationLine: 'underline' }]}>View All</Text>
-              </TouchableOpacity>
+              <Text style={[typography.labelCaps, { color: colors.secondary }]}>
+                {criticalList.length} ITEMS
+              </Text>
             </View>
 
-            <View style={styles.queueList}>
-              
-              {/* Alert Card 1 */}
-              <View style={[styles.alertCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.surfaceDim }]}>
-                <View style={styles.alertCardTop}>
-                  <View>
-                    <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 18 }]}>Core Pipeline Delta</Text>
-                    <View style={styles.alertStatusRow}>
-                      <View style={[styles.statusDot, { backgroundColor: colors.error }]} />
-                      <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>PRIORITY ALPHA</Text>
-                    </View>
-                  </View>
-                  <View style={styles.alertRight}>
-                    <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>BREACH IN</Text>
-                    <Text style={[typography.labelSm, { color: colors.error, fontSize: 16, fontWeight: 'bold' }]}>00:04:12</Text>
-                  </View>
-                </View>
-                <View style={[styles.progressBar, { backgroundColor: colors.surfaceContainerHighest }]}>
-                  <View style={[styles.progressFill, { backgroundColor: colors.error, width: '80%' }]} />
-                </View>
-                <View style={styles.alertCardBottom}>
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Agent ID: 94-X</Text>
-                  <View style={styles.actionBtnsRow}>
-                    <TouchableOpacity style={[styles.actionBtnSecondary, { borderColor: colors.surfaceDim }]}>
-                      <Text style={[typography.labelCaps, { color: colors.primary }]}>HOLD</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.actionBtnPrimary, { backgroundColor: colors.primary }]}>
-                      <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>EXECUTE</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
+            {loading ? (
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 24 }} />
+            ) : criticalList.length === 0 ? (
+              <View style={[styles.emptyBox, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
+                <MaterialIcons name="verified" size={32} color={colors.onTertiaryContainer} />
+                <Text style={[typography.bodyMd, { color: colors.secondary, marginTop: 8, textAlign: 'center' }]}>
+                  All systems clear. No critical alerts or overdue mandates pending.
+                </Text>
               </View>
+            ) : (
+              <View style={styles.queueList}>
+                {criticalList.map((item) => {
+                  const isOverdue = item.alertType === 'OVERDUE';
+                  return (
+                    <TouchableOpacity
+                      key={item._id}
+                      style={[styles.alertCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}
+                      onPress={() => navigation.navigate('TaskDetail', { taskId: item._id })}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.alertCardTop}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 16 }]} numberOfLines={1}>
+                            {item.title}
+                          </Text>
+                          <View style={styles.alertStatusRow}>
+                            <View style={[styles.statusDot, { backgroundColor: isOverdue ? colors.error : colors.primary }]} />
+                            <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>
+                              {item.alertType} • PRIORITY: {item.priority?.toUpperCase()}
+                            </Text>
+                          </View>
+                        </View>
+                        <MaterialIcons name="chevron-right" size={24} color={colors.secondary} />
+                      </View>
 
-              {/* Alert Card 2 */}
-              <View style={[styles.alertCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.surfaceDim }]}>
-                <View style={styles.alertCardTop}>
-                  <View>
-                    <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 18 }]}>Network Saturation</Text>
-                    <View style={styles.alertStatusRow}>
-                      <View style={[styles.statusDot, { backgroundColor: colors.primary }]} />
-                      <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>SYSTEM ADVISORY</Text>
-                    </View>
-                  </View>
-                  <View style={styles.alertRight}>
-                    <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>BREACH IN</Text>
-                    <Text style={[typography.labelSm, { color: colors.primary, fontSize: 16, fontWeight: 'bold' }]}>00:22:45</Text>
-                  </View>
-                </View>
-                <View style={[styles.progressBar, { backgroundColor: colors.surfaceContainerHighest }]}>
-                  <View style={[styles.progressFill, { backgroundColor: colors.primary, width: '40%' }]} />
-                </View>
-                <View style={styles.alertCardBottom}>
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Region: US-EAST-1</Text>
-                  <View style={styles.actionBtnsRow}>
-                    <TouchableOpacity style={[styles.actionBtnSecondary, { borderColor: colors.surfaceDim }]}>
-                      <Text style={[typography.labelCaps, { color: colors.primary }]}>RESOLVE</Text>
+                      {item.dueDate ? (
+                        <View style={styles.alertCardBottom}>
+                          <Text style={[typography.labelSm, { color: isOverdue ? colors.error : colors.secondary, fontSize: 11 }]}>
+                            DUE: {new Date(item.dueDate).toLocaleDateString()}
+                          </Text>
+                          <Text style={[typography.labelCaps, { color: colors.primary, fontSize: 10 }]}>
+                            STATUS: {item.status?.toUpperCase()}
+                          </Text>
+                        </View>
+                      ) : null}
                     </TouchableOpacity>
-                  </View>
-                </View>
+                  );
+                })}
               </View>
-
-              {/* Alert Card 3 */}
-              <View style={[styles.alertCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.surfaceDim }]}>
-                <View style={styles.alertCardTop}>
-                  <View>
-                    <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 18 }]}>Financial Mandate 401</Text>
-                    <View style={styles.alertStatusRow}>
-                      <View style={[styles.statusDot, { backgroundColor: colors.error }]} />
-                      <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>LATE SETTLEMENT</Text>
-                    </View>
-                  </View>
-                  <View style={styles.alertRight}>
-                    <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>OVERDUE BY</Text>
-                    <Text style={[typography.labelSm, { color: colors.error, fontSize: 16, fontWeight: 'bold' }]}>14:02:11</Text>
-                  </View>
-                </View>
-                <View style={styles.alertCardBottom}>
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Batch: #883921</Text>
-                  <View style={styles.actionBtnsRow}>
-                    <TouchableOpacity style={[styles.actionBtnPrimary, { backgroundColor: colors.primary }]}>
-                      <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>AUDIT NOW</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-
-            </View>
+            )}
           </View>
-
-          {/* Dynamic Visualization */}
-          <View style={[styles.vizCard, { borderColor: colors.surfaceDim }]}>
-            <View style={styles.vizOverlay}>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>LOAD TRENDS</Text>
-              <Text style={[typography.bodyMd, { color: colors.onSurfaceVariant, fontSize: 14 }]}>Anomalous spikes detected in Sector 4-B. Automation recommended.</Text>
-            </View>
-          </View>
-
         </View>
       </ScrollView>
-
-      {/* Global CTA */}
-      <View style={styles.fabContainer}>
-        <TouchableOpacity style={[styles.fab, { backgroundColor: colors.primary }]}>
-          <MaterialIcons name="bolt" size={24} color={colors.onPrimary} />
-          <Text style={[typography.headlineLgMobile, { color: colors.onPrimary, fontSize: 18, marginLeft: spacing.sm }]}>EXECUTE REALLOCATION</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Bottom Navigation (Mock) */}
-      <View style={[styles.bottomNav, { backgroundColor: colors.surface, borderTopColor: colors.surfaceDim }]}>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="grid-view" size={24} color={colors.secondary} />
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>DASHBOARD</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItemActive, { backgroundColor: colors.primary }]}>
-          <MaterialIcons name="settings-input-component" size={24} color={colors.onPrimary} />
-          <Text style={[typography.labelCaps, { color: colors.onPrimary, marginTop: 4 }]}>SYSTEM</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="account-tree" size={24} color={colors.secondary} />
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>PROJECTS</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="adjust" size={24} color={colors.secondary} />
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>CORE</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -211,7 +175,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    paddingHorizontal: 16,
     height: 64,
     borderBottomWidth: 1,
   },
@@ -221,9 +185,11 @@ const styles = StyleSheet.create({
   },
   container: {
     flexGrow: 1,
-    paddingBottom: 180, // Space for fab and bottom nav
+    paddingBottom: 48,
   },
-  mainContent: {},
+  mainContent: {
+    padding: 16,
+  },
   alertHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -244,166 +210,74 @@ const styles = StyleSheet.create({
   },
   bentoCardHalf: {
     flex: 1,
-    height: 128,
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 8,
     padding: 16,
     justifyContent: 'space-between',
+    minHeight: 110,
   },
   bentoCardFull: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 128,
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 8,
     padding: 16,
+    gap: 12,
   },
-  chartMockup: {
-    width: 64,
-    height: 64,
-    position: 'relative',
+  loadTrack: {
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
   },
-  donutOuter: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 4,
-  },
-  donutInner: {
-    position: 'absolute',
-    top: -4,
-    left: -4,
-    right: -4,
-    bottom: -4,
-    borderRadius: 32,
-    borderWidth: 4,
+  loadFill: {
+    height: '100%',
+    borderRadius: 3,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginBottom: 16,
+    alignItems: 'center',
+    marginBottom: 12,
   },
   queueList: {
     gap: 12,
   },
   alertCard: {
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 8,
     padding: 16,
-    gap: 12,
+    gap: 8,
   },
   alertCardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   alertStatusRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
     marginTop: 4,
-    gap: 8,
   },
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  alertRight: {
-    alignItems: 'flex-end',
-  },
-  progressBar: {
-    height: 4,
-    width: '100%',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   alertCardBottom: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  actionBtnsRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  actionBtnSecondary: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  actionBtnPrimary: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
-  },
-  vizCard: {
-    height: 160,
-    borderWidth: 1,
-    borderRadius: 4,
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: '#fff', // placeholder
-  },
-  vizOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    justifyContent: 'flex-end',
-  },
-  fabContainer: {
-    position: 'absolute',
-    bottom: 96,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
-    zIndex: 30,
-  },
-  fab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingBottom: 24,
     borderTopWidth: 1,
-    zIndex: 50,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+    paddingTop: 8,
+    marginTop: 4,
   },
-  navItem: {
+  emptyBox: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 8,
   },
-  navItemActive: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 32,
-  }
 });
 
 export default CriticalAlertsScreen;

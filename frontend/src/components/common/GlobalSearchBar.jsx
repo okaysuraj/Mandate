@@ -99,15 +99,15 @@ const GlobalSearchBar = () => {
   const quickLinks = [
     { label: "Today's Mandates", path: "/today", icon: "event_upcoming" },
     { label: "Kanban Board", path: "/kanban", icon: "view_kanban" },
+    { label: "Temporal Calendar", path: "/calendar", icon: "calendar_today" },
     { label: "Project Fleet", path: "/projects", icon: "account_tree" },
-    { label: "Analytics & Metrics", path: "/analytics", icon: "analytics" },
   ];
 
   return (
-    <div className="relative flex-1 max-w-[50%] w-1/2 mx-md" ref={searchRef}>
+    <div className="relative flex-1 max-w-xl mx-2 md:mx-4" ref={searchRef}>
       {/* Search Input Container */}
-      <div className="relative flex items-center bg-surface-container-low px-md py-sm rounded-full border border-transparent focus-within:border-primary/50 transition-all">
-        <span className="material-symbols-outlined text-outline text-[18px] flex-shrink-0">search</span>
+      <div className="relative flex items-center bg-surface-container-lowest px-3.5 py-2 rounded-xl border border-outline-variant hover:border-primary/60 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-xs">
+        <span className="material-symbols-outlined text-on-surface-variant text-[18px] flex-shrink-0">search</span>
         
         <input
           value={query}
@@ -117,13 +117,13 @@ const GlobalSearchBar = () => {
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          className="bg-transparent border-none focus:ring-0 font-label-sm text-sm ml-sm w-full outline-none placeholder:text-outline text-on-surface"
-          placeholder="Global Search tasks, projects, goals..."
+          className="bg-transparent border-none focus:ring-0 font-body-md text-xs md:text-sm ml-2 w-full outline-none placeholder:text-on-surface-variant/60 text-on-surface"
+          placeholder="Global Directive Search (Tasks, Projects, Files)..."
           type="text"
         />
 
         {loading && (
-          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin ml-xs"></div>
+          <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin ml-1 flex-shrink-0"></div>
         )}
 
         {query && !loading && (
@@ -132,24 +132,24 @@ const GlobalSearchBar = () => {
               setQuery("");
               setResults({ tasks: [], projects: [], goals: [], documents: [], pages: [] });
             }}
-            className="p-xs text-outline hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center"
+            className="p-1 text-on-surface-variant hover:text-on-surface rounded-lg transition-colors cursor-pointer flex items-center justify-center flex-shrink-0"
             title="Clear search"
           >
-            <span className="material-symbols-outlined text-[16px]">close</span>
+            <span className="material-symbols-outlined text-[15px]">close</span>
           </button>
         )}
       </div>
 
       {/* Results Dropdown Overlay */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-xs bg-surface border border-outline-variant rounded-md shadow-2xl overflow-hidden z-50 max-h-[420px] flex flex-col">
+        <div className="absolute left-0 right-0 top-full mt-2 bg-surface-container-lowest border border-outline-variant/80 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-[420px] flex flex-col">
           {/* Default Quick Shortcuts when query is empty */}
           {!query.trim() && (
-            <div className="p-md">
-              <div className="font-label-caps text-[10px] text-outline uppercase tracking-wider mb-sm font-bold">
-                Quick Navigation Shortcuts
+            <div className="p-3">
+              <div className="font-mono text-[10px] text-on-surface-variant uppercase tracking-wider mb-2 font-bold px-1">
+                Quick Directive Access
               </div>
-              <div className="grid grid-cols-2 gap-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 {quickLinks.map((item) => (
                   <button
                     key={item.path}
@@ -157,10 +157,10 @@ const GlobalSearchBar = () => {
                       setIsOpen(false);
                       navigate(item.path);
                     }}
-                    className="flex items-center gap-sm p-sm rounded-sm hover:bg-surface-container-low text-left text-on-surface-variant hover:text-primary transition-all cursor-pointer"
+                    className="flex items-center gap-2 p-2.5 rounded-xl hover:bg-surface-container text-left text-on-surface-variant hover:text-primary transition-all cursor-pointer border border-transparent hover:border-outline-variant/50"
                   >
                     <span className="material-symbols-outlined text-[18px] text-primary">{item.icon}</span>
-                    <span className="font-label-caps text-xs font-semibold">{item.label}</span>
+                    <span className="font-mono text-xs font-semibold uppercase">{item.label}</span>
                   </button>
                 ))}
               </div>
@@ -169,18 +169,18 @@ const GlobalSearchBar = () => {
 
           {/* Search Query Results */}
           {query.trim() && !loading && !hasResults && (
-            <div className="py-xl px-lg text-center text-on-surface-variant font-label-caps text-xs">
-              No matching mandates, projects, or pages found for "<span className="text-primary font-bold">{query}</span>"
+            <div className="py-8 px-4 text-center text-on-surface-variant font-mono text-xs">
+              No matching directives, projects, or nodes found for "<span className="text-primary font-bold">{query}</span>"
             </div>
           )}
 
           {query.trim() && hasResults && (
-            <div className="overflow-y-auto p-xs space-y-md scrollbar-thin">
+            <div className="overflow-y-auto p-2 space-y-3 custom-scrollbar">
               {/* Pages Section */}
               {results.pages?.length > 0 && (
                 <div>
-                  <div className="font-label-caps text-[10px] text-outline uppercase tracking-wider px-sm py-xs font-bold">
-                    Navigation Pages
+                  <div className="font-mono text-[10px] text-on-surface-variant uppercase tracking-wider px-2 py-1 font-bold">
+                    Navigation Nodes
                   </div>
                   {results.pages.map((p) => {
                     const currentIndex = flatList.findIndex((item) => item.path === p.path && item.type === "page");
@@ -189,12 +189,12 @@ const GlobalSearchBar = () => {
                       <div
                         key={p.path}
                         onClick={() => handleSelect({ ...p, url: p.path })}
-                        className={`flex items-center gap-md px-md py-sm rounded-sm cursor-pointer transition-all ${
-                          isSelected ? "bg-primary text-on-primary font-bold" : "hover:bg-surface-container-low text-on-surface"
+                        className={`flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all border border-transparent ${
+                          isSelected ? "bg-primary text-on-primary font-bold shadow-xs" : "hover:bg-surface-container text-on-surface"
                         }`}
                       >
                         <span className="material-symbols-outlined text-[18px]">{p.icon}</span>
-                        <span className="font-label-caps text-xs uppercase">{p.label}</span>
+                        <span className="font-mono text-xs uppercase">{p.label}</span>
                       </div>
                     );
                   })}
@@ -204,9 +204,9 @@ const GlobalSearchBar = () => {
               {/* Tasks Section */}
               {results.tasks?.length > 0 && (
                 <div>
-                  <div className="font-label-caps text-[10px] text-primary uppercase tracking-wider px-sm py-xs font-bold flex justify-between">
-                    <span>Tasks & Mandates</span>
-                    <span className="text-[9px] text-outline">{results.tasks.length} found</span>
+                  <div className="font-mono text-[10px] text-primary uppercase tracking-wider px-2 py-1 font-bold flex justify-between">
+                    <span>Directives &amp; Tasks</span>
+                    <span className="font-mono text-[9px] text-on-surface-variant">{results.tasks.length} found</span>
                   </div>
                   {results.tasks.map((t) => {
                     const currentIndex = flatList.findIndex((item) => item._id === t._id && item.type === "task");
@@ -215,19 +215,19 @@ const GlobalSearchBar = () => {
                       <div
                         key={t._id}
                         onClick={() => handleSelect({ ...t, url: `/focus/${t._id}` })}
-                        className={`flex items-center justify-between px-md py-sm rounded-sm cursor-pointer transition-all ${
-                          isSelected ? "bg-primary text-on-primary font-bold" : "hover:bg-surface-container-low text-on-surface"
+                        className={`flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-all border border-transparent ${
+                          isSelected ? "bg-primary text-on-primary font-bold shadow-xs" : "hover:bg-surface-container text-on-surface"
                         }`}
                       >
-                        <div className="flex items-center gap-sm min-w-0 pr-sm">
-                          <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                          <span className="font-body-md text-xs truncate">{t.title}</span>
+                        <div className="flex items-center gap-2 min-w-0 pr-2">
+                          <span className="material-symbols-outlined text-[18px] text-primary">check_box_outline_blank</span>
+                          <span className="text-xs truncate font-medium">{t.title}</span>
                         </div>
-                        <div className="flex items-center gap-xs flex-shrink-0">
-                          <span className={`px-xs py-0.5 text-[9px] font-label-caps uppercase rounded-xs ${
-                            t.priority === 'urgent' ? 'bg-error-container text-on-error-container font-bold' : 'bg-surface-variant text-on-surface-variant'
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <span className={`px-2 py-0.5 text-[9px] font-mono uppercase rounded-full border ${
+                            t.priority === 'urgent' ? 'border-error text-error bg-error/10 font-bold' : 'border-outline-variant text-on-surface-variant'
                           }`}>
-                            {t.priority || 'Normal'}
+                            {t.priority || 'Routine'}
                           </span>
                         </div>
                       </div>
@@ -239,9 +239,9 @@ const GlobalSearchBar = () => {
               {/* Projects Section */}
               {results.projects?.length > 0 && (
                 <div>
-                  <div className="font-label-caps text-[10px] text-primary uppercase tracking-wider px-sm py-xs font-bold flex justify-between">
-                    <span>Projects</span>
-                    <span className="text-[9px] text-outline">{results.projects.length} found</span>
+                  <div className="font-mono text-[10px] text-primary uppercase tracking-wider px-2 py-1 font-bold flex justify-between">
+                    <span>Projects &amp; Fleets</span>
+                    <span className="font-mono text-[9px] text-on-surface-variant">{results.projects.length} found</span>
                   </div>
                   {results.projects.map((proj) => {
                     const currentIndex = flatList.findIndex((item) => item._id === proj._id && item.type === "project");
@@ -250,40 +250,15 @@ const GlobalSearchBar = () => {
                       <div
                         key={proj._id}
                         onClick={() => handleSelect({ ...proj, url: `/projects` })}
-                        className={`flex items-center gap-md px-md py-sm rounded-sm cursor-pointer transition-all ${
-                          isSelected ? "bg-primary text-on-primary font-bold" : "hover:bg-surface-container-low text-on-surface"
+                        className={`flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all border border-transparent ${
+                          isSelected ? "bg-primary text-on-primary font-bold shadow-xs" : "hover:bg-surface-container text-on-surface"
                         }`}
                       >
-                        <span className="material-symbols-outlined text-[18px]">account_tree</span>
+                        <span className="material-symbols-outlined text-[18px] text-primary">account_tree</span>
                         <div className="min-w-0 flex-1">
-                          <p className="font-label-caps text-xs uppercase truncate">{proj.name}</p>
-                          <p className="text-[10px] text-outline truncate">{proj.description || "Project Workspace"}</p>
+                          <p className="font-mono text-xs uppercase truncate font-bold">{proj.name}</p>
+                          <p className="font-mono text-[10px] text-on-surface-variant truncate">{proj.description || "Project Workspace"}</p>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Goals Section */}
-              {results.goals?.length > 0 && (
-                <div>
-                  <div className="font-label-caps text-[10px] text-primary uppercase tracking-wider px-sm py-xs font-bold">
-                    Goals & Key Results
-                  </div>
-                  {results.goals.map((g) => {
-                    const currentIndex = flatList.findIndex((item) => item._id === g._id && item.type === "goal");
-                    const isSelected = selectedIndex === currentIndex;
-                    return (
-                      <div
-                        key={g._id}
-                        onClick={() => handleSelect({ ...g, url: `/goals` })}
-                        className={`flex items-center gap-md px-md py-sm rounded-sm cursor-pointer transition-all ${
-                          isSelected ? "bg-primary text-on-primary font-bold" : "hover:bg-surface-container-low text-on-surface"
-                        }`}
-                      >
-                        <span className="material-symbols-outlined text-[18px]">flag</span>
-                        <span className="font-body-md text-xs truncate">{g.title}</span>
                       </div>
                     );
                   })}

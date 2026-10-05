@@ -7,7 +7,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { useDataStore } from "../../store/useDataStore";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
-import { API_URL } from "../../config/config";
+import { API_URL } from "../../config";
 
 const AiInsightsScreen = ({ navigation }) => {
   const { colors, typography } = useTheme();

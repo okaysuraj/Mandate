@@ -132,14 +132,19 @@ const CreateTaskScreen = ({ navigation }) => {
                 <Text style={[typography.labelCaps, { color: colors.primary }]}>{allocation}%</Text>
               </View>
               <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: spacing.lg }]}>
-                {/* Mock Slider */}
+                {/* Allocation Gauge */}
                 <View style={[styles.sliderTrack, { backgroundColor: colors.surfaceDim, marginBottom: spacing.sm }]}>
                   <View style={[styles.sliderFill, { backgroundColor: colors.primary, width: `${allocation}%` }]} />
                   <View style={[styles.sliderThumb, { backgroundColor: colors.primary, left: `${allocation}%`, marginLeft: -12 }]} />
                 </View>
                 <View style={styles.allocationLabels}>
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>MINIMAL</Text>
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>CRITICAL_LOAD</Text>
+                  {[25, 50, 75, 100].map((val) => (
+                    <TouchableOpacity key={val} onPress={() => setAllocation(val)}>
+                      <Text style={[typography.labelSm, { color: allocation === val ? colors.primary : colors.onSurfaceVariant }]}>
+                        {val}%
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
               </View>
             </View>

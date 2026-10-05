@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useWorkspace } from "../../context/WorkspaceContext";
+import { X } from "lucide-react";
 
 const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
   const [title, setTitle] = useState("");
@@ -18,24 +19,20 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
 
   useEffect(() => {
     if (initialData && initialData._id) {
-      setTitle(initialData.title);
+      setTitle(initialData.title || "");
       setDescription(initialData.description || "");
       setStartTime(new Date(initialData.startTime).toISOString().slice(0, 16));
       setEndTime(new Date(initialData.endTime).toISOString().slice(0, 16));
       setMeetingLink(initialData.meetingLink || "");
       setAttendees(initialData.attendees || []);
     } else if (initialData && initialData.startTime) {
-      // Create from clicking a specific day
       setTitle("");
       setDescription("");
-      
       const st = new Date(initialData.startTime);
-      st.setHours(9, 0, 0, 0); // Default to 9 AM
+      st.setHours(9, 0, 0, 0);
       setStartTime(st.toISOString().slice(0, 16));
-      
-      const et = new Date(st.getTime() + 60 * 60000); // 1 hour later
+      const et = new Date(st.getTime() + 60 * 60000);
       setEndTime(et.toISOString().slice(0, 16));
-      
       setMeetingLink("");
       setAttendees([]);
     } else {
@@ -62,7 +59,7 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
         toast.success("Event updated");
       } else {
         await axios.post("/api/events", payload);
-        toast.success("Event created");
+        toast.success("Event scheduled");
       }
       onSave();
       onClose();
@@ -88,77 +85,84 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm"
     >
       <motion.div 
-        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        initial={{ scale: 0.98, opacity: 0, y: 15 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="bg-white dark:bg-[#1A1A1A] w-full max-w-xl p-8 rounded-xl shadow-2xl flex flex-col gap-6"
+        exit={{ scale: 0.98, opacity: 0, y: 15 }}
+        className="bg-surface-container-lowest border border-outline-variant/80 w-full max-w-xl p-4 sm:p-6 md:p-8 rounded-2xl shadow-2xl flex flex-col gap-4 text-on-surface overflow-hidden"
       >
-        <div className="flex justify-between items-center mb-2 pb-4 border-b border-[#D9DADC] dark:border-gray-800">
+        <div className="flex justify-between items-center pb-3 border-b border-outline-variant/40 bg-surface-container-low -m-4 sm:-m-6 md:-m-8 mb-2 p-4 sm:p-6">
           <div>
-            <h2 className="text-xs font-bold mb-2 text-gray-500 tracking-widest uppercase">Mandate Calendar</h2>
-            <h2 className="text-2xl font-bold uppercase tracking-tight text-[#1A1A1A] dark:text-white font-['Space_Grotesk']">
-              {(initialData && initialData._id) ? "Edit Event" : "Schedule Event"}
+            <h2 className="text-[10px] font-mono font-bold text-on-surface-variant tracking-widest uppercase">TEMPORAL SCHEDULE</h2>
+            <h2 className="text-lg sm:text-xl font-mono font-black uppercase tracking-tight text-primary">
+              {(initialData && initialData._id) ? "Modify Event" : "Schedule Protocol Event"}
             </h2>
           </div>
-          {initialData && initialData._id && (
-            <button onClick={handleDelete} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-2 rounded-lg text-sm font-bold">
-              Delete Event
+          <div className="flex items-center gap-2">
+            {initialData && initialData._id && (
+              <button onClick={handleDelete} className="text-error hover:bg-error/10 px-3 py-1.5 rounded-lg border border-error/30 text-xs font-mono font-bold uppercase cursor-pointer">
+                Delete
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-xl border border-outline-variant hover:border-primary flex items-center justify-center text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
             </button>
-          )}
+          </div>
         </div>
         
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 mt-2">
           <Input 
             label="Event Title" 
             value={title} 
             onChange={(e) => setTitle(e.target.value)} 
             required 
-            placeholder="e.g. Weekly Sync"
+            placeholder="e.g. Tactical Sync, Sprint Retrospective"
           />
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Start Time</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-widest">Start Time</label>
               <input 
                 type="datetime-local"
                 required
-                className="w-full bg-[#F9F9FB] dark:bg-[#111] border border-[#EDEDF0] dark:border-gray-800 rounded-lg p-3 text-sm focus:outline-none dark:text-white"
+                className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
               />
             </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">End Time</label>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-widest">End Time</label>
               <input 
                 type="datetime-local"
                 required
-                className="w-full bg-[#F9F9FB] dark:bg-[#111] border border-[#EDEDF0] dark:border-gray-800 rounded-lg p-3 text-sm focus:outline-none dark:text-white"
+                className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Meeting Link (Optional)</label>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-widest">Meeting Link (Virtual Room)</label>
             <input 
               type="url"
               placeholder="https://meet.google.com/..."
-              className="w-full bg-[#F9F9FB] dark:bg-[#111] border border-[#EDEDF0] dark:border-gray-800 rounded-lg p-3 text-sm focus:outline-none dark:text-white"
+              className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
               value={meetingLink}
               onChange={(e) => setMeetingLink(e.target.value)}
             />
           </div>
           
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Attendees</label>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-widest">Operatives Involved</label>
             <select 
               multiple
-              className="w-full bg-[#F9F9FB] dark:bg-[#111] border border-[#EDEDF0] dark:border-gray-800 rounded-lg p-3 text-sm focus:outline-none dark:text-white"
+              className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
               value={attendees}
               onChange={(e) => setAttendees(Array.from(e.target.selectedOptions, option => option.value))}
             >
@@ -168,22 +172,22 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
             </select>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Description</label>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-widest">Agenda Notes</label>
             <textarea
-              className="w-full min-h-[80px] resize-y bg-[#F9F9FB] dark:bg-[#111] border border-[#EDEDF0] dark:border-gray-800 rounded-lg p-3 text-sm focus:outline-none dark:text-white"
+              className="w-full min-h-[70px] resize-y bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-body-md text-on-surface focus:outline-none focus:border-primary transition-colors"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Event details..."
+              placeholder="Agenda items and discussion notes..."
             />
           </div>
 
-          <div className="flex justify-end gap-4 mt-4">
+          <div className="flex justify-end gap-2 mt-2 pt-3 border-t border-outline-variant">
             <Button variant="secondary" type="button" onClick={onClose}>
               Cancel
             </Button>
             <Button type="submit">
-              {(initialData && initialData._id) ? "Save Changes" : "Schedule Event"}
+              {(initialData && initialData._id) ? "Save Changes" : "Commit Event"}
             </Button>
           </div>
         </form>

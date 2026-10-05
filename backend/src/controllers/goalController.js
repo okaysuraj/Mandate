@@ -26,6 +26,16 @@ export const getGoals = async (req, res) => {
   }
 };
 
+export const getGoalById = async (req, res) => {
+  try {
+    const goal = await Goal.findById(req.params.id).populate("linkedTasks");
+    if (!goal) return res.status(404).json({ message: "Goal not found" });
+    res.json(goal);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 export const updateGoal = async (req, res) => {
   try {
     const goal = await Goal.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate("linkedTasks");

@@ -74,109 +74,116 @@ const FocusPage = () => {
   };
 
   return (
-    <div className="bg-background text-on-background selection:bg-primary selection:text-on-primary overflow-hidden h-screen w-screen flex flex-col font-body-md relative">
+    <div className="bg-background text-on-background selection:bg-primary selection:text-on-primary min-h-screen w-full flex flex-col font-body-md relative overflow-y-auto sm:overflow-hidden">
       {/* Top Action Layer */}
-      <header className="fixed top-0 left-0 w-full px-xl py-lg flex justify-between items-center z-50 pointer-events-none">
-        <div className="flex items-center gap-md pointer-events-auto">
-          <span className="font-headline-lg text-headline-lg font-black tracking-tighter text-primary uppercase">MANDATE</span>
-          <div className="px-sm py-xs bg-primary text-on-primary rounded-none font-label-caps text-[9px] flex items-center gap-xs">
+      <header className="w-full px-4 sm:px-8 py-4 sm:py-6 flex justify-between items-center z-50">
+        <div className="flex items-center gap-3">
+          <span className="text-xl sm:text-2xl font-black tracking-tight text-primary uppercase font-mono">MANDATE</span>
+          <div className="px-2.5 py-1 bg-primary text-on-primary rounded-full font-mono text-[10px] font-bold flex items-center gap-1.5 shadow-xs">
             <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span>
             FOCUS ACTIVE
           </div>
         </div>
-        <div className="pointer-events-auto">
-          <button onClick={() => navigate(-1)} className="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors flex items-center gap-xs group">
+        <div>
+          <button 
+            onClick={() => navigate(-1)} 
+            className="font-mono text-xs font-bold text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1 group px-3 py-1.5 rounded-lg hover:bg-surface-container cursor-pointer"
+          >
             EXIT FOCUS
-            <span className="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            <span className="material-symbols-outlined text-sm group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
           </button>
         </div>
       </header>
 
       {/* Background Atmospheric Element */}
       <div className="absolute inset-0 pointer-events-none opacity-20 z-0">
-        <div className="w-full h-full" style={{ backgroundImage: "radial-gradient(#D9DADC 0.5px, transparent 0.5px)", backgroundSize: "24px 24px" }}></div>
+        <div className="w-full h-full" style={{ backgroundImage: "radial-gradient(#888888 0.5px, transparent 0.5px)", backgroundSize: "24px 24px" }}></div>
       </div>
 
       {/* Main Central Canvas */}
-      <main className="flex-grow flex flex-col items-center justify-center relative z-10 px-gutter">
-        <div className="text-center">
+      <main className="flex-grow flex flex-col items-center justify-center relative z-10 px-4 py-8 sm:py-12">
+        <div className="text-center max-w-xl mx-auto w-full">
           {/* Timer Label */}
-          <div className="font-label-caps text-label-caps text-on-surface-variant mb-md flex justify-center items-center gap-sm uppercase">
-            <span className="w-2 h-2 bg-tertiary-fixed-dim rounded-full animate-status"></span>
+          <div className="font-mono text-xs font-bold text-on-surface-variant mb-4 flex justify-center items-center gap-2 uppercase tracking-wider">
+            <span className="w-2 h-2 bg-primary rounded-full animate-ping"></span>
             {task ? task.title : "DEEP WORK SESSION"}
           </div>
 
           {/* Stark Central Timer */}
-          <h1 className="font-display-lg text-[180px] md:text-[240px] font-black tracking-[-0.06em] leading-none text-primary timer-glow select-none cursor-pointer" onClick={() => setIsRunning(!isRunning)}>
+          <h1 
+            className="text-6xl sm:text-8xl md:text-9xl lg:text-[180px] font-black tracking-tighter leading-none text-primary select-none cursor-pointer hover:opacity-90 transition-opacity font-mono" 
+            onClick={() => setIsRunning(!isRunning)}
+            title="Click to pause or resume"
+          >
             {timerDisplay}
           </h1>
 
           {/* Commit Action */}
-          <div className="mt-xl">
+          <div className="mt-8 sm:mt-12 flex justify-center">
             <button 
               onClick={handleCommit}
-              className={`${committed ? 'bg-on-tertiary-container text-on-tertiary' : 'bg-primary text-on-primary'} font-label-caps text-label-caps px-xl py-md rounded-full hover:scale-105 active:scale-95 transition-all shadow-none flex items-center gap-sm mx-auto group`}
+              className={`${committed ? 'bg-tertiary-container text-on-tertiary-container' : 'bg-primary text-on-primary'} font-mono text-xs font-bold px-8 py-4 rounded-xl hover:scale-105 active:scale-95 transition-all shadow-md flex items-center gap-2 cursor-pointer uppercase tracking-wider`}
             >
               {committed ? "ACTION RECORDED" : (!isRunning && timeLeft === 25 * 60 ? "START SESSION" : "COMMIT ACTION")}
-              <span className="material-symbols-outlined text-[18px] group-hover:rotate-12 transition-transform">bolt</span>
+              <span className="material-symbols-outlined text-base">bolt</span>
             </button>
           </div>
         </div>
       </main>
 
       {/* Bottom Telemetry Layer */}
-      <footer className="fixed bottom-0 left-0 w-full px-xl py-xl z-50">
-        <div className="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-3 gap-lg">
+      <footer className="w-full px-4 sm:px-8 py-4 sm:py-6 z-20">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* CPU Load Module */}
-          <div className="bg-surface-container-lowest border border-surface-variant transition-all p-lg flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-sm">
-              <span className="font-label-caps text-label-caps text-on-surface-variant">CPU LOAD</span>
-              <span className="material-symbols-outlined text-on-surface-variant text-[18px]">memory</span>
+          <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+            <div className="flex justify-between items-start mb-2">
+              <span className="font-mono text-xs font-bold text-on-surface-variant uppercase">CPU LOAD</span>
+              <span className="material-symbols-outlined text-on-surface-variant text-base">memory</span>
             </div>
             <div className="flex items-end justify-between">
-              <span className="font-headline-lg text-headline-lg font-bold">12<span className="text-body-md font-medium text-on-surface-variant">%</span></span>
-              <div className="h-8 flex items-end gap-[2px]">
-                <div className="w-1 bg-primary h-[20%]"></div>
-                <div className="w-1 bg-primary h-[35%]"></div>
-                <div className="w-1 bg-primary h-[15%]"></div>
-                <div className="w-1 bg-primary h-[60%]"></div>
-                <div className="w-1 bg-primary h-[40%]"></div>
-                <div className="w-1 bg-primary h-[25%]"></div>
+              <span className="text-xl sm:text-2xl font-bold font-mono text-on-surface">12<span className="text-xs font-medium text-on-surface-variant">%</span></span>
+              <div className="h-6 flex items-end gap-[3px]">
+                <div className="w-1 bg-primary h-[20%] rounded-full"></div>
+                <div className="w-1 bg-primary h-[35%] rounded-full"></div>
+                <div className="w-1 bg-primary h-[15%] rounded-full"></div>
+                <div className="w-1 bg-primary h-[60%] rounded-full"></div>
+                <div className="w-1 bg-primary h-[40%] rounded-full"></div>
+                <div className="w-1 bg-primary h-[25%] rounded-full"></div>
               </div>
             </div>
           </div>
 
           {/* Sessions Module */}
-          <div className="bg-surface-container-lowest border border-surface-variant transition-all p-lg flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-sm">
-              <span className="font-label-caps text-label-caps text-on-surface-variant">SESSIONS</span>
-              <span className="material-symbols-outlined text-on-surface-variant text-[18px]">timer_10_alt_1</span>
+          <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+            <div className="flex justify-between items-start mb-2">
+              <span className="font-mono text-xs font-bold text-on-surface-variant uppercase">SESSIONS</span>
+              <span className="material-symbols-outlined text-on-surface-variant text-base">timer_10_alt_1</span>
             </div>
             <div className="flex items-end justify-between">
-              <span className="font-headline-lg text-headline-lg font-bold">04<span className="text-body-md font-medium text-on-surface-variant">/08</span></span>
-              <div className="flex gap-xs pb-xs">
+              <span className="text-xl sm:text-2xl font-bold font-mono text-on-surface">04<span className="text-xs font-medium text-on-surface-variant">/08</span></span>
+              <div className="flex gap-1 pb-1">
                 <div className="w-2 h-2 bg-primary rounded-full"></div>
                 <div className="w-2 h-2 bg-primary rounded-full"></div>
                 <div className="w-2 h-2 bg-primary rounded-full"></div>
                 <div className="w-2 h-2 bg-primary rounded-full"></div>
-                <div className="w-2 h-2 bg-surface-container-highest rounded-full border border-outline-variant"></div>
-                <div className="w-2 h-2 bg-surface-container-highest rounded-full border border-outline-variant"></div>
-                <div className="w-2 h-2 bg-surface-container-highest rounded-full border border-outline-variant"></div>
-                <div className="w-2 h-2 bg-surface-container-highest rounded-full border border-outline-variant"></div>
+                <div className="w-2 h-2 bg-surface-container-high rounded-full border border-outline-variant"></div>
+                <div className="w-2 h-2 bg-surface-container-high rounded-full border border-outline-variant"></div>
+                <div className="w-2 h-2 bg-surface-container-high rounded-full border border-outline-variant"></div>
+                <div className="w-2 h-2 bg-surface-container-high rounded-full border border-outline-variant"></div>
               </div>
             </div>
           </div>
 
           {/* Streak Module */}
-          <div className="bg-surface-container-lowest border border-surface-variant transition-all p-lg flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-sm">
-              <span className="font-label-caps text-label-caps text-on-surface-variant">STREAK</span>
-              <span className="material-symbols-outlined text-on-surface-variant text-[18px]">local_fire_department</span>
+          <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
+            <div className="flex justify-between items-start mb-2">
+              <span className="font-mono text-xs font-bold text-on-surface-variant uppercase">STREAK</span>
+              <span className="material-symbols-outlined text-on-surface-variant text-base">local_fire_department</span>
             </div>
             <div className="flex items-end justify-between">
-              <span className="font-headline-lg text-headline-lg font-bold">12<span className="text-body-md font-medium text-on-surface-variant"> DAYS</span></span>
-              <div className="bg-tertiary-fixed-dim/10 px-sm py-[2px] rounded-full border border-tertiary-fixed-dim/30">
-                <span className="font-label-caps text-[9px] text-on-tertiary-container">+22% EFFICIENCY</span>
+              <span className="text-xl sm:text-2xl font-bold font-mono text-on-surface">12<span className="text-xs font-medium text-on-surface-variant"> DAYS</span></span>
+              <div className="bg-tertiary-container/60 px-2 py-0.5 rounded-full border border-tertiary/20">
+                <span className="font-mono text-[10px] font-bold text-on-tertiary-container">+22% EFFICIENCY</span>
               </div>
             </div>
           </div>

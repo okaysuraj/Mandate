@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
 import { Alert } from "react-native";
 import { useAuth } from "./AuthContext";
-import { API_URL } from "../config";
+import api from "../services/api";
 
 const WorkspaceContext = createContext();
 
@@ -26,13 +25,13 @@ export const WorkspaceProvider = ({ children }) => {
 
   const fetchWorkspaces = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/api/workspaces`);
-      setWorkspaces(data);
+      const { data } = await api.get("/workspaces");
+      setWorkspaces(data || []);
 
-      if (user.activeWorkspace) {
-        const active = data.find((w) => w._id === user.activeWorkspace);
-        setActiveWorkspace(active || data[0]);
-      } else if (data.length > 0) {
+      if (user?.activeWorkspace) {
+        const active = (data || []).find((w) => w._id === user.activeWorkspace);
+        setActiveWorkspace(active || data?.[0] || null);
+      } else if (data?.length > 0) {
         setActiveWorkspace(data[0]);
       }
     } catch (error) {
@@ -44,7 +43,7 @@ export const WorkspaceProvider = ({ children }) => {
 
   const createWorkspace = async (name) => {
     try {
-      const { data } = await axios.post(`${API_URL}/api/workspaces`, { name });
+      const { data } = await api.post("/workspaces", { name });
       setWorkspaces([...workspaces, data]);
       Alert.alert("Success", "Workspace created");
       return data;
@@ -56,11 +55,11 @@ export const WorkspaceProvider = ({ children }) => {
 
   const switchWorkspace = async (id) => {
     try {
-      const { data } = await axios.put(`${API_URL}/api/workspaces/${id}/active`);
+      const { data } = await api.put(`/workspaces/${id}/active`);
       const newActive = workspaces.find((w) => w._id === data.activeWorkspace);
-      setActiveWorkspace(newActive);
+      if (newActive) setActiveWorkspace(newActive);
       await updateUser({ activeWorkspace: data.activeWorkspace });
-      Alert.alert("Success", `Switched to ${newActive.name}`);
+      Alert.alert("Success", `Switched to ${newActive?.name || "workspace"}`);
     } catch (error) {
       Alert.alert("Error", error.response?.data?.message || "Failed to switch workspace");
     }

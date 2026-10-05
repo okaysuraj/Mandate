@@ -4,7 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
-import { API_URL } from '../../config/config';
+import { API_URL } from '../../config';
 
 const NotificationPreferencesScreen = ({ navigation }) => {
   const { colors, typography, spacing, borderRadius } = useTheme();

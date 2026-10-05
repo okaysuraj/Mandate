@@ -35,20 +35,20 @@ const TodayPage = () => {
   const getStatusDisplay = (task) => {
     if (task.status === "completed") {
       return (
-        <span className="text-xs bg-surface-container-highest text-on-surface-variant px-2 py-0.5 rounded-full font-label-caps flex items-center gap-1">
+        <span className="text-xs bg-surface-container-highest text-on-surface-variant px-2.5 py-0.5 rounded-full font-label-caps font-semibold flex items-center gap-1.5 border border-outline-variant">
           <span className="material-symbols-outlined text-[12px]">check</span> COMPLETED
         </span>
       );
     }
     if (task.status === "in-progress" || String(task._id) === String(focusTask?._id)) {
       return (
-        <span className="text-xs bg-tertiary-container text-tertiary-fixed px-2 py-0.5 rounded-full font-label-caps flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-pulse"></span> ACTIVE
+        <span className="text-xs bg-tertiary-container text-on-tertiary-container px-2.5 py-0.5 rounded-full font-label-caps font-semibold flex items-center gap-1.5 border border-outline-variant">
+          <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span> ACTIVE
         </span>
       );
     }
     return (
-      <span className="text-xs bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-label-caps">
+      <span className="text-xs bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full font-label-caps font-semibold border border-outline-variant">
         PENDING
       </span>
     );
@@ -56,40 +56,41 @@ const TodayPage = () => {
 
   return (
     <AppLayout>
-      <div className="flex-1 w-full space-y-xl pb-xl">
+      <div className="flex-1 w-full space-y-6 lg:space-y-8 pb-12">
         {/* ACTIVE FOCUS SECTION */}
-        <div className="relative overflow-hidden bg-primary p-lg lg:p-xl text-on-primary min-h-[360px] flex flex-col justify-end group transition-all duration-500 rounded-md">
-          <div className="absolute inset-0 opacity-10 pointer-events-none"></div>
-          <div className="relative z-10 space-y-lg">
-            <div className="flex items-center gap-sm">
-              <span className="px-2 py-1 bg-on-tertiary-container text-tertiary-fixed font-label-caps text-label-caps uppercase border border-on-tertiary-container">
+        <div className="relative overflow-hidden bg-surface-container-lowest border border-outline-variant p-6 sm:p-8 lg:p-10 text-on-surface min-h-[300px] sm:min-h-[340px] flex flex-col justify-end group transition-all duration-300 rounded-xl shadow-xs">
+          <div className="absolute inset-0 bg-gradient-to-tr from-surface-container-highest/20 to-transparent pointer-events-none"></div>
+          <div className="relative z-10 space-y-4 sm:space-y-6">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <span className="px-2.5 py-1 bg-tertiary-container text-on-tertiary-container font-label-caps text-xs uppercase font-bold rounded-full border border-outline-variant flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
                 Status: {focusTask ? "Ready" : "Idle"}
               </span>
-              <span className="text-on-primary-container font-label-caps text-label-caps uppercase">
+              <span className="text-on-surface-variant font-mono text-xs uppercase tracking-wider px-2 py-0.5 bg-surface-container rounded border border-outline-variant">
                 Ref: PROTO-SEC-{refCode}
               </span>
             </div>
-            <div className="space-y-sm max-w-2xl">
-              <h1 className="font-display-lg text-headline-lg md:text-[36px] font-black leading-tight uppercase">
+            <div className="space-y-2 max-w-2xl">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight uppercase tracking-tight text-on-surface">
                 {focusTask ? focusTask.title : "NO ACTIVE MANDATE"}
               </h1>
-              <p className="text-on-primary-container font-body-md text-base md:text-lg leading-relaxed">
+              <p className="text-on-surface-variant text-sm sm:text-base leading-relaxed line-clamp-3">
                 {focusTask ? (focusTask.description || "Execute strategic directive across relevant subsystem components. Awaiting operator initialization.") : "System is currently idling. All core objectives have been satisfied for the current cycle."}
               </p>
             </div>
-            <div className="flex flex-wrap gap-md pt-sm">
+            <div className="flex flex-wrap items-center gap-3 pt-2">
               {focusTask && (
                 <>
                   <button 
                     onClick={() => navigate(`/focus/${focusTask._id || focusTask.id}`)}
-                    className="bg-on-tertiary px-lg py-md rounded-full text-primary font-bold hover:scale-105 active:scale-95 transition-all flex items-center gap-md cursor-pointer"
+                    className="bg-primary text-on-primary px-5 sm:px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
                   >
                     <span>START SESSION</span>
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
+                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
                   </button>
                   <button 
                     onClick={() => navigate(`/tasks/${focusTask._id || focusTask.id}`)}
-                    className="border border-on-primary-container px-lg py-md rounded-full text-on-primary font-bold hover:bg-surface-container-low hover:text-primary transition-all cursor-pointer"
+                    className="border border-outline-variant bg-surface-container-low text-on-surface px-5 sm:px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-surface-container hover:text-primary transition-all cursor-pointer"
                   >
                     DETAILS
                   </button>
@@ -97,27 +98,27 @@ const TodayPage = () => {
               )}
             </div>
           </div>
-          <div className="absolute top-lg right-lg text-right hidden lg:block">
-            <div className="text-on-primary-container font-label-caps text-[80px] leading-none opacity-10 select-none uppercase">
+          <div className="absolute top-6 right-6 text-right hidden sm:block pointer-events-none select-none">
+            <div className="text-on-surface-variant/15 font-black text-6xl lg:text-8xl leading-none uppercase font-mono">
               MND-{mndCode}
             </div>
           </div>
         </div>
 
         {/* SCHEDULED PROTOCOLS */}
-        <div className="space-y-lg">
-          <div className="flex items-end justify-between border-b-2 border-primary pb-sm">
-            <h2 className="font-headline-lg text-headline-lg flex items-center gap-md font-bold uppercase">
-              <span className="material-symbols-outlined text-[28px]">schedule</span>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-outline-variant pb-3">
+            <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2 uppercase tracking-tight text-on-surface">
+              <span className="material-symbols-outlined text-primary">schedule</span>
               Scheduled Protocols
             </h2>
-            <span className="font-label-caps text-on-surface-variant mb-1">{dayStr}</span>
+            <span className="text-xs font-mono font-medium text-on-surface-variant">{dayStr}</span>
           </div>
-          <div className="grid grid-cols-1 gap-px bg-surface-variant border border-surface-variant overflow-hidden rounded">
+          <div className="border border-outline-variant divide-y divide-outline-variant overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm">
             {loading && activeTasks.length === 0 ? (
-              <div className="bg-surface-container-lowest p-lg text-center font-label-caps text-on-surface-variant">LOADING DIRECTIVES...</div>
+              <div className="p-8 text-center font-mono text-xs uppercase tracking-wider text-on-surface-variant">LOADING DIRECTIVES...</div>
             ) : scheduledTasks.length === 0 ? (
-              <div className="bg-surface-container-lowest p-lg text-center font-label-caps text-on-surface-variant">NO PROTOCOLS SCHEDULED</div>
+              <div className="p-8 text-center font-mono text-xs uppercase tracking-wider text-on-surface-variant">NO PROTOCOLS SCHEDULED</div>
             ) : (
               scheduledTasks.map((task, i) => {
                 const taskId = String(task._id || task.id || i);
@@ -126,31 +127,36 @@ const TodayPage = () => {
                 return (
                   <div 
                     key={taskId} 
-                    className={`group ${task.status === "completed" ? "bg-surface-container-lowest opacity-60 hover:opacity-100" : isFocus ? "bg-surface-container-lowest" : "bg-surface-container-lowest"} p-lg hover:bg-surface-container-low transition-all flex flex-col md:flex-row md:items-center justify-between gap-md relative overflow-hidden`}
+                    className={`group p-4 sm:p-5 hover:bg-surface-container-low transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 relative ${task.status === "completed" ? "opacity-60 hover:opacity-100" : ""}`}
                   >
                     {isFocus && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>}
-                    <div className="flex items-center gap-lg">
-                      <div className={`font-label-caps text-xl font-black w-20 ${task.status !== 'completed' && !isFocus ? 'text-on-surface-variant' : ''}`}>
+                    <div className="flex items-start sm:items-center gap-4 min-w-0">
+                      <div className="font-mono text-xs sm:text-sm font-bold text-on-surface-variant w-14 sm:w-16 shrink-0 pt-0.5 sm:pt-0">
                         {task.dueDate ? new Date(task.dueDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : `${String(8 + i).padStart(2, '0')}:00`}
                       </div>
-                      <div className="space-y-xs">
-                        <h3 className={`font-bold text-lg uppercase tracking-tight ${task.status === "completed" ? "line-through text-on-surface-variant" : ""}`}>
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <h3 className={`font-bold text-sm sm:text-base uppercase tracking-tight text-on-surface truncate ${task.status === "completed" ? "line-through text-on-surface-variant" : ""}`}>
                           {task.title}
                         </h3>
-                        <div className="flex items-center gap-md">
+                        <div className="flex flex-wrap items-center gap-2">
                           {getStatusDisplay(task)}
                           {task.status !== "completed" && (
-                            <span className="text-xs text-on-surface-variant font-label-sm uppercase">PRIORITY: {task.priority || "MEDIUM"}</span>
+                            <span className="text-[10px] text-on-surface-variant font-mono uppercase tracking-wider bg-surface-container px-2 py-0.5 rounded border border-outline-variant">
+                              PRIORITY: {task.priority || "MEDIUM"}
+                            </span>
                           )}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-md">
+                    <div className="flex items-center justify-end gap-2 shrink-0">
                       <button 
                         onClick={() => navigate(`/tasks/${taskId}`)}
-                        className="material-symbols-outlined p-2 border border-outline-variant rounded-full hover:bg-primary hover:text-on-primary transition-all cursor-pointer"
+                        aria-label="View task details"
+                        className="w-9 h-9 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all cursor-pointer"
                       >
-                        {task.status === "completed" ? "visibility" : isFocus ? "more_vert" : "play_arrow"}
+                        <span className="material-symbols-outlined text-sm">
+                          {task.status === "completed" ? "visibility" : isFocus ? "more_vert" : "play_arrow"}
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -161,36 +167,58 @@ const TodayPage = () => {
         </div>
 
         {/* ANALYTICS BENTO */}
-        <div className="grid grid-cols-12 gap-gutter mb-xl">
-          <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-lg space-y-md rounded">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+          <div className="lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-5 sm:p-6 space-y-4 rounded-xl shadow-sm">
             <div className="flex justify-between items-center">
-              <h4 className="font-label-caps text-label-caps uppercase text-on-surface-variant font-bold">Infrastructure Load</h4>
-              <span className="text-xs font-bold text-primary">REAL-TIME</span>
+              <h4 className="font-label-caps text-xs uppercase tracking-wider text-on-surface-variant font-bold">Today's Execution Progress</h4>
+              <span className="text-xs font-mono font-bold text-primary">
+                {scheduledTasks.filter(t => t.status === "completed").length} / {scheduledTasks.length} COMPLETED
+              </span>
             </div>
-            <div className="h-44 w-full bg-surface-container-low relative overflow-hidden group rounded">
-              <div className="absolute inset-0 flex items-end justify-between px-md gap-1">
-                <div className="bg-primary-container w-full h-[60%] group-hover:h-[80%] transition-all duration-700"></div>
-                <div className="bg-primary w-full h-[40%] group-hover:h-[60%] transition-all duration-700 delay-75"></div>
-                <div className="bg-primary-container w-full h-[70%] group-hover:h-[50%] transition-all duration-700 delay-100"></div>
-                <div className="bg-primary w-full h-[30%] group-hover:h-[90%] transition-all duration-700 delay-150"></div>
-                <div className="bg-primary-container w-full h-[55%] group-hover:h-[45%] transition-all duration-700 delay-200"></div>
-                <div className="bg-primary w-full h-[85%] group-hover:h-[65%] transition-all duration-700 delay-300"></div>
+            <div className="bg-surface-container-low border border-outline-variant rounded-lg p-4 space-y-3">
+              <div className="w-full bg-surface-container-high h-3 rounded-full overflow-hidden">
+                <div 
+                  className="bg-primary h-full transition-all duration-500 rounded-full"
+                  style={{ width: `${scheduledTasks.length > 0 ? Math.round((scheduledTasks.filter(t => t.status === "completed").length / scheduledTasks.length) * 100) : 0}%` }}
+                ></div>
               </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="font-display-lg text-4xl font-black opacity-20">78.4%</span>
+              <div className="flex justify-between items-center text-xs font-mono text-on-surface-variant">
+                <span>0% Initiated</span>
+                <span className="font-bold text-primary text-sm">
+                  {scheduledTasks.length > 0 ? Math.round((scheduledTasks.filter(t => t.status === "completed").length / scheduledTasks.length) * 100) : 0}%
+                </span>
+                <span>100% Target</span>
               </div>
             </div>
           </div>
           
-          <div className="col-span-12 lg:col-span-4 bg-primary text-on-primary p-lg flex flex-col justify-between border border-primary rounded">
-            <h4 className="font-label-caps text-label-caps uppercase text-on-primary-container font-bold">Next Milestone</h4>
-            <div className="space-y-xs">
-              <div className="font-display-lg text-4xl font-black">02:45:12</div>
-              <p className="text-xs text-on-primary-container uppercase tracking-widest font-label-caps">Until Network Lockdown</p>
+          <div className="lg:col-span-4 bg-surface-container-high border border-outline-variant p-5 sm:p-6 flex flex-col justify-between rounded-xl shadow-sm space-y-4">
+            <div>
+              <h4 className="font-label-caps text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-2">Active Directive</h4>
+              <div className="space-y-1">
+                <div className="text-lg sm:text-xl font-bold text-on-surface truncate">
+                  {focusTask ? focusTask.title : "All Tasks Clear"}
+                </div>
+                <p className="text-[11px] text-on-surface-variant uppercase tracking-wider font-mono">
+                  Priority: {focusTask?.priority?.toUpperCase() || "NORMAL"} // Status: {focusTask?.status?.toUpperCase() || "IDLE"}
+                </p>
+              </div>
             </div>
-            <button className="w-full mt-lg py-sm border border-on-primary-container font-bold hover:bg-on-primary hover:text-primary transition-all font-label-caps uppercase rounded-full cursor-pointer">
-              EXTEND WINDOW
-            </button>
+            {focusTask ? (
+              <button 
+                onClick={() => navigate(`/focus/${focusTask._id || focusTask.id}`)}
+                className="w-full py-2.5 bg-primary text-on-primary font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all rounded-full cursor-pointer shadow-sm"
+              >
+                ENTER FOCUS MODE
+              </button>
+            ) : (
+              <button 
+                onClick={() => navigate("/kanban")}
+                className="w-full py-2.5 border border-outline-variant bg-surface-container-low text-on-surface font-bold text-xs uppercase tracking-wider hover:bg-surface-container hover:text-primary transition-all rounded-full cursor-pointer"
+              >
+                VIEW KANBAN
+              </button>
+            )}
           </div>
         </div>
       </div>

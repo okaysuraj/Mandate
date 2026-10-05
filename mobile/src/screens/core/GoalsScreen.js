@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, ActivityIndicator, ScrollView } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
-import { API_URL } from "../../config";
 import { useTheme } from "../../context/ThemeContext";
+import { getGoals } from "../../services/goalService";
 
 const GoalsScreen = ({ navigation }) => {
   const [goals, setGoals] = useState([]);
@@ -14,9 +13,9 @@ const GoalsScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (user) {
-      axios.get(`${API_URL}/api/goals`, { params: { workspaceId: user.activeWorkspace } })
-        .then(res => setGoals(res.data || []))
-        .catch(err => console.log(err))
+      getGoals({ workspaceId: user.activeWorkspace })
+        .then(data => setGoals(data || []))
+        .catch(err => console.log("Failed to load goals", err))
         .finally(() => setLoading(false));
     }
   }, [user]);

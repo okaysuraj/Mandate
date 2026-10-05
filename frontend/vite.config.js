@@ -12,4 +12,18 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router'],
+          'vendor-firebase': ['firebase/app', 'firebase/auth'],
+          'vendor-ui': ['lucide-react', 'framer-motion'],
+          'vendor-dnd': ['@hello-pangea/dnd'],
+          'vendor-utils': ['date-fns', 'axios', 'socket.io-client', 'zustand'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
 })

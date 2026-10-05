@@ -1,17 +1,17 @@
 import React from "react";
 
 export const Button = ({ children, variant = "primary", className = "", ...props }) => {
-  const baseStyles = "px-6 py-3 rounded-full font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white font-['Space_Grotesk'] tracking-wide text-sm";
+  const baseStyles = "inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[40px] rounded-md font-label-caps text-xs font-bold uppercase tracking-wider transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 active:scale-[0.98] cursor-pointer select-none";
   
   const variants = {
-    primary: "bg-[#1A1A1A] hover:bg-black text-white focus:ring-[#1A1A1A]",
-    secondary: "bg-transparent border border-[#D9DADC] hover:border-[#1A1A1A] text-[#1A1A1A] focus:ring-[#1A1A1A]",
-    danger: "bg-red-600 hover:bg-red-700 text-white focus:ring-red-600",
-    ghost: "bg-transparent hover:bg-[#F3F3F5] text-[#1A1A1A]"
+    primary: "bg-primary text-on-primary border border-primary hover:opacity-90 shadow-sm",
+    secondary: "bg-transparent border border-outline text-on-surface hover:bg-surface-container-low hover:border-primary",
+    danger: "bg-error text-white border border-error hover:opacity-90 shadow-sm",
+    ghost: "bg-transparent text-on-surface hover:bg-surface-container-low border border-transparent hover:border-outline-variant"
   };
 
   return (
-    <button className={`${baseStyles} ${variants[variant]} ${className}`} {...props}>
+    <button className={`${baseStyles} ${variants[variant] || variants.primary} ${className}`} {...props}>
       {children}
     </button>
   );

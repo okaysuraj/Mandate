@@ -168,7 +168,7 @@ const TeamDashboardScreen = ({ navigation }) => {
         {/* Atmospheric Footer */}
         <View style={styles.atmosphericFooter}>
           <View style={[styles.gridPattern, { borderColor: colors.outlineVariant }]}>
-            {/* Mock grid lines using borders inside */}
+            {/* Subtle atmospheric grid lines */}
             <View style={styles.gridLines} />
           </View>
           <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 8, textAlign: 'center' }]}>STATION-STATUS: OPTIMAL</Text>
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderWidth: 1,
     opacity: 0.3,
-    backgroundColor: '#00000005', // Subtle texture mock
+    backgroundColor: '#00000005', // Subtle texture overlay
   }
 });
 

@@ -26,11 +26,12 @@ export const deleteTask = async (id) => {
 };
 
 export const addComment = async (taskId, commentData) => {
-  const { data } = await api.post(`/comments`, { ...commentData, targetId: taskId, targetType: 'Task' });
+  const payload = typeof commentData === 'string' ? { content: commentData } : commentData;
+  const { data } = await api.post(`/comments/task/${taskId}`, payload);
   return data;
 };
 
 export const getCommentsForTask = async (taskId) => {
-  const { data } = await api.get(`/comments`, { params: { targetId: taskId, targetType: 'Task' } });
+  const { data } = await api.get(`/comments/task/${taskId}`);
   return data;
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, RefreshControl, Dimensions, Animated, Image
+  SafeAreaView, ScrollView, RefreshControl, Dimensions, Animated, Image, FlatList, Platform
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
@@ -13,7 +13,7 @@ const { width } = Dimensions.get('window');
 
 const KanbanScreen = ({ navigation }) => {
   const { user } = useAuth();
-  const { tasks, loading, loadTasks, subscribeToSocket } = useDataStore(state => state);
+  const { tasks, loading, loadTasks, subscribeToSocket, moveTask } = useDataStore(state => state);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const scrollViewRef = useRef(null);
@@ -35,9 +35,10 @@ const KanbanScreen = ({ navigation }) => {
     setRefreshing(false);
   };
 
-  const backlogTasks = tasks.filter(t => t.status.toLowerCase() === 'todo' || t.status.toLowerCase() === 'pending');
-  const inProgressTasks = tasks.filter(t => t.status.toLowerCase() === 'in progress' || t.status.toLowerCase() === 'in-progress');
-  const validationTasks = tasks.filter(t => t.status.toLowerCase() === 'done' || t.status.toLowerCase() === 'completed');
+  const backlogTasks = tasks.filter(t => t.status && (t.status.toLowerCase() === 'todo' || t.status.toLowerCase() === 'pending'));
+  const inProgressTasks = tasks.filter(t => t.status && (t.status.toLowerCase() === 'in progress' || t.status.toLowerCase() === 'in-progress'));
+  const validationTasks = tasks.filter(t => t.status && (t.status.toLowerCase() === 'done' || t.status.toLowerCase() === 'completed'));
+  const archivedTasks = tasks.filter(t => t.status && t.status.toLowerCase() === 'archived');
 
   const scrollToTab = (index) => {
     setActiveTab(index);
@@ -135,25 +136,65 @@ const KanbanScreen = ({ navigation }) => {
             )}
           </View>
         )}
+
+        {/* Quick status transition actions */}
+        <View style={{ flexDirection: 'row', gap: 6, marginTop: spacing.sm, paddingTop: spacing.xs, borderTopWidth: 1, borderTopColor: colors.outlineVariant + '40', flexWrap: 'wrap' }}>
+          {type !== 'pending' && (
+            <TouchableOpacity 
+              style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4, backgroundColor: colors.surfaceContainerHigh }}
+              onPress={() => moveTask(task._id || task.id, 'pending')}
+            >
+              <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary }]}>TO BACKLOG</Text>
+            </TouchableOpacity>
+          )}
+          {type !== 'in-progress' && (
+            <TouchableOpacity 
+              style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4, backgroundColor: colors.primary }}
+              onPress={() => moveTask(task._id || task.id, 'in-progress')}
+            >
+              <Text style={[typography.labelCaps, { fontSize: 10, color: colors.onPrimary }]}>START</Text>
+            </TouchableOpacity>
+          )}
+          {type !== 'completed' && (
+            <TouchableOpacity 
+              style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4, backgroundColor: colors.tertiaryFixed }}
+              onPress={() => moveTask(task._id || task.id, 'completed')}
+            >
+              <Text style={[typography.labelCaps, { fontSize: 10, color: colors.onTertiaryContainer }]}>COMPLETE</Text>
+            </TouchableOpacity>
+          )}
+          {type !== 'archived' && (
+            <TouchableOpacity 
+              style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4, backgroundColor: colors.surfaceContainerLow }}
+              onPress={() => moveTask(task._id || task.id, 'archived')}
+            >
+              <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary }]}>ARCHIVE</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </TouchableOpacity>
     );
   };
 
-  const renderColumn = (tasks, id, type) => (
-    <ScrollView 
+  const renderColumn = (columnTasks, id, type) => (
+    <FlatList 
+      data={columnTasks}
+      keyExtractor={(item) => item._id || item.id}
+      renderItem={({ item }) => renderTaskCard(item, type)}
       style={styles.columnContainer}
       contentContainerStyle={styles.columnContent}
       showsVerticalScrollIndicator={false}
+      initialNumToRender={6}
+      maxToRenderPerBatch={8}
+      windowSize={5}
+      removeClippedSubviews={Platform.OS === 'android'}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
-    >
-      {tasks.length === 0 ? (
+      ListEmptyComponent={
         <Text style={[typography.labelCaps, { color: colors.secondary, textAlign: 'center', marginTop: spacing.xl }]}>
           NO TASKS IN {id}
         </Text>
-      ) : (
-        tasks.map(t => renderTaskCard(t, type))
-      )}
-    </ScrollView>
+      }
+    />
   );
 
   return (
@@ -177,8 +218,8 @@ const KanbanScreen = ({ navigation }) => {
       {/* Board Header / Tab Switcher */}
       <View style={styles.tabScrollWrapper}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScrollContent}>
-          {['BACKLOG', 'IN PROGRESS', 'VALIDATION'].map((tab, idx) => {
-            const counts = [backlogTasks.length, inProgressTasks.length, validationTasks.length];
+          {['BACKLOG', 'IN PROGRESS', 'VALIDATION', 'ARCHIVE'].map((tab, idx) => {
+            const counts = [backlogTasks.length, inProgressTasks.length, validationTasks.length, archivedTasks.length];
             const isActive = activeTab === idx;
             
             return (
@@ -217,13 +258,18 @@ const KanbanScreen = ({ navigation }) => {
         {renderColumn(backlogTasks, "BACKLOG", "pending")}
         {renderColumn(inProgressTasks, "IN PROGRESS", "in-progress")}
         {renderColumn(validationTasks, "VALIDATION", "completed")}
+        {renderColumn(archivedTasks, "ARCHIVE", "archived")}
       </ScrollView>
 
       {/* Deploy Action Footer */}
       <View style={styles.actionFooter}>
-        <TouchableOpacity style={[styles.deployButton, { backgroundColor: colors.primary, borderRadius: borderRadius.full }]} activeOpacity={0.8}>
-          <MaterialIcons name="rocket-launch" size={20} color={colors.onPrimary} style={{ marginRight: spacing.sm }} />
-          <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2 }]}>DEPLOY BATCH</Text>
+        <TouchableOpacity 
+          style={[styles.deployButton, { backgroundColor: colors.primary, borderRadius: borderRadius.full }]} 
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate("CreateTask")}
+        >
+          <MaterialIcons name="add" size={20} color={colors.onPrimary} style={{ marginRight: spacing.sm }} />
+          <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2 }]}>CREATE MANDATE</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

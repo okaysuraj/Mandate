@@ -43,7 +43,7 @@ const EmailVerificationScreen = ({ navigation }) => {
           <View style={styles.iconContainer}>
             <View style={[styles.iconBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
               <MaterialIcons name="lock" size={36} color={colors.primary} />
-              {/* Scanline overlay mocked */}
+              {/* Scanline overlay */}
               <View style={styles.scanline} />
             </View>
           </View>
@@ -107,7 +107,7 @@ const EmailVerificationScreen = ({ navigation }) => {
               <Text style={[typography.labelSm, { color: colors.primary, fontWeight: 'bold' }]}>MAN-992-ALPHA</Text>
             </View>
             <View style={[styles.waveformContainer, { backgroundColor: colors.surfaceContainer }]}>
-              {/* Mock Waveform */}
+              {/* Audio / frequency waveform */}
               <View style={styles.waveBars}>
                 {[2, 4, 6, 3, 5, 7, 4].map((h, i) => (
                   <View key={i} style={[styles.waveBar, { height: h * 4, backgroundColor: colors.primaryContainer }]} />

@@ -34,78 +34,84 @@ const TeamWorkspacePage = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-xl pb-2xl">
+      <div className="space-y-6 sm:space-y-8 pb-16 px-4 sm:px-6 md:px-8 py-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-md border-b border-outline-variant/30 pb-lg">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-outline-variant/40 pb-6">
           <div>
-            <p className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest mb-xs">
-              Organization & Workspace
-            </p>
-            <h1 className="font-headline-lg text-headline-lg md:text-[36px] text-primary uppercase font-black tracking-tight">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block"></span>
+              <span className="font-mono text-xs uppercase font-bold text-on-surface-variant tracking-widest">
+                ORGANIZATION &amp; COLLABORATION
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-on-surface uppercase tracking-tight">
               Team Workspace
             </h1>
-            <p className="font-body-md text-on-surface-variant max-w-xl mt-xs">
+            <p className="text-sm text-on-surface-variant max-w-xl mt-1">
               View active team members, roles, permissions, and workspace resource distribution.
             </p>
           </div>
-          <div className="flex gap-md">
+          <div className="flex flex-wrap gap-3">
             <Link
               to="/team"
-              className="px-6 py-2.5 border border-outline-variant rounded-full font-label-caps text-label-caps hover:bg-surface-container-low transition-colors block text-center"
+              className="px-5 py-2.5 border border-outline-variant rounded-xl font-mono text-xs font-bold text-on-surface hover:bg-surface-container transition-colors block text-center"
             >
-              Team Analytics
+              TEAM ANALYTICS
             </Link>
             <Link
               to="/settings"
-              className="px-6 py-2.5 bg-primary text-on-primary rounded-full font-label-caps text-label-caps shadow-md hover:opacity-90 transition-all block text-center"
+              className="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-mono text-xs font-bold shadow-md hover:opacity-90 active:scale-95 transition-all block text-center uppercase"
             >
-              Manage Workspace
+              MANAGE WORKSPACE
             </Link>
           </div>
         </div>
 
         {/* Member Roster & Controls */}
-        <div className="bg-surface-container-lowest border border-outline-variant p-xl space-y-lg">
-          <div className="flex flex-col md:flex-row justify-between md:items-center gap-md">
+        <div className="bg-surface-container-lowest border border-outline-variant/60 p-6 sm:p-8 rounded-2xl shadow-sm space-y-6">
+          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div>
-              <h2 className="font-headline-lg text-headline-lg text-primary font-bold uppercase">
+              <h2 className="text-xl sm:text-2xl font-bold text-on-surface">
                 Workspace Roster ({allMembers.length} Members)
               </h2>
-              <p className="text-xs text-on-surface-variant">Core Productivity & Engineering Workspace</p>
+              <p className="text-xs text-on-surface-variant mt-0.5">Core Engineering &amp; Operations Distribution</p>
             </div>
-            <div className="w-full md:w-72">
+            <div className="w-full md:w-80 relative">
+              <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-base">
+                search
+              </span>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search team members or roles..."
-                className="w-full bg-surface border border-outline-variant p-md rounded-sm text-xs font-body-md text-on-surface outline-none focus:border-primary"
+                placeholder="Search by name, role, email..."
+                className="w-full bg-surface-container-low border border-outline-variant pl-10 pr-4 py-2.5 rounded-xl text-xs font-medium text-on-surface outline-none focus:border-primary transition-colors"
               />
             </div>
           </div>
 
-          <div className="space-y-md pt-md">
+          <div className="space-y-3 pt-2">
             {filteredMembers.map((member) => (
               <div
                 key={member.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between border border-outline-variant/60 p-md rounded hover:border-primary transition-all gap-md bg-surface-container-lowest"
+                className="flex flex-col sm:flex-row sm:items-center justify-between border border-outline-variant/60 p-4 rounded-xl hover:border-primary/50 transition-all gap-4 bg-surface-container-low"
               >
-                <div className="flex items-center gap-md">
-                  <div className="w-12 h-12 rounded-full bg-surface-container-high border border-outline-variant overflow-hidden flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-full bg-surface-container-high border border-outline-variant/80 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-sm">
                     {member.avatar ? (
                       <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="font-display-lg text-headline-lg font-bold text-primary">
+                      <span className="font-mono text-base font-bold text-primary">
                         {member.name.charAt(0).toUpperCase()}
                       </span>
                     )}
                   </div>
                   <div>
-                    <div className="flex items-center gap-xs">
-                      <p className="font-body-md font-bold text-primary">{member.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-on-surface">{member.name}</p>
                       {member.id === currentUserMember.id && (
-                        <span className="bg-primary/10 text-primary font-label-caps text-[10px] px-2 py-0.5 rounded uppercase font-bold">
-                          You
+                        <span className="bg-primary/10 text-primary font-mono text-[10px] px-2 py-0.5 rounded-full uppercase font-bold border border-primary/20">
+                          YOU
                         </span>
                       )}
                     </div>
@@ -113,14 +119,19 @@ const TeamWorkspacePage = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-lg">
-                  <div className="text-right">
-                    <span className="font-label-caps text-xs text-primary font-bold uppercase block">{member.role}</span>
-                    <span className="text-[10px] text-on-surface-variant font-label-caps uppercase">{member.status}</span>
+                <div className="flex items-center justify-between sm:justify-end gap-6 pt-2 sm:pt-0 border-t sm:border-t-0 border-outline-variant/30">
+                  <div className="sm:text-right">
+                    <span className="font-mono text-xs text-primary font-bold uppercase block">{member.role}</span>
+                    <div className="flex items-center sm:justify-end gap-1.5 mt-0.5">
+                      <span className={`w-1.5 h-1.5 rounded-full ${member.status === 'Active' ? 'bg-primary' : 'bg-on-surface-variant/40'}`}></span>
+                      <span className="text-[10px] text-on-surface-variant font-mono uppercase">{member.status}</span>
+                    </div>
                   </div>
-                  <span className="material-symbols-outlined text-outline text-lg cursor-pointer hover:text-primary">
-                    more_vert
-                  </span>
+                  <button className="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
+                    <span className="material-symbols-outlined text-xl">
+                      more_vert
+                    </span>
+                  </button>
                 </div>
               </div>
             ))}

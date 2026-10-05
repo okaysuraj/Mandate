@@ -1,205 +1,180 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { 
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, 
+  SafeAreaView, ActivityIndicator, RefreshControl 
+} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useDataStore } from '../../store/useDataStore';
+import api from '../../services/api';
 
 const SavedViewsScreen = ({ navigation }) => {
-  const { colors, typography, spacing, borderRadius } = useTheme();
+  const { colors, typography, spacing } = useTheme();
+  const { tasks, loadTasks } = useDataStore((state) => state);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      await loadTasks();
+      const res = await api.get('/projects').catch(() => ({ data: [] }));
+      setProjects(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.warn('Failed to load views data:', err.message);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchData();
+  };
+
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => t.status === 'completed' || t.status === 'done').length;
+  const urgentTasks = tasks.filter((t) => t.priority === 'urgent');
+  const highTasks = tasks.filter((t) => t.priority === 'high');
+  const priorityBacklogCount = urgentTasks.length + highTasks.length;
+  const activeProjectsCount = projects.length;
+
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  const viewsList = [
+    {
+      id: 'today_focus',
+      title: 'Today Focus',
+      subtitle: `${tasks.filter((t) => t.status !== 'completed' && t.status !== 'done').length} active mandates`,
+      tag1: 'EXECUTION',
+      tag2: `${tasks.filter((t) => t.status === 'in-progress' || t.status === 'in_progress').length} IN PROGRESS`,
+      progress: completionRate,
+      icon: 'flare',
+      onPress: () => navigation.navigate('Today'),
+    },
+    {
+      id: 'priority_backlog',
+      title: 'Priority Backlog',
+      subtitle: `${priorityBacklogCount} urgent & high tasks`,
+      tag1: 'CRITICAL PATH',
+      tag2: `${urgentTasks.length} URGENT`,
+      progress: priorityBacklogCount > 0 ? Math.min(100, Math.round((highTasks.length / priorityBacklogCount) * 100)) : 100,
+      icon: 'warning',
+      onPress: () => navigation.navigate('KanbanMain'),
+    },
+    {
+      id: 'active_projects',
+      title: 'Active Projects',
+      subtitle: `${activeProjectsCount} registered workspace projects`,
+      tag1: 'WORKSPACE',
+      tag2: `${activeProjectsCount} STREAMS`,
+      progress: activeProjectsCount > 0 ? 100 : 0,
+      icon: 'account-tree',
+      onPress: () => navigation.navigate('ProjectsMain'),
+    },
+  ];
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Top App Bar */}
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.iconBtn}>
-            <MaterialIcons name="menu" size={24} color={colors.primary} />
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 8 }]}>MANDATE</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 8 }]}>
+            SAVED VIEWS
+          </Text>
         </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.iconBtn}>
-            <MaterialIcons name="search" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn}>
-            <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('GlobalSearch')}>
+          <MaterialIcons name="search" size={24} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.container}>
-        
+      <ScrollView 
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+        }
+      >
         {/* Summary Module */}
-        <View style={[styles.summaryCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+        <View style={[styles.summaryCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           <View style={styles.summaryHeader}>
             <View>
-              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>SUMMARY</Text>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>System Activity</Text>
+              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>WORKSPACE STATUS</Text>
+              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>Overall Progress</Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text style={[typography.displayLg, { fontSize: 32, lineHeight: 36, color: colors.primary }]}>84%</Text>
-              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>+12% vs LY</Text>
+              <Text style={[typography.displayLg, { fontSize: 32, lineHeight: 36, color: colors.primary }]}>{completionRate}%</Text>
+              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>
+                {completedTasks}/{totalTasks} RESOLVED
+              </Text>
             </View>
           </View>
 
-          {/* Bar Chart */}
-          <View style={styles.chartContainer}>
-            {[40, 65, 50, 85, 95, 70, 60, 45, 30, 55].map((h, i) => (
-              <View 
-                key={i} 
-                style={[
-                  styles.chartBar, 
-                  { 
-                    height: `${h}%`, 
-                    backgroundColor: h === 95 ? colors.primary : colors.surfaceContainerHighest 
-                  }
-                ]} 
-              />
-            ))}
-          </View>
-          <View style={styles.chartFooter}>
-            <Text style={[typography.labelSm, { color: colors.secondary }]}>08:00</Text>
-            <Text style={[typography.labelSm, { color: colors.secondary }]}>12:00</Text>
-            <Text style={[typography.labelSm, { color: colors.secondary }]}>16:00</Text>
-            <Text style={[typography.labelSm, { color: colors.secondary }]}>20:00</Text>
+          {/* Progress Indicator */}
+          <View style={[styles.progressTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
+            <View style={[styles.progressFill, { width: `${completionRate}%`, backgroundColor: colors.primary }]} />
           </View>
         </View>
 
         {/* Gallery Header */}
         <View style={styles.galleryHeader}>
-          <Text style={[typography.labelCaps, { color: colors.onSecondaryContainer }]}>SAVED VIEWS (12)</Text>
-          <TouchableOpacity style={styles.filterBtn}>
-            <MaterialIcons name="tune" size={16} color={colors.primary} />
-            <Text style={[typography.labelSm, { color: colors.primary, marginLeft: 4 }]}>FILTER</Text>
-          </TouchableOpacity>
+          <Text style={[typography.labelCaps, { color: colors.secondary }]}>CORE FILTERS ({viewsList.length})</Text>
         </View>
 
         {/* List of Modules */}
-        <View style={styles.modulesList}>
-          
-          {/* Module 1 */}
-          <TouchableOpacity style={[styles.moduleCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
-            <View style={styles.moduleHeader}>
-              <View style={styles.moduleHeaderLeft}>
-                <View style={[styles.moduleIconContainer, { backgroundColor: colors.surfaceContainerLow }]}>
-                  <MaterialIcons name="analytics" size={24} color={colors.primary} />
+        {loading ? (
+          <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 32 }} />
+        ) : (
+          <View style={styles.modulesList}>
+            {viewsList.map((item) => (
+              <TouchableOpacity 
+                key={item.id}
+                style={[styles.moduleCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}
+                onPress={item.onPress}
+                activeOpacity={0.8}
+              >
+                <View style={styles.moduleHeader}>
+                  <View style={styles.moduleHeaderLeft}>
+                    <View style={[styles.moduleIconContainer, { backgroundColor: colors.surfaceContainerLow }]}>
+                      <MaterialIcons name={item.icon} size={24} color={colors.primary} />
+                    </View>
+                    <View style={styles.moduleTitleContainer}>
+                      <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>
+                        {item.title}
+                      </Text>
+                      <Text style={[typography.labelSm, { color: colors.secondary }]}>
+                        {item.subtitle}
+                      </Text>
+                    </View>
+                  </View>
+                  <MaterialIcons name="chevron-right" size={24} color={colors.secondary} />
                 </View>
-                <View style={styles.moduleTitleContainer}>
-                  <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>Q4 Pipeline Analysis</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}>Updated 2h ago</Text>
-                </View>
-              </View>
-              <MaterialIcons name="more-vert" size={24} color={colors.secondary} />
-            </View>
-            <View style={styles.tagsRow}>
-              <View style={[styles.tag, { backgroundColor: colors.surfaceContainerLow }]}>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>REG: EMEA</Text>
-              </View>
-              <View style={[styles.tag, { backgroundColor: colors.surfaceContainerLow }]}>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>STAT: ACTIVE</Text>
-              </View>
-            </View>
-            {/* Fake Sparkline */}
-            <View style={styles.sparklineContainer}>
-              <View style={[styles.sparklineMock, { borderColor: colors.primary }]} />
-            </View>
-            <View style={styles.moduleFooter}>
-              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>+24.8%</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary }]}>VOL: $4.2M</Text>
-            </View>
-          </TouchableOpacity>
 
-          {/* Module 2 */}
-          <TouchableOpacity style={[styles.moduleCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
-            <View style={styles.moduleHeader}>
-              <View style={styles.moduleHeaderLeft}>
-                <View style={[styles.moduleIconContainer, { backgroundColor: colors.surfaceContainerLow }]}>
-                  <MaterialIcons name="adjust" size={24} color={colors.primary} />
+                <View style={styles.tagsRow}>
+                  <View style={[styles.tag, { backgroundColor: colors.surfaceContainerLow }]}>
+                    <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>{item.tag1}</Text>
+                  </View>
+                  <View style={[styles.tag, { backgroundColor: colors.surfaceContainerLow }]}>
+                    <Text style={[typography.labelSm, { color: colors.primary, fontSize: 10 }]}>{item.tag2}</Text>
+                  </View>
                 </View>
-                <View style={styles.moduleTitleContainer}>
-                  <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>Core Health</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}>Real-time sync</Text>
-                </View>
-              </View>
-              <MaterialIcons name="more-vert" size={24} color={colors.secondary} />
-            </View>
-            <View style={styles.tagsRow}>
-              <View style={[styles.tag, { backgroundColor: colors.tertiaryContainer }]}>
-                <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>STABLE</Text>
-              </View>
-              <View style={[styles.tag, { backgroundColor: colors.surfaceContainerLow }]}>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>NODES: 124</Text>
-              </View>
-            </View>
-            {/* Fake Sparkline */}
-            <View style={styles.sparklineContainer}>
-              <View style={[styles.sparklineMock, { borderColor: colors.primary }]} />
-            </View>
-            <View style={styles.moduleFooter}>
-              <Text style={[typography.labelSm, { color: colors.secondary }]}>Latency: 14ms</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary }]}>UP: 99.9%</Text>
-            </View>
-          </TouchableOpacity>
 
-          {/* Module 3 */}
-          <TouchableOpacity style={[styles.moduleCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
-            <View style={styles.moduleHeader}>
-              <View style={styles.moduleHeaderLeft}>
-                <View style={[styles.moduleIconContainer, { backgroundColor: colors.surfaceContainerLow }]}>
-                  <MaterialIcons name="account-tree" size={24} color={colors.primary} />
+                {/* Progress bar */}
+                <View style={[styles.moduleProgressTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
+                  <View style={[styles.moduleProgressFill, { width: `${item.progress}%`, backgroundColor: colors.primary }]} />
                 </View>
-                <View style={styles.moduleTitleContainer}>
-                  <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>Project Artemis</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}>Priority Alpha</Text>
-                </View>
-              </View>
-              <MaterialIcons name="more-vert" size={24} color={colors.secondary} />
-            </View>
-            <View style={styles.tagsRow}>
-              <View style={[styles.tag, { backgroundColor: colors.errorContainer }]}>
-                <Text style={[typography.labelSm, { color: colors.error }]}>CRITICAL PATH</Text>
-              </View>
-              <View style={[styles.tag, { backgroundColor: colors.surfaceContainerLow }]}>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>SPRINT 14</Text>
-              </View>
-            </View>
-            {/* Fake Sparkline */}
-            <View style={styles.sparklineContainer}>
-              <View style={[styles.sparklineMock, { borderColor: colors.error, borderStyle: 'dashed' }]} />
-            </View>
-            <View style={styles.moduleFooter}>
-              <Text style={[typography.labelSm, { color: colors.error }]}>High Volatility</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary }]}>ETA: OCT 24</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Empty State / Add New */}
-          <TouchableOpacity style={[styles.emptyStateCard, { borderColor: colors.outlineVariant }]}>
-            <MaterialIcons name="add-circle" size={36} color={colors.secondary} style={{ marginBottom: 8 }} />
-            <Text style={[typography.labelCaps, { color: colors.secondary }]}>Create New View</Text>
-          </TouchableOpacity>
-
-        </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </ScrollView>
-
-      {/* Bottom Nav */}
-      <View style={[styles.bottomNav, { backgroundColor: colors.surface, borderTopColor: colors.outlineVariant }]}>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="grid-view" size={24} color={colors.secondary} />
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>DASHBOARD</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="settings-input-component" size={24} color={colors.secondary} />
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>SYSTEM</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItemActive, { backgroundColor: colors.primary }]}>
-          <MaterialIcons name="account-tree" size={24} color={colors.onPrimary} />
-          <Text style={[typography.labelCaps, { color: colors.onPrimary, marginTop: 4 }]}>PROJECTS</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="adjust" size={24} color={colors.secondary} />
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 4 }]}>CORE</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -213,164 +188,95 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 64,
     borderBottomWidth: 1,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   iconBtn: {
-    padding: 8,
+    padding: 6,
   },
   container: {
     flexGrow: 1,
-    paddingTop: 80, // to clear header + space
-    paddingHorizontal: 16,
-    paddingBottom: 100, // to clear bottom nav
+    padding: 16,
+    paddingBottom: 48,
+    gap: 16,
   },
   summaryCard: {
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 24, // p-lg conceptually
-    marginBottom: 24,
+    borderRadius: 8,
+    padding: 16,
+    gap: 16,
   },
   summaryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginBottom: 16,
+    alignItems: 'flex-start',
   },
-  chartContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: 96,
-    paddingTop: 16,
-    gap: 4,
+  progressTrack: {
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
   },
-  chartBar: {
-    flex: 1,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-  },
-  chartFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
+  progressFill: {
+    height: '100%',
+    borderRadius: 3,
   },
   galleryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  filterBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginTop: 8,
   },
   modulesList: {
-    gap: 16,
+    gap: 12,
   },
   moduleCard: {
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: 8,
+    padding: 16,
+    gap: 12,
   },
   moduleHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
+    alignItems: 'center',
   },
   moduleHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
   },
   moduleIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   moduleTitleContainer: {
-    justifyContent: 'center',
+    flex: 1,
   },
   tagsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 24,
   },
   tag: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 4,
   },
-  sparklineContainer: {
-    height: 64,
-    justifyContent: 'flex-end',
-    marginBottom: 8,
+  moduleProgressTrack: {
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginTop: 4,
   },
-  sparklineMock: {
-    height: '50%',
-    borderTopWidth: 2,
-    borderRightWidth: 2,
-    borderTopRightRadius: 16,
-    opacity: 0.5,
+  moduleProgressFill: {
+    height: '100%',
+    borderRadius: 2,
   },
-  moduleFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  emptyStateCard: {
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderRadius: 16,
-    padding: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 24, // pb-safe conceptually
-    paddingTop: 12,
-    borderTopWidth: 1,
-    zIndex: 50,
-  },
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-  },
-  navItemActive: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: 24,
-    marginHorizontal: 8,
-  }
 });
 
 export default SavedViewsScreen;

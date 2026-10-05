@@ -55,11 +55,11 @@ const GoalsPage = () => {
   const getStatusChip = (status) => {
     switch (status) {
       case "achieved": 
-        return { label: "COMPLETED", class: "bg-primary-container text-on-primary-container" };
+        return { label: "COMPLETED", class: "bg-surface-container-highest text-on-surface-variant border border-outline-variant" };
       case "active": 
-        return { label: "ACTIVE", class: "bg-tertiary-container text-on-tertiary-container" };
+        return { label: "ACTIVE", class: "bg-tertiary-container text-on-tertiary-container border border-outline-variant" };
       default: 
-        return { label: "PENDING", class: "bg-surface-container text-on-surface-variant" };
+        return { label: "PENDING", class: "bg-secondary-container text-on-secondary-container border border-outline-variant" };
     }
   };
 
@@ -71,127 +71,189 @@ const GoalsPage = () => {
 
   return (
     <AppLayout>
-      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-lg w-full">
+      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-6 w-full pb-12">
         {/* Page Header & CTA */}
-        <section className="flex flex-col md:flex-row md:items-end justify-between gap-md">
+        <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-outline-variant">
           <div>
-            <span className="font-label-caps text-label-caps text-secondary tracking-widest block mb-xs">STRATEGIC_LAYER_V4</span>
-            <h2 className="font-display-lg text-display-lg text-primary">Goals List</h2>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-2 h-2 rounded-full bg-primary inline-block"></span>
+              <span className="font-mono text-xs uppercase font-bold text-on-surface-variant tracking-widest block">
+                STRATEGIC LAYER · OBJECTIVES MATRIX
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-on-surface uppercase tracking-tight">Goals List</h1>
           </div>
           <button 
             onClick={() => setIsCreating(true)}
-            className="bg-primary text-on-primary px-lg py-md rounded-full flex items-center gap-sm font-label-caps text-label-caps hover:opacity-80 transition-opacity active:scale-95 duration-150"
+            className="bg-primary text-on-primary px-5 py-2.5 rounded-lg flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider hover:opacity-90 active:scale-95 transition-all shadow-sm cursor-pointer self-start md:self-auto"
           >
-            <span className="material-symbols-outlined">add</span>
-            INITIALIZE_GOAL
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            INITIALIZE GOAL
           </button>
         </section>
 
         {isCreating && (
-          <form onSubmit={handleCreateGoal} className="p-lg bg-surface-container-low border border-outline-variant rounded-lg mb-lg">
+          <form onSubmit={handleCreateGoal} className="p-5 sm:p-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm space-y-4">
             <input 
               type="text" 
               placeholder="STRATEGIC OBJECTIVE..."
               value={newTitle}
               onChange={e => setNewTitle(e.target.value)}
-              className="w-full bg-transparent text-headline-lg-mobile font-bold outline-none mb-md border-b border-outline-variant pb-2 focus:border-primary transition-colors"
+              className="w-full bg-surface-container-low border border-outline-variant rounded-lg p-3 text-sm font-bold text-on-surface outline-none focus:border-primary transition-colors"
               autoFocus
             />
-            <div className="flex justify-end gap-sm">
-              <button type="button" onClick={() => setIsCreating(false)} className="px-lg py-sm text-label-caps font-label-caps text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">CANCEL</button>
-              <button type="submit" disabled={!newTitle.trim()} className="px-lg py-sm text-label-caps font-label-caps bg-primary text-on-primary rounded-full disabled:opacity-50 hover:opacity-90 transition-opacity">COMMIT</button>
+            <div className="flex justify-end gap-2">
+              <button 
+                type="button" 
+                onClick={() => setIsCreating(false)} 
+                className="px-4 py-2 text-xs font-mono font-bold uppercase text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors cursor-pointer"
+              >
+                CANCEL
+              </button>
+              <button 
+                type="submit" 
+                disabled={!newTitle.trim()} 
+                className="px-5 py-2 text-xs font-mono font-bold uppercase bg-primary text-on-primary rounded-lg disabled:opacity-50 hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+              >
+                COMMIT
+              </button>
             </div>
           </form>
         )}
 
         {/* Bento Dashboard Metrics */}
-        <section className="grid grid-cols-1 md:grid-cols-4 gap-gutter">
-          <div className="bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between h-40">
-            <span className="font-label-caps text-label-caps text-secondary">ACTIVE_OBJECTIVES</span>
-            <div className="flex items-baseline gap-sm">
-              <span className="font-headline-lg text-[48px]">{activeCount}</span>
-              <span className="font-label-sm text-tertiary-fixed-dim text-label-sm">+1</span>
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-surface-container-lowest border border-outline-variant p-4 sm:p-5 rounded-xl shadow-sm flex flex-col justify-between h-36">
+            <span className="font-mono text-[10px] uppercase font-bold text-on-surface-variant">ACTIVE OBJECTIVES</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black font-mono text-on-surface">{activeCount}</span>
+              <span className="font-mono text-xs text-tertiary font-bold">+1</span>
             </div>
           </div>
-          <div className="bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between h-40">
-            <span className="font-label-caps text-label-caps text-secondary">SYSTEM_EFFICIENCY</span>
-            <div className="flex items-baseline gap-sm">
-              <span className="font-headline-lg text-[48px]">{systemEfficiency}%</span>
+          <div className="bg-surface-container-lowest border border-outline-variant p-4 sm:p-5 rounded-xl shadow-sm flex flex-col justify-between h-36">
+            <span className="font-mono text-[10px] uppercase font-bold text-on-surface-variant">SYSTEM EFFICIENCY</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black font-mono text-on-surface">{systemEfficiency}%</span>
             </div>
-            <div className="w-full bg-surface-container h-1 rounded-full overflow-hidden">
-              <div className="bg-primary h-full transition-all duration-1000" style={{ width: `${systemEfficiency}%` }}></div>
-            </div>
-          </div>
-          <div className="bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between h-40">
-            <span className="font-label-caps text-label-caps text-secondary">URGENT_DIRECTIVES</span>
-            <div className="flex items-baseline gap-sm">
-              <span className="font-headline-lg text-[48px] text-error">00</span>
+            <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+              <div className="bg-primary h-full transition-all duration-500 rounded-full" style={{ width: `${systemEfficiency}%` }}></div>
             </div>
           </div>
-          <div className="bg-surface-container-lowest border border-outline-variant p-lg flex flex-col justify-between h-40">
-            <span className="font-label-caps text-label-caps text-secondary">MEAN_TIME_RESOLUTION</span>
-            <div className="flex items-baseline gap-sm">
-              <span className="font-headline-lg text-[48px]">4.2<span className="text-body-md font-normal ml-xs">DAYS</span></span>
+          <div className="bg-surface-container-lowest border border-outline-variant p-4 sm:p-5 rounded-xl shadow-sm flex flex-col justify-between h-36">
+            <span className="font-mono text-[10px] uppercase font-bold text-on-surface-variant">URGENT DIRECTIVES</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black font-mono text-error">00</span>
+            </div>
+          </div>
+          <div className="bg-surface-container-lowest border border-outline-variant p-4 sm:p-5 rounded-xl shadow-sm flex flex-col justify-between h-36">
+            <span className="font-mono text-[10px] uppercase font-bold text-on-surface-variant">MEAN RESOLUTION</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-black font-mono text-on-surface">4.2</span>
+              <span className="font-mono text-xs text-on-surface-variant uppercase">DAYS</span>
             </div>
           </div>
         </section>
 
-        {/* Main Ledger Table */}
-        <section className="bg-surface-container-lowest border border-outline-variant overflow-hidden">
+        {/* Mobile View: Stacked Cards */}
+        <div className="md:hidden space-y-3">
+          {loading ? (
+            <div className="p-8 text-center font-mono text-xs uppercase tracking-wider text-on-surface-variant bg-surface-container-lowest border border-outline-variant rounded-xl">
+              LOADING DIRECTIVES...
+            </div>
+          ) : goals.length === 0 ? (
+            <div className="p-8 text-center font-mono text-xs uppercase tracking-wider text-on-surface-variant bg-surface-container-lowest border border-outline-variant rounded-xl">
+              NO OBJECTIVES FOUND
+            </div>
+          ) : (
+            goals.map((goal, i) => {
+              const status = getStatusChip(goal.status);
+              const progress = getProgress(goal);
+              return (
+                <div 
+                  key={goal._id || i}
+                  className="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl shadow-sm space-y-3"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[10px] text-on-surface-variant font-bold bg-surface-container px-2 py-0.5 rounded border border-outline-variant">
+                      #G-{String(8812 + i).padStart(4, '0')}
+                    </span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 font-mono text-[10px] rounded-full uppercase tracking-wider font-bold ${status.class}`}>
+                      {status.label}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-on-surface uppercase tracking-tight">{goal.title}</h3>
+                    <span className="text-[11px] font-mono text-on-surface-variant">{goal.linkedTasks?.length || 0} linked directives</span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs font-mono text-on-surface-variant">
+                      <span>Progress</span>
+                      <span className="font-bold text-on-surface">{progress}%</span>
+                    </div>
+                    <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+                      <div className="bg-primary h-full transition-all duration-500 rounded-full" style={{ width: `${progress}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Main Ledger Table */}
+        <section className="hidden md:block bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-container-low border-b border-outline-variant">
-                  <th className="px-lg py-md font-label-caps text-label-caps text-secondary uppercase tracking-tighter w-32">Goal ID</th>
-                  <th className="px-lg py-md font-label-caps text-label-caps text-secondary uppercase tracking-tighter">Strategic Objective</th>
-                  <th className="px-lg py-md font-label-caps text-label-caps text-secondary uppercase tracking-tighter">Status</th>
-                  <th className="px-lg py-md font-label-caps text-label-caps text-secondary uppercase tracking-tighter">System Progress</th>
-                  <th className="px-lg py-md font-label-caps text-label-caps text-secondary uppercase tracking-tighter">Created Date</th>
-                  <th className="px-lg py-md font-label-caps text-label-caps text-secondary uppercase tracking-tighter w-16"></th>
+                  <th className="px-5 py-3.5 font-mono text-[10px] text-on-surface-variant uppercase tracking-wider w-32">Goal ID</th>
+                  <th className="px-5 py-3.5 font-mono text-[10px] text-on-surface-variant uppercase tracking-wider">Strategic Objective</th>
+                  <th className="px-5 py-3.5 font-mono text-[10px] text-on-surface-variant uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3.5 font-mono text-[10px] text-on-surface-variant uppercase tracking-wider">System Progress</th>
+                  <th className="px-5 py-3.5 font-mono text-[10px] text-on-surface-variant uppercase tracking-wider">Created Date</th>
+                  <th className="px-5 py-3.5 font-mono text-[10px] text-on-surface-variant uppercase tracking-wider w-16"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-container">
+              <tbody className="divide-y divide-outline-variant">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="px-lg py-lg text-center font-label-sm text-label-sm text-on-surface-variant">LOADING DIRECTIVES...</td>
+                    <td colSpan={6} className="px-5 py-12 text-center font-mono text-xs text-on-surface-variant uppercase">LOADING DIRECTIVES...</td>
                   </tr>
                 ) : goals.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-lg py-lg text-center font-label-sm text-label-sm text-on-surface-variant">NO OBJECTIVES FOUND</td>
+                    <td colSpan={6} className="px-5 py-12 text-center font-mono text-xs text-on-surface-variant uppercase">NO OBJECTIVES FOUND</td>
                   </tr>
                 ) : (
                   goals.map((goal, i) => {
                     const status = getStatusChip(goal.status);
                     const progress = getProgress(goal);
                     return (
-                      <tr key={goal._id} className="hover:bg-surface-container-low transition-colors group cursor-pointer">
-                        <td className="px-lg py-lg font-label-sm text-label-sm text-on-surface-variant">#G-{String(8812 + i).padStart(4, '0')}</td>
-                        <td className="px-lg py-lg">
+                      <tr key={goal._id || i} className="hover:bg-surface-container-low transition-colors group cursor-pointer">
+                        <td className="px-5 py-4 font-mono text-xs text-on-surface-variant">#G-{String(8812 + i).padStart(4, '0')}</td>
+                        <td className="px-5 py-4">
                           <div className="flex flex-col">
-                            <span className="font-body-md text-primary font-bold">{goal.title}</span>
-                            <span className="font-label-sm text-label-sm text-secondary">{goal.linkedTasks?.length || 0} linked tasks.</span>
+                            <span className="font-bold text-sm text-on-surface">{goal.title}</span>
+                            <span className="font-mono text-xs text-on-surface-variant">{goal.linkedTasks?.length || 0} linked tasks.</span>
                           </div>
                         </td>
-                        <td className="px-lg py-lg">
-                          <span className={`inline-flex items-center px-sm py-xs font-label-caps text-[10px] rounded-full uppercase tracking-widest font-bold ${status.class}`}>
+                        <td className="px-5 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 font-mono text-[10px] rounded-full uppercase tracking-wider font-bold ${status.class}`}>
                             {status.label}
                           </span>
                         </td>
-                        <td className="px-lg py-lg w-64">
-                          <div className="flex flex-col gap-xs">
-                            <div className="flex justify-between font-label-sm text-label-sm">
-                              <span>{progress}%</span>
-                            </div>
-                            <div className="w-full bg-surface-container-high h-[2px]">
-                              <div className="bg-primary h-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
+                        <td className="px-5 py-4 w-64">
+                          <div className="flex flex-col gap-1.5">
+                            <span className="font-mono text-xs font-bold text-on-surface">{progress}%</span>
+                            <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+                              <div className="bg-primary h-full transition-all duration-500 rounded-full" style={{ width: `${progress}%` }}></div>
                             </div>
                           </div>
                         </td>
-                        <td className="px-lg py-lg font-label-sm text-label-sm text-on-surface-variant uppercase">
-                          {new Date(goal.createdAt).toLocaleDateString('en-GB', { month: 'short', day: '2-digit', year: 'numeric' }).replace(/ /g, '_')}
+                        <td className="px-5 py-4 font-mono text-xs text-on-surface-variant uppercase">
+                          {new Date(goal.createdAt || Date.now()).toLocaleDateString('en-GB', { month: 'short', day: '2-digit', year: 'numeric' })}
                         </td>
-                        <td className="px-lg py-lg text-right">
-                          <button className="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity p-xs hover:bg-surface-container rounded-full">more_vert</button>
+                        <td className="px-5 py-4 text-right">
+                          <button className="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-primary text-[18px]">more_vert</button>
                         </td>
                       </tr>
                     );
@@ -200,30 +262,12 @@ const GoalsPage = () => {
               </tbody>
             </table>
           </div>
-          <div className="p-lg bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-secondary uppercase">DISPLAYING {goals.length > 0 ? 1 : 0}-{Math.min(10, goals.length)} OF {goals.length} SYSTEM OBJECTIVES</span>
-            <div className="flex gap-sm">
-              <button className="material-symbols-outlined p-sm hover:bg-surface-container-low border border-outline-variant rounded-full disabled:opacity-50" disabled>chevron_left</button>
-              <button className="material-symbols-outlined p-sm hover:bg-surface-container-low border border-outline-variant rounded-full">chevron_right</button>
+          <div className="p-4 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between">
+            <span className="font-mono text-xs text-on-surface-variant uppercase">DISPLAYING {goals.length > 0 ? 1 : 0}-{Math.min(10, goals.length)} OF {goals.length} SYSTEM OBJECTIVES</span>
+            <div className="flex gap-1.5">
+              <button className="material-symbols-outlined p-1.5 hover:bg-surface-container border border-outline-variant rounded-lg text-on-surface disabled:opacity-40 cursor-pointer text-[16px]" disabled>chevron_left</button>
+              <button className="material-symbols-outlined p-1.5 hover:bg-surface-container border border-outline-variant rounded-lg text-on-surface cursor-pointer text-[16px]">chevron_right</button>
             </div>
-          </div>
-        </section>
-
-        {/* Decorative Technical Visual */}
-        <section className="h-48 relative overflow-hidden border border-outline-variant bg-black group mb-xl">
-          <div className="absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity">
-            <div className="w-full h-full" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-          </div>
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center">
-              <p className="font-label-caps text-label-caps text-tertiary-fixed-dim animate-pulse">STRATEGIC_OVERVIEW_FEED_ACTIVE</p>
-              <p className="font-label-sm text-label-sm text-on-primary-fixed-variant mt-xs">ENCRYPTED_DATA_TUNNEL_ESTABLISHED</p>
-            </div>
-          </div>
-          <div className="absolute bottom-md right-md flex gap-xs">
-            <div className="w-unit h-unit bg-tertiary-fixed-dim rounded-full"></div>
-            <div className="w-unit h-unit bg-tertiary-fixed-dim rounded-full opacity-50"></div>
-            <div className="w-unit h-unit bg-tertiary-fixed-dim rounded-full opacity-20"></div>
           </div>
         </section>
       </div>

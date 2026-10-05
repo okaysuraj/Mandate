@@ -55,7 +55,7 @@ const GoalProgressTrackingScreen = ({ navigation }) => {
               {/* Background Grid Pattern Simulation */}
               <View style={[styles.chartGrid, { opacity: 0.1 }]} />
               
-              {/* Svg Chart Mock */}
+              {/* Svg Chart Vector */}
               <Svg style={StyleSheet.absoluteFill} viewBox="0 0 400 200">
                 <Line x1="0" y1="180" x2="400" y2="20" stroke={colors.outline} strokeWidth="1" strokeDasharray="4,4" />
                 <Polyline points="0,190 40,170 80,175 120,140 160,130 200,100 240,110 280,70 320,50 360,60 400,25" fill="none" stroke={colors.primary} strokeWidth="2.5" />

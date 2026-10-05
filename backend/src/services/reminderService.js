@@ -19,7 +19,7 @@ export const initReminderService = (io) => {
           $gte: new Date(in15Mins.setSeconds(0, 0)),
           $lte: new Date(in15Mins.setSeconds(59, 999))
         }
-      });
+      }).lean();
 
       for (const task of upcomingTasks) {
         // Create notification for the creator

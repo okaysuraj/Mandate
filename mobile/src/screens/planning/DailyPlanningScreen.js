@@ -1,12 +1,36 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image 
+  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, RefreshControl 
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
+import api from "../../services/api";
+import { useDataStore } from "../../store/useDataStore";
 
 const DailyPlanningScreen = ({ navigation }) => {
   const { colors, typography, spacing } = useTheme();
+  const { tasks } = useDataStore((state) => state);
+  const [suggestions, setSuggestions] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchSuggestions = async () => {
+    try {
+      const res = await api.get('/planning/suggestions');
+      setSuggestions(res.data);
+    } catch (e) {
+      console.warn('Failed to load planning suggestions', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchSuggestions();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchSuggestions();
+    setRefreshing(false);
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -174,7 +198,7 @@ const DailyPlanningScreen = ({ navigation }) => {
         </View>
 
         {/* Dynamic Ambient Visualization */}
-        <View style={[styles.ambientBlock, { backgroundColor: colors.primaryContainer, borderColor: colors.outline }]}>
+        <View style={[styles.ambientBlock, { backgroundColor: colors.primaryContainer, borderColor: colors.outline, marginBottom: 24 }]}>
           <View style={{ flex: 1, justifyContent: 'flex-end', padding: 16 }}>
             <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, fontSize: 10 }]}>COGNITIVE_LOAD_STREAM</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
@@ -183,6 +207,27 @@ const DailyPlanningScreen = ({ navigation }) => {
             </View>
           </View>
         </View>
+
+        {/* Enter Lock-In Protocol Action Button */}
+        <TouchableOpacity 
+          style={{
+            backgroundColor: colors.primary,
+            paddingVertical: 16,
+            borderRadius: 8,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'row',
+            gap: 8,
+            marginBottom: 32
+          }}
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate('LockIn')}
+        >
+          <MaterialIcons name="lock" size={20} color={colors.onPrimary} />
+          <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2, fontSize: 12 }]}>
+            ENTER LOCK-IN PROTOCOL
+          </Text>
+        </TouchableOpacity>
 
       </ScrollView>
     </SafeAreaView>

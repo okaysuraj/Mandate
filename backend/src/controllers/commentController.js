@@ -4,7 +4,8 @@ export const getComments = async (req, res) => {
   try {
     const comments = await Comment.find({ taskId: req.params.taskId })
       .populate("user", "name email")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(comments);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });

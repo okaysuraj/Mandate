@@ -4,7 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useDataStore } from '../../store/useDataStore';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
-import { API_URL } from '../../config/config';
+import { API_URL } from '../../config';
 
 const AiSmartReschedulingScreen = ({ navigation }) => {
   const { tasks, loadTasks } = useDataStore(state => state);

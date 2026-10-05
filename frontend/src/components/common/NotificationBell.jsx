@@ -88,63 +88,67 @@ const NotificationBell = () => {
           setIsOpen(!isOpen);
           if (!isOpen && unreadCount > 0) markAllAsRead();
         }}
-        className="relative p-sm rounded-full hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80 flex items-center justify-center"
+        className="relative w-10 h-10 rounded-xl border border-outline-variant hover:border-primary bg-surface-container-lowest hover:bg-surface-container transition-all cursor-pointer active:scale-95 flex items-center justify-center text-on-surface"
         title="Notifications"
       >
-        <span className="material-symbols-outlined text-primary text-[20px]">notifications</span>
+        <span className="material-symbols-outlined text-[20px]">notifications</span>
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-error rounded-full ring-2 ring-background"></span>
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-error rounded-full border-2 border-surface flex items-center justify-center">
+            <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
+          </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-surface border border-outline-variant rounded-md shadow-lg overflow-hidden z-50">
-          <div className="px-md py-sm border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
-            <div className="flex items-center gap-xs">
-              <span className="font-label-caps text-label-caps text-primary font-bold uppercase">Notifications</span>
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-surface-container-lowest border border-outline-variant/80 rounded-2xl shadow-2xl overflow-hidden z-50">
+          <div className="px-4 py-3 border-b border-outline-variant/40 flex justify-between items-center bg-surface-container-low">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs text-primary font-bold uppercase tracking-wider">
+                System Log / Alerts
+              </span>
               {unreadCount > 0 && (
-                <span className="bg-primary/10 text-primary text-[10px] font-bold px-sm py-xs rounded-full">
-                  {unreadCount} new
+                <span className="bg-primary text-on-primary font-mono text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {unreadCount}
                 </span>
               )}
             </div>
             {notifications.length > 0 && (
               <button
                 onClick={clearAllNotifications}
-                className="font-label-caps text-[10px] text-error hover:text-error/80 uppercase font-bold tracking-wider transition-colors cursor-pointer"
+                className="font-mono text-[10px] text-error hover:underline uppercase font-bold tracking-wider transition-colors cursor-pointer"
               >
                 Clear All
               </button>
             )}
           </div>
 
-          <div className="max-h-80 overflow-y-auto p-xs flex flex-col gap-xs scrollbar-thin">
+          <div className="max-h-80 overflow-y-auto p-2 flex flex-col gap-2 custom-scrollbar">
             {notifications.length === 0 ? (
-              <div className="py-lg text-center text-on-surface-variant font-label-caps text-xs">
-                No notifications
+              <div className="py-8 text-center text-on-surface-variant font-mono text-xs">
+                No active notifications
               </div>
             ) : (
               notifications.map((n) => (
                 <div
                   key={n._id}
-                  className={`group relative p-md rounded-sm border transition-all flex items-start justify-between gap-sm ${
+                  className={`group relative p-3 rounded-xl border transition-all flex items-start justify-between gap-2.5 ${
                     n.isRead
-                      ? "border-transparent bg-surface-container-lowest text-on-surface-variant opacity-80"
-                      : "border-outline-variant bg-surface-container-low text-on-surface font-semibold"
+                      ? "border-outline-variant/40 bg-surface-container-lowest text-on-surface-variant opacity-75"
+                      : "border-primary/40 bg-surface-container-low text-on-surface font-semibold shadow-xs"
                   }`}
                 >
                   <div className="flex-1 min-w-0 pr-2">
-                    <p className="text-xs font-body-md leading-snug break-words">{n.message}</p>
-                    <span className="text-[9px] font-label-sm text-outline mt-xs block uppercase">
+                    <p className="text-xs leading-snug break-words">{n.message}</p>
+                    <span className="font-mono text-[9px] text-on-surface-variant/70 mt-1 block uppercase">
                       {n.createdAt ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                     </span>
                   </div>
                   <button
                     onClick={(e) => clearNotification(n._id, e)}
-                    className="p-1 rounded hover:bg-surface-container-high text-on-surface-variant hover:text-error transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-colors cursor-pointer"
                     title="Clear notification"
                   >
-                    <span className="material-symbols-outlined text-[16px]">close</span>
+                    <span className="material-symbols-outlined text-[15px]">close</span>
                   </button>
                 </div>
               ))

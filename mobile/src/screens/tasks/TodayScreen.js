@@ -9,6 +9,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import { useDataStore } from "../../store/useDataStore";
 import { useTheme } from "../../context/ThemeContext";
+import api from "../../services/api";
 
 const TodayScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -22,19 +23,22 @@ const TodayScreen = ({ navigation }) => {
   const [pulseAnim] = useState(new Animated.Value(1));
 
   useEffect(() => {
-    Animated.loop(
+    const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, { toValue: 0.4, duration: 1000, useNativeDriver: true }),
         Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true })
       ])
-    ).start();
+    );
+    pulse.start();
+    return () => pulse.stop();
   }, [pulseAnim]);
 
   useEffect(() => {
     if (user) {
       loadTasks();
-      // Burnout data could be added to a useMetricsStore
-      setBurnoutData({ level: 'low' }); 
+      api.get("/ai/burnout")
+        .then(res => setBurnoutData(res.data))
+        .catch(() => setBurnoutData(null));
     }
   }, [user, loadTasks]);
 
@@ -45,7 +49,10 @@ const TodayScreen = ({ navigation }) => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadTasks();
+    await Promise.all([
+      loadTasks(),
+      api.get("/ai/burnout").then(res => setBurnoutData(res.data)).catch(() => {})
+    ]);
     setRefreshing(false);
   };
 
@@ -53,10 +60,20 @@ const TodayScreen = ({ navigation }) => {
   const completedTasks = tasks.filter(t => t.status.toLowerCase() === "completed" || t.status.toLowerCase() === "done").length;
   const efficiency = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : "0.0";
   const activeTasks = tasks.filter(t => t.status.toLowerCase() !== "completed" && t.status.toLowerCase() !== "done");
-  const recentActivity = [...tasks].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 6);
+  const recentActivity = [...tasks].sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)).slice(0, 6);
 
-  // Generate some fake graph heights for the mini graph
-  const graphHeights = ['50%', '75%', '66%', '100%', '80%', '66%', '80%'];
+  // Compute dynamic task distribution heights
+  const priorityDistribution = [
+    tasks.filter(t => t.priority === 'urgent').length,
+    tasks.filter(t => t.priority === 'high').length,
+    tasks.filter(t => t.priority === 'medium').length,
+    tasks.filter(t => t.priority === 'low').length,
+    completedTasks,
+    activeTasks.length,
+    Math.max(totalTasks, 1)
+  ];
+  const maxP = Math.max(...priorityDistribution, 1);
+  const graphHeights = priorityDistribution.map(val => `${Math.max(Math.round((val / maxP) * 100), 12)}%`);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>

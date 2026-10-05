@@ -6,9 +6,9 @@ const navItems = [
   { path: "/dashboard", icon: "dashboard", label: "Dashboard" },
   { path: "/today", icon: "event_upcoming", label: "Today" },
   { path: "/kanban", icon: "view_kanban", label: "Kanban" },
+  { path: "/calendar", icon: "calendar_today", label: "Calendar" },
   { path: "/backlog", icon: "inventory_2", label: "Backlog" },
   { path: "/projects", icon: "account_tree", label: "Projects" },
-  { path: "/calendar", icon: "calendar_today", label: "Calendar" },
   { path: "/analytics", icon: "analytics", label: "Analytics" },
   { path: "/inbox", icon: "inbox", label: "Inbox" },
   { path: "/team-workspace", icon: "group", label: "Team" },
@@ -36,7 +36,7 @@ const navItems = [
   { path: "/status-center", icon: "monitor_heart", label: "Status" },
 ];
 
-const Sidebar = ({ onNewTask, isCollapsed = false }) => {
+const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onCloseMobile }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const navRef = useRef(null);
@@ -61,40 +61,74 @@ const Sidebar = ({ onNewTask, isCollapsed = false }) => {
     }
   }, [location.pathname]);
 
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    if (onCloseMobile) {
+      onCloseMobile();
+    }
+  }, [location.pathname]);
+
   const handleScroll = (e) => {
     sessionStorage.setItem("sidebarScrollPos", String(e.target.scrollTop));
   };
 
-  return (
-    <aside
-      className={`hidden md:flex flex-col h-[calc(100vh-4rem)] fixed left-0 top-16 bg-surface-container-lowest border-r border-surface-variant z-40 transition-all duration-300 overflow-x-hidden ${
-        isCollapsed ? "w-16 py-sm gap-xs" : "w-64 py-md gap-sm"
-      }`}
-    >
-      {/* User Header */}
-      <div className={`border-b border-surface-variant flex-shrink-0 ${isCollapsed ? "px-xs pb-xs flex justify-center" : "px-lg pb-sm"}`}>
-        <div className="flex items-center gap-sm">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary flex-shrink-0 overflow-hidden border border-outline-variant">
+  const navContent = (isMobileView = false) => (
+    <div className="flex flex-col h-full bg-surface-container-lowest text-on-surface">
+      {/* Header: User Profile or Mobile Close */}
+      <div className="border-b border-outline-variant flex-shrink-0 px-4 py-3 bg-surface-container flex items-center justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center flex-shrink-0 overflow-hidden border border-outline-variant font-mono font-bold text-xs">
             {user?.avatar ? (
               <img src={user.avatar} alt={user?.name || "User Avatar"} className="w-full h-full object-cover" />
             ) : (
-              <span className="material-symbols-outlined">person</span>
+              <span>{(user?.name || "OP").slice(0, 2).toUpperCase()}</span>
             )}
           </div>
-          {!isCollapsed && (
+          {(!isCollapsed || isMobileView) && (
             <div className="min-w-0">
-              <p className="font-label-caps text-on-surface font-bold uppercase truncate">{user?.name || "OP-942"}</p>
-              <p className="text-[10px] text-on-surface-variant uppercase tracking-widest truncate">{user?.email || "Infrastructure Lead"}</p>
+              <p className="font-label-caps text-xs text-on-surface font-bold uppercase truncate">{user?.name || "OPERATIVE"}</p>
+              <p className="font-mono text-[9px] text-outline uppercase tracking-wider truncate">{user?.email || "OP-942"}</p>
             </div>
           )}
         </div>
+
+        {isMobileView && (
+          <button
+            onClick={onCloseMobile}
+            className="w-8 h-8 rounded-md border border-outline-variant hover:border-primary flex items-center justify-center text-on-surface cursor-pointer"
+            title="Close Menu"
+          >
+            <span className="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        )}
+      </div>
+
+      {/* Primary Action Button */}
+      <div className={`p-3 border-b border-outline-variant flex-shrink-0 bg-surface-container-lowest ${isCollapsed && !isMobileView ? "px-1.5" : "px-3"}`}>
+        {isCollapsed && !isMobileView ? (
+          <button
+            onClick={onNewTask}
+            title="New Directive"
+            className="w-full h-10 rounded-md bg-primary text-on-primary flex items-center justify-center hover:opacity-90 transition-all cursor-pointer active:scale-95 border border-primary"
+          >
+            <span className="material-symbols-outlined text-[20px]">add</span>
+          </button>
+        ) : (
+          <button
+            onClick={onNewTask}
+            className="w-full py-2.5 bg-primary text-on-primary rounded-md font-label-caps text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-all cursor-pointer active:scale-98 flex items-center justify-center gap-1.5 border border-primary shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[16px]">add</span>
+            <span>New Directive</span>
+          </button>
+        )}
       </div>
       
-      {/* Scrollable Navigation Items Container with scroll position retention */}
+      {/* Scrollable Navigation Items */}
       <nav 
         ref={navRef}
         onScroll={handleScroll}
-        className={`flex-1 overflow-y-auto overflow-x-hidden py-sm flex flex-col scrollbar-thin scrollbar-thumb-outline-variant hover:scrollbar-thumb-primary ${isCollapsed ? "px-xs gap-1" : "px-md gap-xs"}`}
+        className={`flex-1 overflow-y-auto py-2 flex flex-col custom-scrollbar ${isCollapsed && !isMobileView ? "px-1 gap-1" : "px-2 gap-0.5"}`}
       >
         {navItems.map((item) => {
           const active = isActive(item.path);
@@ -103,73 +137,83 @@ const Sidebar = ({ onNewTask, isCollapsed = false }) => {
               key={item.path}
               to={item.path}
               ref={active ? activeItemRef : null}
-              title={isCollapsed ? item.label : undefined}
-              className={`flex items-center transition-all duration-200 flex-shrink-0 ${
-                isCollapsed
-                  ? `justify-center p-sm rounded-md ${
+              title={isCollapsed && !isMobileView ? item.label : undefined}
+              className={`flex items-center transition-all duration-150 flex-shrink-0 rounded-md border ${
+                isCollapsed && !isMobileView
+                  ? `justify-center p-2.5 ${
                       active
-                        ? "bg-primary text-on-primary font-bold"
-                        : "text-on-surface-variant hover:bg-surface-container-low"
+                        ? "bg-primary text-on-primary border-primary font-bold shadow-sm"
+                        : "text-on-surface-variant hover:bg-surface-container border-transparent hover:border-outline-variant"
                     }`
-                  : `gap-md px-md py-sm ${
+                  : `gap-3 px-3 py-2 ${
                       active
-                        ? "bg-primary text-on-primary rounded-none font-bold border-l-4 border-primary"
-                        : "text-on-surface-variant font-medium hover:bg-surface-container-low"
+                        ? "bg-primary text-on-primary border-primary font-bold shadow-sm"
+                        : "text-on-surface-variant font-medium hover:bg-surface-container border-transparent hover:border-outline-variant hover:text-on-surface"
                     }`
               }`}
             >
-              <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-              {!isCollapsed && (
-                <span className="font-label-caps uppercase text-sm truncate">{item.label}</span>
+              <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+              {(!isCollapsed || isMobileView) && (
+                <span className="font-label-caps uppercase text-xs truncate tracking-wider">{item.label}</span>
               )}
             </Link>
           );
         })}
       </nav>
 
-      {/* Footer Controls / New Entry */}
-      <div className={`mt-auto pt-sm flex-shrink-0 border-t border-surface-variant bg-surface-container-lowest ${isCollapsed ? "px-xs" : "px-md"}`}>
-        {isCollapsed ? (
-          <button
-            onClick={onNewTask}
-            title="New Entry"
-            className="w-10 h-10 mx-auto rounded-full bg-primary text-on-primary flex items-center justify-center hover:opacity-90 transition-all mb-sm cursor-pointer active:scale-95"
-          >
-            <span className="material-symbols-outlined">add</span>
-          </button>
-        ) : (
-          <button
-            onClick={onNewTask}
-            className="w-full py-sm bg-primary text-on-primary rounded-full font-label-caps text-center hover:opacity-90 transition-all uppercase mb-sm cursor-pointer active:scale-95"
-          >
-            New Entry
-          </button>
-        )}
-        
-        <div className="flex flex-col gap-xs pb-sm">
-          <Link
-            to="/settings"
-            title={isCollapsed ? "Settings" : undefined}
-            className={`flex items-center text-on-surface-variant font-medium hover:bg-surface-container-low transition-all ${
-              isCollapsed ? "justify-center p-sm rounded-md" : "gap-md px-md py-xs"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[20px]">settings</span>
-            {!isCollapsed && <span className="font-label-caps uppercase text-xs">Settings</span>}
-          </Link>
-          <button
-            onClick={logout}
-            title={isCollapsed ? "Sign Out" : undefined}
-            className={`flex items-center text-on-surface-variant font-medium hover:bg-surface-container-low transition-all w-full ${
-              isCollapsed ? "justify-center p-sm rounded-md" : "gap-md px-md py-xs text-left"
-            }`}
-          >
-            <span className="material-symbols-outlined text-error text-[20px]">logout</span>
-            {!isCollapsed && <span className="font-label-caps uppercase text-xs text-error">Sign Out</span>}
-          </button>
-        </div>
+      {/* Footer Controls */}
+      <div className="mt-auto border-t border-outline-variant p-2 bg-surface-container flex flex-col gap-1 flex-shrink-0">
+        <Link
+          to="/settings"
+          title={isCollapsed && !isMobileView ? "Settings" : undefined}
+          className={`flex items-center text-on-surface-variant hover:text-on-surface font-medium hover:bg-surface-container-highest transition-all rounded-md border border-transparent hover:border-outline-variant ${
+            isCollapsed && !isMobileView ? "justify-center p-2" : "gap-3 px-3 py-1.5"
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">settings</span>
+          {(!isCollapsed || isMobileView) && <span className="font-label-caps uppercase text-xs tracking-wider">Settings</span>}
+        </Link>
+        <button
+          onClick={logout}
+          title={isCollapsed && !isMobileView ? "Sign Out" : undefined}
+          className={`flex items-center text-error hover:bg-error/10 transition-all rounded-md border border-transparent hover:border-error/30 w-full cursor-pointer ${
+            isCollapsed && !isMobileView ? "justify-center p-2" : "gap-3 px-3 py-1.5 text-left"
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">logout</span>
+          {(!isCollapsed || isMobileView) && <span className="font-label-caps uppercase text-xs tracking-wider">Sign Out</span>}
+        </button>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside
+        className={`hidden md:flex flex-col h-[calc(100vh-4rem)] fixed left-0 top-16 bg-surface-container-lowest border-r border-outline-variant z-40 transition-all duration-200 overflow-x-hidden ${
+          isCollapsed ? "w-16" : "w-64"
+        }`}
+      >
+        {navContent(false)}
+      </aside>
+
+      {/* Mobile Sidebar Overlay & Drawer */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div 
+            onClick={onCloseMobile}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+          />
+
+          {/* Drawer Container */}
+          <aside className="relative w-72 max-w-[85vw] h-full bg-surface-container-lowest border-r-2 border-outline-variant shadow-2xl z-50 flex flex-col animate-in slide-in-from-left duration-200">
+            {navContent(true)}
+          </aside>
+        </div>
+      )}
+    </>
   );
 };
 

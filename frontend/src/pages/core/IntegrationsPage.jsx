@@ -44,60 +44,87 @@ const IntegrationsPage = () => {
 
   return (
     <AppLayout>
-      <div className="bg-surface min-h-full pb-xl">
-        <div className="max-w-5xl mx-auto">
+      <div className="bg-surface min-h-full pb-xl px-4 sm:px-6 md:px-8 py-6">
+        <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8">
           {/* Header Section */}
-          <div className="mb-xl flex flex-col md:flex-row md:items-end justify-between gap-md">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-outline-variant/40 pb-6">
             <div>
-              <h1 className="font-headline-lg text-headline-lg text-primary uppercase tracking-tight mb-xs">External Linkages</h1>
-              <p className="font-body-md text-on-surface-variant max-w-xl">Configure APIs, webhooks, and third-party data synchronization protocols.</p>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block"></span>
+                <span className="font-mono text-xs uppercase font-bold text-on-surface-variant tracking-widest">
+                  EXTERNAL ECOSYSTEM
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-on-surface uppercase tracking-tight">
+                External Linkages
+              </h1>
+              <p className="text-sm text-on-surface-variant max-w-xl mt-1">
+                Configure APIs, webhooks, and third-party data synchronization protocols.
+              </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Slack */}
-            <div className="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg rounded-none flex flex-col h-full">
-              <div className="flex justify-between items-start mb-lg">
-                <div className="w-12 h-12 bg-primary flex items-center justify-center font-bold text-on-primary text-xl border border-outline-variant">#</div>
-                {integrations.slack && <span className="material-symbols-outlined text-tertiary-fixed-dim" style={{fontVariationSettings: "'FILL' 1"}}>check_circle</span>}
+            <div className="bg-surface-container-lowest border border-outline-variant/60 p-6 sm:p-8 rounded-2xl flex flex-col justify-between shadow-sm hover:border-primary/40 transition-all">
+              <div>
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center font-bold text-on-primary text-xl shadow-xs">#</div>
+                  {integrations.slack && (
+                    <span className="flex items-center gap-1 font-mono text-[10px] uppercase font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
+                      <span className="material-symbols-outlined text-sm" style={{fontVariationSettings: "'FILL' 1"}}>check_circle</span>
+                      LINKED
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-bold text-on-surface uppercase mb-1">Slack</h3>
+                <p className="text-xs text-on-surface-variant leading-relaxed mb-6">Receive mandate updates, sprint completions, and @mentions directly in designated Slack channels.</p>
               </div>
-              <h3 className="font-headline-lg text-headline-lg-mobile text-primary uppercase mb-xs">Slack</h3>
-              <p className="font-body-md text-label-sm text-on-surface-variant mb-xl flex-1">Receive mandate updates and @mentions directly in your Slack channels.</p>
               <button 
                 onClick={() => handleConnect('slack')}
                 disabled={loading}
-                className={`w-full py-md font-label-caps text-label-caps tracking-widest border transition-colors ${integrations.slack ? 'bg-error-container border-error-container text-on-error-container hover:bg-error hover:text-on-error' : 'bg-primary border-primary text-on-primary hover:opacity-90'}`}
+                className={`w-full py-3 rounded-xl font-mono text-xs font-bold tracking-wider transition-all cursor-pointer uppercase ${integrations.slack ? 'bg-error-container text-on-error-container hover:bg-error hover:text-on-error' : 'bg-primary text-on-primary hover:opacity-90 active:scale-95 shadow-sm'}`}
               >
-                {loading ? "PROCESSING..." : integrations.slack ? 'SEVER_LINK' : 'ESTABLISH_LINK'}
+                {loading ? "PROCESSING..." : integrations.slack ? 'SEVER LINK' : 'ESTABLISH LINK'}
               </button>
             </div>
 
             {/* Google Calendar */}
-            <div className="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg rounded-none flex flex-col h-full">
-              <div className="flex justify-between items-start mb-lg">
-                <div className="w-12 h-12 bg-surface-container-high border border-outline-variant flex items-center justify-center font-label-caps text-label-caps text-primary">31</div>
-                {integrations.googleCalendar && <span className="material-symbols-outlined text-tertiary-fixed-dim" style={{fontVariationSettings: "'FILL' 1"}}>check_circle</span>}
+            <div className="bg-surface-container-lowest border border-outline-variant/60 p-6 sm:p-8 rounded-2xl flex flex-col justify-between shadow-sm hover:border-primary/40 transition-all">
+              <div>
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-12 h-12 bg-surface-container-high rounded-xl border border-outline-variant/80 flex items-center justify-center font-mono text-base font-bold text-primary shadow-xs">31</div>
+                  {integrations.googleCalendar && (
+                    <span className="flex items-center gap-1 font-mono text-[10px] uppercase font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
+                      <span className="material-symbols-outlined text-sm" style={{fontVariationSettings: "'FILL' 1"}}>check_circle</span>
+                      LINKED
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-bold text-on-surface uppercase mb-1">Google Calendar</h3>
+                <p className="text-xs text-on-surface-variant leading-relaxed mb-6">Sync your deadlines with calendar timelines. Auto-schedule deep work sessions into daily slots.</p>
               </div>
-              <h3 className="font-headline-lg text-headline-lg-mobile text-primary uppercase mb-xs">G_Calendar</h3>
-              <p className="font-body-md text-label-sm text-on-surface-variant mb-xl flex-1">Sync your mandates with your calendar. Auto-schedule focus blocks.</p>
               <button 
                 onClick={() => handleConnect('googleCalendar')}
                 disabled={loading}
-                className={`w-full py-md font-label-caps text-label-caps tracking-widest border transition-colors ${integrations.googleCalendar ? 'bg-error-container border-error-container text-on-error-container hover:bg-error hover:text-on-error' : 'bg-primary border-primary text-on-primary hover:opacity-90'}`}
+                className={`w-full py-3 rounded-xl font-mono text-xs font-bold tracking-wider transition-all cursor-pointer uppercase ${integrations.googleCalendar ? 'bg-error-container text-on-error-container hover:bg-error hover:text-on-error' : 'bg-primary text-on-primary hover:opacity-90 active:scale-95 shadow-sm'}`}
               >
-                {loading ? "PROCESSING..." : integrations.googleCalendar ? 'SEVER_LINK' : 'ESTABLISH_LINK'}
+                {loading ? "PROCESSING..." : integrations.googleCalendar ? 'SEVER LINK' : 'ESTABLISH LINK'}
               </button>
             </div>
 
             {/* Developer API */}
-            <div className="col-span-12 md:col-span-4 bg-primary text-on-primary border border-on-primary p-lg rounded-none flex flex-col h-full">
-              <div className="flex justify-between items-start mb-lg">
-                <div className="w-12 h-12 border border-outline-variant flex items-center justify-center font-label-caps text-label-caps">{`{ }`}</div>
+            <div className="bg-gradient-to-br from-primary to-primary/80 text-on-primary p-6 sm:p-8 rounded-2xl flex flex-col justify-between shadow-lg relative overflow-hidden">
+              <div className="absolute -right-8 -top-8 w-28 h-28 bg-white/5 rounded-full pointer-events-none"></div>
+              <div>
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-12 h-12 rounded-xl border border-white/20 bg-white/10 flex items-center justify-center font-mono text-sm font-bold">{`{ }`}</div>
+                </div>
+                <h3 className="text-lg font-bold uppercase mb-1">Developer API</h3>
+                <p className="text-xs text-on-primary/80 leading-relaxed mb-6">Build programmatic integrations and dispatch events with the Mandate REST endpoints and Webhooks.</p>
               </div>
-              <h3 className="font-headline-lg text-headline-lg-mobile uppercase mb-xs">API_Access</h3>
-              <p className="font-body-md text-label-sm opacity-70 mb-xl flex-1">Build custom integrations with the Mandate REST API and Webhooks.</p>
-              <button className="w-full py-md font-label-caps text-label-caps tracking-widest border border-outline-variant hover:bg-on-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
-                VIEW_DOCUMENTATION <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+              <button className="w-full py-3 font-mono text-xs font-bold tracking-wider bg-white/10 hover:bg-white/20 text-on-primary border border-white/20 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer uppercase">
+                DOCUMENTATION <span className="material-symbols-outlined text-sm">open_in_new</span>
               </button>
             </div>
           </div>

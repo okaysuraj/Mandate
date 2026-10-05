@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, 
   TextInput, Image, Modal, Platform 
@@ -9,12 +9,27 @@ import { useDataStore } from "../../store/useDataStore";
 
 const InboxScreen = ({ navigation }) => {
   const { colors, typography, spacing, borderRadius } = useTheme();
-  const { notifications } = useDataStore(state => state);
+  const { notifications, loadNotifications, markNotificationRead } = useDataStore(state => state);
   const [selectedFilter, setSelectedFilter] = useState('ALL');
   const [selectedMessage, setSelectedMessage] = useState(null);
   
-  // Use store notifications natively
-  const displayMessages = notifications || [];
+  useEffect(() => {
+    loadNotifications();
+  }, [loadNotifications]);
+
+  // Adapt store notifications cleanly
+  const rawNotifications = notifications || [];
+  const displayMessages = rawNotifications.map((n) => ({
+    id: n._id || n.id,
+    title: n.title || "Notification",
+    snippet: n.message || n.snippet || "",
+    type: (n.type || "SYSTEM").toUpperCase(),
+    read: n.isRead !== undefined ? n.isRead : !!n.read,
+    time: n.createdAt ? new Date(n.createdAt).toLocaleDateString([], { month: "short", day: "numeric" }) : (n.time || "Recent"),
+    sender: n.user?.name || "COMMAND",
+    typeColor: n.type === 'reminder' ? 'tertiary' : n.type === 'assignment' ? 'primary' : 'secondary',
+    senderIcon: n.type === 'reminder' ? 'alarm' : 'notifications'
+  }));
 
   const filters = ['ALL', 'ALERTS', 'MENTIONS', 'SYSTEM'];
 
@@ -75,39 +90,56 @@ const InboxScreen = ({ navigation }) => {
 
       {/* Message List */}
       <ScrollView contentContainerStyle={styles.messageList}>
-        {displayMessages.map((msg) => (
-          <TouchableOpacity 
-            key={msg.id} 
-            style={[
-              styles.messageItem, 
-              { backgroundColor: msg.read ? 'transparent' : colors.surfaceContainerLow },
-              !msg.read && { borderLeftWidth: 4, borderLeftColor: colors.primary }
-            ]}
-            onPress={() => setSelectedMessage(msg)}
-          >
-            <View style={styles.msgHeaderRow}>
-              <View style={[styles.typeBadge, { backgroundColor: `${colors[msg.typeColor]}20` }]}>
-                <Text style={[typography.labelCaps, { color: colors[msg.typeColor], fontSize: 10 }]}>{msg.type}</Text>
-              </View>
-              <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>{msg.time}</Text>
-            </View>
-            <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700', marginBottom: 4 }]}>{msg.title}</Text>
-            <Text style={[typography.labelSm, { color: colors.secondary }]} numberOfLines={2}>{msg.snippet}</Text>
-            
-            <View style={styles.senderRow}>
-              {msg.senderAvatar ? (
-                <View style={[styles.senderAvatar, { backgroundColor: colors.surfaceDim }]}>
-                  <Image source={{ uri: msg.senderAvatar }} style={{ width: '100%', height: '100%' }} />
+        {displayMessages.length === 0 ? (
+          <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 48 }}>
+            <MaterialIcons name="inbox" size={48} color={colors.outlineVariant} />
+            <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 12 }]}>
+              NO COMMUNICATIONS LOGGED
+            </Text>
+          </View>
+        ) : (
+          displayMessages.map((msg) => {
+            const badgeColor = colors[msg.typeColor] || colors.primary;
+            return (
+              <TouchableOpacity 
+                key={msg.id} 
+                style={[
+                  styles.messageItem, 
+                  { backgroundColor: msg.read ? 'transparent' : colors.surfaceContainerLow },
+                  !msg.read && { borderLeftWidth: 4, borderLeftColor: colors.primary }
+                ]}
+                onPress={() => {
+                  setSelectedMessage(msg);
+                  if (!msg.read && markNotificationRead) {
+                    markNotificationRead(msg.id);
+                  }
+                }}
+              >
+                <View style={styles.msgHeaderRow}>
+                  <View style={[styles.typeBadge, { backgroundColor: `${badgeColor}25` }]}>
+                    <Text style={[typography.labelCaps, { color: badgeColor, fontSize: 10 }]}>{msg.type}</Text>
+                  </View>
+                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>{msg.time}</Text>
                 </View>
-              ) : (
-                <View style={[styles.senderAvatar, { backgroundColor: colors.surfaceDim }]}>
-                  <MaterialIcons name={msg.senderIcon} size={14} color={colors.primary} />
+                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700', marginBottom: 4 }]}>{msg.title}</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary }]} numberOfLines={2}>{msg.snippet}</Text>
+                
+                <View style={styles.senderRow}>
+                  {msg.senderAvatar ? (
+                    <View style={[styles.senderAvatar, { backgroundColor: colors.surfaceDim }]}>
+                      <Image source={{ uri: msg.senderAvatar }} style={{ width: '100%', height: '100%' }} />
+                    </View>
+                  ) : (
+                    <View style={[styles.senderAvatar, { backgroundColor: colors.surfaceDim }]}>
+                      <MaterialIcons name={msg.senderIcon || "notifications"} size={14} color={colors.primary} />
+                    </View>
+                  )}
+                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, fontSize: 10, letterSpacing: 1 }]}>{msg.sender}</Text>
                 </View>
-              )}
-              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, fontSize: 10, letterSpacing: 1 }]}>{msg.sender}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+              </TouchableOpacity>
+            );
+          })
+        )}
       </ScrollView>
 
       {/* Detail Modal */}

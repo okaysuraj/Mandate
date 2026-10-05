@@ -69,9 +69,22 @@ const __dirname = path.resolve();
 // We need to mount the stripe webhook BEFORE express.json() because it needs the raw body
 app.use("/api/stripe/webhook", express.raw({ type: "application/json" }));
 
-// middleware
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://mandateapp.netlify.app"
+].filter(Boolean);
+
 app.use(cors({
-  origin: "*", 
+  origin: (origin, callback) => {
+    // allow mobile apps, postman, server-to-server with no origin
+    if (!origin || allowedOrigins.includes(origin) || !process.env.NODE_ENV || process.env.NODE_ENV !== "production") {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json()); // this middleware will parse JSON bodies: req.body

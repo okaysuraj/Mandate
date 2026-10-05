@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AppLayout from "../../components/layout/AppLayout";
-import axios from "axios";
+import api from "../../lib/axios";
 import { useAuth } from "../../context/AuthContext";
 
 const AnalyticsPage = () => {
@@ -13,13 +13,13 @@ const AnalyticsPage = () => {
     const fetchAnalytics = async () => {
       try {
         const [tasksRes, analyticsRes] = await Promise.all([
-          axios.get("/api/tasks", { params: { limit: 100 } }),
-          axios.get("/api/tasks/analytics")
+          api.get("/tasks", { params: { limit: 100 } }),
+          api.get("/tasks/analytics")
         ]);
         setTasks(tasksRes.data.data || []);
         setAnalytics(analyticsRes.data);
       } catch (error) {
-        console.error("Failed to load analytics");
+        console.error("Failed to load analytics", error);
       } finally {
         setLoading(false);
       }
@@ -27,208 +27,209 @@ const AnalyticsPage = () => {
     if (user) fetchAnalytics();
   }, [user]);
 
+  // Compute 6 dynamic buckets for Output vs Capacity based on real tasks
+  const completedTasks = tasks.filter(t => t.status === "completed");
+  const activeTasks = tasks.filter(t => t.status !== "completed");
+  const totalCount = tasks.length || 1;
+
+  const buckets = [
+    { label: "URGENT", total: tasks.filter(t => t.priority === "urgent").length, done: completedTasks.filter(t => t.priority === "urgent").length },
+    { label: "HIGH", total: tasks.filter(t => t.priority === "high").length, done: completedTasks.filter(t => t.priority === "high").length },
+    { label: "MEDIUM", total: tasks.filter(t => t.priority === "medium").length, done: completedTasks.filter(t => t.priority === "medium").length },
+    { label: "LOW", total: tasks.filter(t => t.priority === "low").length, done: completedTasks.filter(t => t.priority === "low").length },
+    { label: "PLANNED", total: tasks.filter(t => !!t.dueDate).length, done: completedTasks.filter(t => !!t.dueDate).length },
+    { label: "UNSCHEDULED", total: tasks.filter(t => !t.dueDate).length, done: completedTasks.filter(t => !t.dueDate).length },
+  ];
+
   return (
     <AppLayout>
-      <div className="bento-grid-bg min-h-full">
+      <div className="min-h-full space-y-6 pb-12 w-full max-w-7xl mx-auto">
         {/* Header Section */}
-        <header className="mb-xl flex justify-between items-end">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-4 border-b border-outline-variant">
           <div>
-            <h1 className="font-display-lg text-headline-lg text-primary mb-xs">Command Center</h1>
-            <p className="font-label-caps text-label-sm text-outline uppercase">Real-time productivity intelligence telemetry</p>
-          </div>
-          <div className="flex gap-md">
-            <div className="bg-surface border border-outline-variant px-md py-sm rounded-full flex items-center gap-sm">
-              <span className="font-label-caps text-label-caps text-outline">UPTIME:</span>
-              <span className="font-label-caps text-label-caps text-primary font-label-sm">142:31:04</span>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-2 h-2 rounded-full bg-primary inline-block"></span>
+              <p className="font-mono text-xs uppercase font-bold text-on-surface-variant tracking-widest">
+                PRODUCTIVITY INTELLIGENCE · REALTIME TELEMETRY
+              </p>
             </div>
-            <div className="bg-on-tertiary-container/10 px-md py-sm rounded-full flex items-center gap-sm">
-              <span className="w-2 h-2 rounded-full bg-on-tertiary-container"></span>
-              <span className="font-label-caps text-label-caps text-on-tertiary-container">SYSTEM_OPTIMAL</span>
+            <h1 className="text-2xl sm:text-3xl font-black text-on-surface uppercase tracking-tight">Command Center</h1>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="bg-surface-container-lowest border border-outline-variant px-3.5 py-1.5 rounded-lg flex items-center gap-2">
+              <span className="font-mono text-[10px] uppercase font-bold text-on-surface-variant">DIRECTIVES:</span>
+              <span className="font-mono text-xs text-on-surface font-bold">{tasks.length} LOGGED</span>
+            </div>
+            <div className="bg-tertiary-container border border-outline-variant px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-on-tertiary-container">
+              <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+              <span className="font-mono text-xs font-bold uppercase tracking-wider">SYSTEM_OPTIMAL</span>
             </div>
           </div>
         </header>
 
         {/* Bento Grid */}
-        <div className="grid grid-cols-12 gap-lg">
+        <div className="grid grid-cols-12 gap-4 sm:gap-6">
           {/* Output vs Capacity (Primary Chart) */}
-          <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-lg rounded-none relative overflow-hidden group">
-            <div className="flex justify-between items-start mb-lg relative z-10">
+          <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-5 sm:p-6 rounded-xl shadow-sm relative overflow-hidden group">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
               <div>
-                <h2 className="font-headline-lg text-primary">Output vs. Capacity</h2>
-                <p className="font-label-sm text-outline">Dual-axis efficiency distribution</p>
+                <h2 className="text-base sm:text-lg font-bold font-mono uppercase tracking-tight text-on-surface">Output vs. Capacity</h2>
+                <p className="text-xs text-on-surface-variant">Dual-axis workstream distribution (Done vs Total in Queue)</p>
               </div>
-              <div className="flex gap-md">
-                <span className="flex items-center gap-xs font-label-caps text-[10px] text-primary"><span className="w-3 h-0.5 bg-primary"></span>OUTPUT</span>
-                <span className="flex items-center gap-xs font-label-caps text-[10px] text-outline"><span className="w-3 h-0.5 bg-outline"></span>CAPACITY</span>
+              <div className="flex items-center gap-3">
+                <span className="flex items-center gap-1.5 font-mono text-[10px] text-on-surface font-bold"><span className="w-3 h-1 bg-primary rounded-full"></span>OUTPUT</span>
+                <span className="flex items-center gap-1.5 font-mono text-[10px] text-on-surface-variant"><span className="w-3 h-1 bg-surface-container-high rounded-full"></span>CAPACITY</span>
               </div>
             </div>
-            {/* Simplified Visual Representation of a Dual Axis Chart */}
-            <div className="h-64 w-full flex items-end gap-xs group">
-              <div className="flex-1 flex flex-col justify-end gap-1">
-                <div className="w-full bg-surface-container h-32 relative">
-                  <div className="absolute bottom-0 left-0 w-full bg-primary/20 h-24 hover:bg-primary/40 transition-all"></div>
-                  <div className="absolute bottom-0 left-1/4 w-[2px] bg-primary h-40"></div>
-                </div>
-                <span className="font-label-caps text-[8px] text-center mt-xs text-outline">08:00</span>
-              </div>
-              <div className="flex-1 flex flex-col justify-end gap-1">
-                <div className="w-full bg-surface-container h-40 relative">
-                  <div className="absolute bottom-0 left-0 w-full bg-primary/20 h-36 hover:bg-primary/40 transition-all"></div>
-                  <div className="absolute bottom-0 left-1/4 w-[2px] bg-primary h-44"></div>
-                </div>
-                <span className="font-label-caps text-[8px] text-center mt-xs text-outline">10:00</span>
-              </div>
-              <div className="flex-1 flex flex-col justify-end gap-1">
-                <div className="w-full bg-surface-container h-48 relative">
-                  <div className="absolute bottom-0 left-0 w-full bg-primary/20 h-44 hover:bg-primary/40 transition-all"></div>
-                  <div className="absolute bottom-0 left-1/4 w-[2px] bg-primary h-52"></div>
-                </div>
-                <span className="font-label-caps text-[8px] text-center mt-xs text-outline">12:00</span>
-              </div>
-              <div className="flex-1 flex flex-col justify-end gap-1">
-                <div className="w-full bg-surface-container h-32 relative">
-                  <div className="absolute bottom-0 left-0 w-full bg-primary/20 h-16 hover:bg-primary/40 transition-all"></div>
-                  <div className="absolute bottom-0 left-1/4 w-[2px] bg-primary h-24"></div>
-                </div>
-                <span className="font-label-caps text-[8px] text-center mt-xs text-outline">14:00</span>
-              </div>
-              <div className="flex-1 flex flex-col justify-end gap-1">
-                <div className="w-full bg-surface-container h-56 relative">
-                  <div className="absolute bottom-0 left-0 w-full bg-primary/20 h-52 hover:bg-primary/40 transition-all"></div>
-                  <div className="absolute bottom-0 left-1/4 w-[2px] bg-primary h-60"></div>
-                </div>
-                <span className="font-label-caps text-[8px] text-center mt-xs text-outline">16:00</span>
-              </div>
-              <div className="flex-1 flex flex-col justify-end gap-1">
-                <div className="w-full bg-surface-container h-40 relative">
-                  <div className="absolute bottom-0 left-0 w-full bg-primary/20 h-32 hover:bg-primary/40 transition-all"></div>
-                  <div className="absolute bottom-0 left-1/4 w-[2px] bg-primary h-36"></div>
-                </div>
-                <span className="font-label-caps text-[8px] text-center mt-xs text-outline">18:00</span>
-              </div>
+            
+            {/* Dynamic Visual Representation of Dual Axis Workstream Breakdown */}
+            <div className="h-56 sm:h-64 w-full flex items-end gap-2 sm:gap-4 pt-4">
+              {buckets.map((b) => {
+                const maxVal = Math.max(...buckets.map(x => x.total), 5);
+                const capacityHeight = Math.max(Math.round((b.total / maxVal) * 100), 12);
+                const outputHeight = b.total > 0 ? Math.round((b.done / b.total) * capacityHeight) : 0;
+
+                return (
+                  <div key={b.label} className="flex-1 flex flex-col justify-end gap-1.5">
+                    <div className="w-full bg-surface-container-low border border-outline-variant relative rounded-lg overflow-hidden" style={{ height: `${capacityHeight}%` }}>
+                      <div 
+                        className="absolute bottom-0 left-0 w-full bg-primary/40 transition-all duration-500 rounded-b-lg" 
+                        style={{ height: `${outputHeight}%` }}
+                      ></div>
+                      <div className="absolute top-1.5 left-1.5 font-mono text-[9px] text-on-surface font-bold">
+                        {b.done}/{b.total}
+                      </div>
+                    </div>
+                    <span className="font-mono text-[9px] text-center text-on-surface-variant truncate uppercase font-bold" title={b.label}>
+                      {b.label}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           {/* Deep Work Ratio */}
-          <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg rounded-none flex flex-col justify-between">
+          <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-5 sm:p-6 rounded-xl shadow-sm flex flex-col justify-between space-y-4">
             <div>
-              <div className="flex justify-between items-center mb-sm">
-                <h2 className="font-headline-lg text-primary">Deep Work Ratio</h2>
-                <span className="material-symbols-outlined text-primary">bolt</span>
+              <div className="flex justify-between items-center mb-1">
+                <h2 className="text-base sm:text-lg font-bold font-mono uppercase tracking-tight text-on-surface">Deep Work Ratio</h2>
+                <span className="material-symbols-outlined text-primary text-[20px]">bolt</span>
               </div>
-              <p className="font-label-sm text-outline">Synchronous focus telemetry</p>
+              <p className="text-xs text-on-surface-variant font-mono">Synchronous focus telemetry</p>
             </div>
-            <div className="relative py-xl flex items-center justify-center">
-              <svg className="w-48 h-48 transform -rotate-90">
-                <circle className="text-surface-container" cx="96" cy="96" fill="transparent" r="80" stroke="currentColor" strokeWidth="4"></circle>
-                <circle className="text-primary transition-all duration-1000 ease-out" cx="96" cy="96" fill="transparent" r="80" stroke="currentColor" strokeDasharray="502.6" strokeDashoffset={502.6 - (502.6 * (analytics?.deepWorkRatio || 0) / 100)} strokeWidth="12"></circle>
+            
+            <div className="relative py-4 flex items-center justify-center">
+              <svg className="w-40 h-40 sm:w-44 sm:h-44 transform -rotate-90">
+                <circle className="text-surface-container-high" cx="88" cy="88" fill="transparent" r="72" stroke="currentColor" strokeWidth="6"></circle>
+                <circle className="text-primary transition-all duration-1000 ease-out" cx="88" cy="88" fill="transparent" r="72" stroke="currentColor" strokeDasharray="452.4" strokeDashoffset={452.4 - (452.4 * (analytics?.deepWorkRatio || 0) / 100)} strokeWidth="10" strokeLinecap="round"></circle>
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="font-display-lg text-headline-lg text-primary font-label-sm">{analytics?.deepWorkRatio || 0}%</span>
-                <span className="font-label-caps text-[10px] text-on-tertiary-container">+4.2% INTRA-DAY</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-2xl sm:text-3xl font-black font-mono text-on-surface">{analytics?.deepWorkRatio || 0}%</span>
+                <span className="font-mono text-[9px] uppercase tracking-wider text-tertiary font-bold mt-0.5">ACTIVE METRIC</span>
               </div>
             </div>
-            <div className="space-y-sm">
-              <div className="flex justify-between font-label-sm border-b border-surface-container-high pb-xs">
-                <span className="text-outline">TARGET</span>
-                <span className="text-primary font-label-sm">85.0%</span>
+
+            <div className="space-y-2 pt-2 border-t border-outline-variant">
+              <div className="flex justify-between text-xs font-mono">
+                <span className="text-on-surface-variant uppercase">TARGET</span>
+                <span className="text-on-surface font-bold">80.0%</span>
               </div>
-              <div className="flex justify-between font-label-sm border-b border-surface-container-high pb-xs">
-                <span className="text-outline">PEAK</span>
-                <span className="text-primary font-label-sm">{(analytics?.deepWorkRatio || 0) + 15}%</span>
+              <div className="flex justify-between text-xs font-mono">
+                <span className="text-on-surface-variant uppercase">TOTAL RESOLVED</span>
+                <span className="text-on-surface font-bold">{analytics?.completedTasks || 0}</span>
               </div>
             </div>
           </div>
 
           {/* Task Resolution Latency */}
-          <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-lg rounded-none relative">
-            <div className="mb-lg">
-              <h2 className="font-headline-lg text-primary">Task Latency</h2>
-              <p className="font-label-sm text-outline">Mean resolution time per ticket</p>
+          <div className="col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-5 sm:p-6 rounded-xl shadow-sm flex flex-col justify-between space-y-4">
+            <div>
+              <h2 className="text-base sm:text-lg font-bold font-mono uppercase tracking-tight text-on-surface mb-1">Task Latency</h2>
+              <p className="text-xs text-on-surface-variant font-mono">Mean resolution time per ticket</p>
             </div>
-            <div className="space-y-md">
-              <div className="p-md bg-surface border border-outline-variant">
-                <div className="flex justify-between mb-xs">
-                  <span className="font-label-caps text-[10px] text-outline">AVERAGE_LATENCY</span>
-                  <span className="font-label-caps text-[10px] text-primary">{analytics?.averageResolutionLatency || "0h 0m"}</span>
-                </div>
-                <div className="w-full bg-surface-container-high h-1.5 overflow-hidden">
-                  <div className="bg-primary h-full w-[45%]"></div>
-                </div>
+            
+            <div className="p-4 bg-surface-container-low border border-outline-variant rounded-lg space-y-2">
+              <div className="flex justify-between text-xs font-mono">
+                <span className="uppercase text-on-surface-variant font-bold text-[10px]">AVERAGE LATENCY</span>
+                <span className="text-on-surface font-bold">{analytics?.averageResolutionLatency || "0h 0m"}</span>
+              </div>
+              <div className="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+                <div className="bg-primary h-full w-[85%] rounded-full"></div>
               </div>
             </div>
-            <div className="mt-lg pt-md border-t border-surface-container-high">
-              <div className="flex items-center gap-sm">
-                <span className="material-symbols-outlined text-on-error">warning</span>
-                <span className="font-label-caps text-[10px] text-error">CRITICAL_LAG detected in NORMAL queue.</span>
+
+            <div className="pt-2 border-t border-outline-variant">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[18px]">schedule</span>
+                <span className="font-mono text-[10px] text-on-surface-variant">Live telemetry from audit logs</span>
               </div>
             </div>
           </div>
 
           {/* Strategic Overview */}
-          <div className="col-span-12 lg:col-span-8 grid grid-cols-2 gap-lg">
+          <div className="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Dynamic Workloads */}
-            <div className="bg-surface-container-low border border-outline-variant p-lg rounded-none">
-              <div className="flex items-center justify-between mb-lg">
-                <h3 className="font-label-caps text-label-caps text-primary">Dynamic Workloads</h3>
-                <span className="material-symbols-outlined text-outline">stacks</span>
+            <div className="bg-surface-container-lowest border border-outline-variant p-5 sm:p-6 rounded-xl shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-mono text-xs uppercase font-bold text-on-surface">Dynamic Workloads</h3>
+                <span className="material-symbols-outlined text-on-surface-variant text-[20px]">stacks</span>
               </div>
-              <div className="space-y-lg">
-                <div className="flex items-center gap-md">
-                  <div className="w-12 h-12 bg-primary flex items-center justify-center text-on-primary font-display-lg text-headline-lg">01</div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center text-on-surface font-mono text-sm font-bold">01</div>
                   <div>
-                    <p className="font-label-caps text-label-caps text-primary">Core Mandate Analysis</p>
-                    <p className="font-label-sm text-outline">Active / {analytics?.completedTasks || 0} Complete</p>
+                    <p className="font-mono text-xs font-bold text-on-surface uppercase">Core Directives</p>
+                    <p className="text-xs text-on-surface-variant font-mono">Total Logged: {tasks.length}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-md">
-                  <div className="w-12 h-12 bg-outline-variant flex items-center justify-center text-on-surface-variant font-display-lg text-headline-lg">02</div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center text-on-surface font-mono text-sm font-bold">02</div>
                   <div>
-                    <p className="font-label-caps text-label-caps text-primary">System Refinement</p>
-                    <p className="font-label-sm text-outline">Queued / {analytics?.activeTasks || 0} Critical</p>
+                    <p className="font-mono text-xs font-bold text-on-surface uppercase">Execution Queue</p>
+                    <p className="text-xs text-on-surface-variant font-mono">{analytics?.activeTasks || 0} Pending</p>
                   </div>
                 </div>
               </div>
             </div>
             
-            {/* Atmospheric Data Viz */}
-            <div className="bg-primary-container p-lg rounded-none flex flex-col justify-between overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-on-tertiary-container/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
+            {/* System Balance */}
+            <div className="bg-surface-container-high border border-outline-variant p-5 sm:p-6 rounded-xl shadow-sm flex flex-col justify-between space-y-4">
               <div>
-                <h3 className="font-label-caps text-label-caps text-on-primary-container">Cognitive Load</h3>
-                <p className="font-headline-lg text-on-primary">Stable Environment</p>
+                <h3 className="font-mono text-xs uppercase font-bold text-on-surface-variant mb-1">System Balance</h3>
+                <p className="text-lg font-bold text-on-surface">Active Telemetry</p>
               </div>
-              <div className="h-16 flex items-end gap-1">
-                <div className="w-1 bg-on-tertiary-container h-4 animate-[bounce_1.2s_infinite]"></div>
-                <div className="w-1 bg-on-tertiary-container h-8 animate-[bounce_1.5s_infinite]"></div>
-                <div className="w-1 bg-on-tertiary-container h-6 animate-[bounce_1s_infinite]"></div>
-                <div className="w-1 bg-on-tertiary-container h-10 animate-[bounce_1.8s_infinite]"></div>
-                <div className="w-1 bg-on-tertiary-container h-4 animate-[bounce_1.4s_infinite]"></div>
-                <div className="w-1 bg-on-tertiary-container h-12 animate-[bounce_2s_infinite]"></div>
-                <div className="w-1 bg-on-tertiary-container h-7 animate-[bounce_1.3s_infinite]"></div>
+              <div className="space-y-1 font-mono text-xs text-on-surface-variant">
+                <p>Active Directives: <span className="font-bold text-on-surface">{analytics?.activeTasks || 0}</span></p>
+                <p>Resolved Directives: <span className="font-bold text-on-surface">{analytics?.completedTasks || 0}</span></p>
               </div>
-              <p className="font-label-sm text-on-primary-container">Noise Floor: -42dB</p>
+              <div className="flex items-center gap-1.5 text-xs font-mono text-tertiary font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                Status: Live Synchronized
+              </div>
             </div>
           </div>
 
           {/* Recent Resolution Log */}
-          <div className="col-span-12 lg:col-span-12 bg-surface-container-lowest border border-outline-variant overflow-hidden mb-xl">
-            <div className="p-lg border-b border-outline-variant flex justify-between items-center">
-              <h2 className="font-headline-lg text-primary">Resolution Log</h2>
-              <button className="font-label-caps text-[10px] text-outline hover:text-primary transition-colors">VIEW_FULL_LOG</button>
+          <div className="col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+            <div className="p-4 sm:p-5 border-b border-outline-variant flex justify-between items-center">
+              <h2 className="text-base font-bold font-mono uppercase tracking-wider text-on-surface">Resolution Log</h2>
+              <button className="font-mono text-xs font-bold text-primary uppercase hover:underline cursor-pointer">VIEW FULL LOG</button>
             </div>
-            <div className="divide-y divide-surface-container">
+            <div className="divide-y divide-outline-variant">
               {tasks.slice(0, 3).map((task, idx) => (
-                <div key={task._id} className="p-md hover:bg-surface-container-low transition-colors flex items-center gap-lg group cursor-pointer">
-                  <span className="font-label-caps text-label-caps text-outline w-24">14:{22 - idx}:{String(idx * 14).padStart(2, '0')}</span>
-                  <span className={`material-symbols-outlined text-body-md ${task.status === 'completed' ? 'text-on-tertiary-container' : 'text-on-secondary-container'}`}>
-                    {task.status === 'completed' ? 'check_circle' : 'pause_circle'}
-                  </span>
-                  <div className="flex-1">
-                    <p className="font-label-caps text-label-caps text-primary">{task.title}</p>
-                    <p className="font-label-sm text-outline">{task.status === 'completed' ? 'Resolved successfully' : 'Pending resolution'}</p>
+                <div key={task._id} className="p-4 hover:bg-surface-container-low transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 group cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-xs text-on-surface-variant w-16">14:{22 - idx}:{String(idx * 14).padStart(2, '0')}</span>
+                    <span className={`material-symbols-outlined text-[20px] ${task.status === 'completed' ? 'text-tertiary' : 'text-on-surface-variant'}`}>
+                      {task.status === 'completed' ? 'check_circle' : 'pause_circle'}
+                    </span>
+                    <div>
+                      <p className="font-bold text-xs uppercase text-on-surface">{task.title}</p>
+                      <p className="text-[11px] text-on-surface-variant">{task.status === 'completed' ? 'Resolved successfully' : 'Pending resolution'}</p>
+                    </div>
                   </div>
-                  <span className="font-label-caps text-[10px] text-primary px-sm py-xs bg-surface-container rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="font-mono text-[10px] text-primary px-2.5 py-1 bg-surface-container border border-outline-variant rounded self-start sm:self-auto opacity-0 group-hover:opacity-100 transition-opacity">
                     VIEW
                   </span>
                 </div>

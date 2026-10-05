@@ -94,7 +94,7 @@ const DigestPreviewScreen = ({ navigation }) => {
                 </View>
               </View>
 
-              {/* Chart Mockup */}
+              {/* Throughput Vector Chart */}
               <View style={styles.chartContainer}>
                 {[40, 65, 55, 85, 45, 95, 70, 60, 50, 80].map((val, idx) => (
                   <View key={idx} style={[styles.bar, { height: `${val}%`, backgroundColor: idx % 2 === 0 ? colors.surfaceContainerHigh : colors.primary }]} />

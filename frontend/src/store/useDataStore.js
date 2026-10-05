@@ -11,11 +11,14 @@ export const useDataStore = create((set, get) => ({
   loadTasks: async () => {
     set({ loading: true });
     try {
-      const data = await getTasks();
-      set({ tasks: data || [], loading: false });
+      const response = await getTasks({ limit: 200 });
+      const rawTasks = Array.isArray(response) 
+        ? response 
+        : (Array.isArray(response?.data) ? response.data : (Array.isArray(response?.tasks) ? response.tasks : []));
+      set({ tasks: rawTasks, loading: false });
     } catch (error) {
       console.error("Failed to load tasks", error);
-      set({ loading: false });
+      set({ tasks: [], loading: false });
     }
   },
 
@@ -43,18 +46,28 @@ export const useDataStore = create((set, get) => ({
     };
   },
 
+  reorderTasks: (newTasks) => {
+    set({ tasks: newTasks });
+  },
+
   moveTask: async (taskId, newStatus) => {
     // Optimistic UI update
+    const previousTasks = get().tasks;
     set((state) => ({
-      tasks: state.tasks.map(t => t._id === taskId ? { ...t, status: newStatus } : t)
+      tasks: state.tasks.map(t => (t._id === taskId || t.id === taskId) ? { ...t, status: newStatus } : t)
     }));
     
     // Background sync
     try {
+      // Skip backend network call for client-side demo tasks
+      if (String(taskId).startsWith("650a1111") || String(taskId).startsWith("demo-") || String(taskId).startsWith("task-")) {
+        return;
+      }
       await updateTask(taskId, { status: newStatus });
     } catch (error) {
-      // Revert if error (simplified)
-      console.warn('Failed to update task status in DB');
+      // Revert on error
+      set({ tasks: previousTasks });
+      throw error;
     }
   }
 }));

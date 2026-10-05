@@ -11,32 +11,64 @@ export const searchGlobal = async (req, res) => {
     }
 
     const regex = new RegExp(q, "i");
+    const allowedWorkspaces = [
+      ...(req.user.workspaces || []),
+      ...(req.user.activeWorkspace ? [req.user.activeWorkspace] : [])
+    ];
 
-    // Search tasks
-    const tasks = await Task.find({
-      $or: [{ title: regex }, { description: regex }, { tags: regex }]
-    })
+    // Search tasks scoped to user's workspaces or tasks they created/are assigned to
+    const taskFilter = {
+      $and: [
+        {
+          $or: [
+            ...(allowedWorkspaces.length > 0 ? [{ workspaceId: { $in: allowedWorkspaces } }] : []),
+            { creatorId: req.user._id },
+            { assigneeId: req.user._id }
+          ]
+        },
+        { $or: [{ title: regex }, { description: regex }, { tags: regex }] }
+      ]
+    };
+    const tasks = await Task.find(taskFilter)
       .limit(5)
       .select("_id title status priority description");
 
-    // Search projects
-    const projects = await Project.find({
+    // Search projects scoped to user's workspaces
+    const projectFilter = allowedWorkspaces.length > 0 ? {
+      workspaceId: { $in: allowedWorkspaces },
       $or: [{ name: regex }, { description: regex }]
-    })
+    } : {
+      creatorId: req.user._id,
+      $or: [{ name: regex }, { description: regex }]
+    };
+    const projects = await Project.find(projectFilter)
       .limit(5)
       .select("_id name description status");
 
-    // Search goals
-    const goals = await Goal.find({
+    // Search goals scoped to user's workspaces
+    const goalFilter = allowedWorkspaces.length > 0 ? {
+      workspaceId: { $in: allowedWorkspaces },
       $or: [{ title: regex }, { description: regex }, { category: regex }]
-    })
-      .limit(5)
-      .select("_id title category description");
+    } : {
+      $or: [{ title: regex }, { description: regex }, { category: regex }]
+    };
+    const goals = allowedWorkspaces.length > 0
+      ? await Goal.find(goalFilter).limit(5).select("_id title category description")
+      : [];
 
-    // Search documents
-    const documents = await Document.find({
-      $or: [{ title: regex }, { content: regex }]
-    })
+    // Search documents scoped to user's workspaces or author
+    const docFilter = {
+      $and: [
+        {
+          $or: [
+            ...(allowedWorkspaces.length > 0 ? [{ workspaceId: { $in: allowedWorkspaces } }] : []),
+            { author: req.user._id }
+          ]
+        },
+        { $or: [{ title: regex }, { content: regex }] }
+      ]
+    };
+    const documents = await Document.find(docFilter)
       .limit(5)
       .select("_id title");
 

@@ -49,8 +49,8 @@ const PriorityStatusScreen = ({ navigation }) => {
                 <Text style={[typography.labelCaps, { fontWeight: 'bold', color: colors.primary }]}>ALPHA_REACTION</Text>
                 <Text style={[typography.labelSm, { color: colors.primary }]}>{alpha}%</Text>
               </View>
-              <View style={[styles.sliderTrackMock, { backgroundColor: colors.surfaceContainer }]}>
-                <View style={[styles.sliderThumbMock, { backgroundColor: colors.primary, left: `${alpha}%` }]} />
+              <View style={[styles.sliderTrack, { backgroundColor: colors.surfaceContainer }]}>
+                <View style={[styles.sliderThumb, { backgroundColor: colors.primary, left: `${alpha}%` }]} />
               </View>
               <View style={styles.sliderFooter}>
                 <Text style={[typography.labelSm, { fontSize: 10, color: colors.outline, opacity: 0.6 }]}>L-SPEC</Text>
@@ -64,8 +64,8 @@ const PriorityStatusScreen = ({ navigation }) => {
                 <Text style={[typography.labelCaps, { fontWeight: 'bold', color: colors.primary }]}>BETA_LATENCY</Text>
                 <Text style={[typography.labelSm, { color: colors.primary }]}>{beta}%</Text>
               </View>
-              <View style={[styles.sliderTrackMock, { backgroundColor: colors.surfaceContainer }]}>
-                <View style={[styles.sliderThumbMock, { backgroundColor: colors.primary, left: `${beta}%` }]} />
+              <View style={[styles.sliderTrack, { backgroundColor: colors.surfaceContainer }]}>
+                <View style={[styles.sliderThumb, { backgroundColor: colors.primary, left: `${beta}%` }]} />
               </View>
               <View style={styles.sliderFooter}>
                 <Text style={[typography.labelSm, { fontSize: 10, color: colors.outline, opacity: 0.6 }]}>MIN_RESP</Text>
@@ -79,8 +79,8 @@ const PriorityStatusScreen = ({ navigation }) => {
                 <Text style={[typography.labelCaps, { fontWeight: 'bold', color: colors.primary }]}>GAMMA_THRESHOLD</Text>
                 <Text style={[typography.labelSm, { color: colors.primary }]}>{gamma}%</Text>
               </View>
-              <View style={[styles.sliderTrackMock, { backgroundColor: colors.surfaceContainer }]}>
-                <View style={[styles.sliderThumbMock, { backgroundColor: colors.primary, left: `${gamma}%` }]} />
+              <View style={[styles.sliderTrack, { backgroundColor: colors.surfaceContainer }]}>
+                <View style={[styles.sliderThumb, { backgroundColor: colors.primary, left: `${gamma}%` }]} />
               </View>
               <View style={styles.sliderFooter}>
                 <Text style={[typography.labelSm, { fontSize: 10, color: colors.outline, opacity: 0.6 }]}>NOISE_FLOOR</Text>
@@ -247,14 +247,14 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginBottom: 8,
   },
-  sliderTrackMock: {
+  sliderTrack: {
     height: 2,
     width: '100%',
     position: 'relative',
     justifyContent: 'center',
     marginBottom: 8,
   },
-  sliderThumbMock: {
+  sliderThumb: {
     width: 16,
     height: 16,
     position: 'absolute',

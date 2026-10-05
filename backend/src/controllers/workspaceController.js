@@ -139,3 +139,37 @@ export const toggleIntegration = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Add member to workspace
+// @route   POST /api/workspaces/:id/members
+// @access  Private (Admin only)
+export const addWorkspaceMember = async (req, res) => {
+  try {
+    const { email, role = "Viewer" } = req.body;
+    const workspace = await Workspace.findById(req.params.id);
+    if (!workspace) return res.status(404).json({ message: "Workspace not found" });
+
+    const requester = workspace.members.find(m => m.user.toString() === req.user.id.toString());
+    if (!requester || requester.role !== "Admin") {
+      return res.status(403).json({ message: "Only Admins can invite or add members" });
+    }
+
+    const targetUser = await User.findOne({ email });
+    if (!targetUser) {
+      return res.status(404).json({ message: "User with this email not found" });
+    }
+
+    const alreadyMember = workspace.members.some(m => m.user.toString() === targetUser._id.toString());
+    if (alreadyMember) {
+      return res.status(400).json({ message: "User is already a member of this workspace" });
+    }
+
+    workspace.members.push({ user: targetUser._id, role });
+    await workspace.save();
+
+    const populated = await Workspace.findById(req.params.id).populate("members.user", "name email");
+    res.status(201).json(populated.members);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

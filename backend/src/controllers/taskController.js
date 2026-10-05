@@ -1,14 +1,35 @@
 import Task from "../models/Task.js";
 import Activity from "../models/Activity.js";
 import User from "../models/User.js";
+import Workspace from "../models/Workspace.js";
 import { runAutomations } from "./automationsController.js";
 
 export const getTasks = async (req, res) => {
   try {
-    const { status, priority, projectId, parentTaskId, page = 1, limit = 10 } = req.query;
+    const { status, priority, projectId, parentTaskId, workspaceId, page = 1, limit = 10 } = req.query;
     
-    // Build query
-    const query = { creatorId: req.user.id };
+    // Build query scoped by workspace or user
+    let baseFilter = {};
+    if (workspaceId) {
+      baseFilter = { workspaceId };
+    } else if (req.user?.activeWorkspace) {
+      baseFilter = {
+        $or: [
+          { workspaceId: req.user.activeWorkspace },
+          { creatorId: req.user.id },
+          { assigneeId: req.user.id }
+        ]
+      };
+    } else {
+      baseFilter = {
+        $or: [
+          { creatorId: req.user.id },
+          { assigneeId: req.user.id }
+        ]
+      };
+    }
+
+    const query = { ...baseFilter };
     if (status) query.status = status;
     if (priority) query.priority = priority;
     if (projectId) query.projectId = projectId;
@@ -28,7 +49,8 @@ export const getTasks = async (req, res) => {
     const tasks = await Task.find(query)
       .sort({ createdAt: -1 })
       .skip(startIndex)
-      .limit(limitNumber);
+      .limit(limitNumber)
+      .lean();
 
     res.status(200).json({
       data: tasks,
@@ -46,7 +68,10 @@ export const getTasks = async (req, res) => {
 
 export const getTaskById = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findById(req.params.id)
+      .populate("creatorId", "name email avatar")
+      .populate("assigneeId", "name email avatar")
+      .lean();
 
     if (!task) {
       return res.status(404).json({ message: "Task not found" });
@@ -117,7 +142,24 @@ export const updateTask = async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    if (task.creatorId.toString() !== req.user.id && task.assigneeId?.toString() !== req.user.id) {
+    const isCreatorOrAssignee = task.creatorId?.toString() === req.user.id || task.assigneeId?.toString() === req.user.id;
+    let isAuthorized = isCreatorOrAssignee;
+
+    if (!isAuthorized && task.workspaceId) {
+      if (req.user.activeWorkspace && task.workspaceId.toString() === req.user.activeWorkspace.toString()) {
+        isAuthorized = true;
+      } else {
+        const workspace = await Workspace.findById(task.workspaceId);
+        if (workspace) {
+          const isOwner = workspace.owner?.toString() === req.user.id;
+          const member = workspace.members?.find(m => m.user?.toString() === req.user.id);
+          const canEdit = member && (member.role === 'Admin' || member.role === 'Editor');
+          isAuthorized = isOwner || canEdit;
+        }
+      }
+    }
+
+    if (!isAuthorized) {
       return res.status(401).json({ message: "Not authorized" });
     }
 
@@ -191,7 +233,18 @@ export const deleteTask = async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    if (task.creatorId.toString() !== req.user.id) {
+    let isAuthorized = task.creatorId.toString() === req.user.id;
+    if (!isAuthorized && task.workspaceId) {
+      const workspace = await Workspace.findById(task.workspaceId);
+      if (workspace) {
+        const isOwner = workspace.owner?.toString() === req.user.id;
+        const member = workspace.members?.find(m => m.user?.toString() === req.user.id);
+        const canDelete = member && member.role === 'Admin';
+        isAuthorized = isOwner || canDelete;
+      }
+    }
+
+    if (!isAuthorized) {
       return res.status(401).json({ message: "Not authorized" });
     }
 
@@ -284,7 +337,14 @@ export const reorderTasks = async (req, res) => {
 
     const bulkOps = tasks.map(t => ({
       updateOne: {
-        filter: { _id: t._id, creatorId: req.user.id },
+        filter: { 
+          _id: t._id,
+          $or: [
+            { creatorId: req.user.id },
+            { assigneeId: req.user.id },
+            { workspaceId: req.user.activeWorkspace || req.user.id }
+          ]
+        },
         update: { $set: { orderIndex: t.orderIndex } }
       }
     }));
@@ -325,8 +385,8 @@ export const getAnalytics = async (req, res) => {
 
     const averageResolutionTimeMs = completedTasks > 0 ? (totalResolutionTime / completedTasks) : 0;
     
-    // Create a mock deep work ratio based on high priority task ratio
-    const deepWorkRatio = allTasks.length > 0 ? (deepWorkTotal / allTasks.length) * 100 : 0;
+    // Calculate genuine deep work ratio based on high and urgent priority tasks
+    const deepWorkRatio = allTasks.length > 0 ? Math.round((deepWorkTotal / allTasks.length) * 100) : 0;
     
     const latencyStr = averageResolutionTimeMs > 0 
       ? `${Math.floor(averageResolutionTimeMs / (1000 * 60 * 60))}h ${Math.floor((averageResolutionTimeMs % (1000 * 60 * 60)) / (1000 * 60))}m`
@@ -336,7 +396,7 @@ export const getAnalytics = async (req, res) => {
       totalTasks: allTasks.length,
       completedTasks,
       activeTasks,
-      deepWorkRatio: Math.min(Math.round(deepWorkRatio + 30), 100), // bump it up slightly for the dashboard feel
+      deepWorkRatio,
       averageResolutionLatency: latencyStr,
     });
   } catch (error) {

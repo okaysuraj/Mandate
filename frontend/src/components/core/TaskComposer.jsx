@@ -90,12 +90,12 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
         tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
       });
       
-      toast.success('Task created successfully');
+      toast.success('Mandate registered');
       if (onTaskCreated) onTaskCreated(res.data);
       onClose();
     } catch (error) {
       console.error('Failed to create task:', error);
-      toast.error('Failed to create task');
+      toast.error('Failed to register mandate');
     } finally {
       setLoading(false);
     }
@@ -115,137 +115,127 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
         {/* Backdrop */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/75 backdrop-blur-sm"
         />
         
         {/* Modal */}
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-2xl bg-white dark:bg-[#0f0f0f] border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-colors"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 30 }}
+          className="relative w-full max-w-2xl bg-surface-container-lowest border border-outline-variant rounded-t-2xl sm:rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] text-on-surface"
           onKeyDown={handleKeyDown}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-white/10">
-            <h3 className="text-lg font-semibold text-black dark:text-white">Create Mandate</h3>
-            <button onClick={onClose} className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white transition">
-              <X className="w-5 h-5" />
+          <div className="flex items-center justify-between p-3.5 md:p-4 border-b border-outline-variant bg-surface-container flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 bg-primary rounded-full inline-block"></span>
+              <h3 className="font-mono text-xs md:text-sm font-black text-primary uppercase tracking-wider">
+                Initiate New Mandate / Protocol
+              </h3>
+            </div>
+            <button 
+              onClick={onClose} 
+              className="w-8 h-8 rounded-full border border-outline-variant hover:border-primary flex items-center justify-center text-on-surface hover:text-primary transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Form */}
-          <div className="p-6 overflow-y-auto custom-scrollbar">
-            <div className="relative mb-6">
+          <div className="p-4 md:p-6 overflow-y-auto custom-scrollbar space-y-5">
+            {/* Title & AI Parse */}
+            <div className="relative">
               <input 
                 ref={titleInputRef}
                 type="text" 
-                placeholder="What needs to be done? (e.g. Call John tomorrow #sales p1)"
+                placeholder="Directive Title or Command (e.g. Deploy v2.4 to staging #infra p1)"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                className="w-full bg-transparent text-3xl font-bold text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none pr-12"
+                className="w-full bg-transparent text-xl md:text-2xl font-mono font-bold text-on-surface placeholder:text-outline focus:outline-none pr-10 border-b border-outline-variant pb-2"
               />
               <button 
                 onClick={handleParse}
                 disabled={isParsing || !title.trim()}
-                title="Smart Parse with AI"
-                className="absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition disabled:opacity-50"
+                title="Smart AI Directive Parse"
+                className="absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-xl border border-outline-variant bg-surface-container hover:bg-surface-container-high text-primary transition-all disabled:opacity-40 cursor-pointer shadow-xs"
               >
-                <Sparkles className="w-5 h-5" />
+                <Sparkles className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Differentiator: Why */}
-            <div className="mb-6 group">
-              <label className="flex items-center text-sm font-semibold text-blue-600 dark:text-blue-400 mb-2">
-                <Zap className="w-4 h-4 mr-1.5" />
-                Why is this important? (Intent)
+            {/* Strategic Intent */}
+            <div>
+              <label className="flex items-center text-xs font-mono font-bold text-primary mb-1.5 uppercase tracking-wider">
+                <Zap className="w-3.5 h-3.5 mr-1" />
+                Strategic Intent / Objective (Why)
               </label>
               <textarea 
-                placeholder="Connecting this task to a clear purpose helps you stay committed..."
+                placeholder="Detail purpose, expected outcome, or operational motivation..."
                 value={intent}
                 onChange={e => setIntent(e.target.value)}
-                className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl p-3 text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all min-h-[80px] resize-y"
+                className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-xs md:text-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary min-h-[70px] resize-y font-body-md transition-colors"
               />
             </div>
 
-            {/* Core Fields */}
-            <div className="flex flex-wrap gap-3 mb-6">
+            {/* Core Fields Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Due Date */}
-              <div className="flex items-center bg-zinc-50 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/10 p-1 px-3">
-                <Calendar className="w-4 h-4 text-zinc-500 dark:text-zinc-400 mr-2" />
+              <div className="flex items-center bg-surface-container-low rounded-xl border border-outline-variant p-2.5">
+                <Calendar className="w-4 h-4 text-primary mr-2 flex-shrink-0" />
                 <input 
                   type="date" 
                   value={dueDate}
                   onChange={e => setDueDate(e.target.value)}
-                  className="bg-transparent text-sm text-black dark:text-white focus:outline-none"
+                  className="bg-transparent text-xs font-mono text-on-surface focus:outline-none w-full"
                 />
               </div>
 
+              {/* Priority */}
+              <div className="flex items-center bg-surface-container-low rounded-xl border border-outline-variant p-2.5">
+                <Flag className={`w-4 h-4 mr-2 flex-shrink-0 ${priority === 'high' ? 'text-error' : priority === 'medium' ? 'text-tertiary' : 'text-on-surface-variant'}`} />
+                <select 
+                  value={priority}
+                  onChange={e => setPriority(e.target.value)}
+                  className="bg-transparent text-xs font-mono uppercase text-on-surface focus:outline-none w-full cursor-pointer"
+                >
+                  <option value="low" className="bg-surface-container text-on-surface">Low Priority</option>
+                  <option value="medium" className="bg-surface-container text-on-surface">Medium Priority</option>
+                  <option value="high" className="bg-surface-container text-on-surface">High Priority (Urgent)</option>
+                </select>
+              </div>
+
               {/* Tags */}
-              <div className="flex items-center bg-zinc-50 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/10 p-1 px-3">
-                <span className="text-zinc-500 dark:text-zinc-400 font-bold mr-2">#</span>
+              <div className="flex items-center bg-surface-container-low rounded-xl border border-outline-variant p-2.5">
+                <span className="text-primary font-mono font-bold mr-2 text-xs">#</span>
                 <input 
                   type="text" 
                   placeholder="tags (comma separated)"
                   value={tags}
                   onChange={e => setTags(e.target.value)}
-                  className="bg-transparent text-sm text-black dark:text-white focus:outline-none"
+                  className="bg-transparent text-xs font-mono text-on-surface focus:outline-none w-full placeholder:text-on-surface-variant/60"
                 />
               </div>
 
-              {/* Priority */}
-              <div className="flex items-center bg-zinc-50 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/10 p-1 px-3">
-                <Flag className={`w-4 h-4 mr-2 ${priority === 'high' ? 'text-red-500 dark:text-red-400' : priority === 'medium' ? 'text-yellow-500 dark:text-yellow-400' : 'text-green-500 dark:text-green-400'}`} />
-                <select 
-                  value={priority}
-                  onChange={e => setPriority(e.target.value)}
-                  className="bg-transparent text-sm text-black dark:text-white focus:outline-none appearance-none pr-4"
-                >
-                  <option value="low" className="bg-white dark:bg-[#0f0f0f]">Low Priority</option>
-                  <option value="medium" className="bg-white dark:bg-[#0f0f0f]">Medium Priority</option>
-                  <option value="high" className="bg-white dark:bg-[#0f0f0f]">High Priority</option>
-                </select>
-              </div>
-
-              {/* Project Selection */}
-              {user?.projects?.length > 0 && (
-                <div className="flex items-center bg-zinc-50 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/10 p-1 px-3">
-                  <Folder className="w-4 h-4 text-zinc-500 dark:text-zinc-400 mr-2" />
-                  <select 
-                    value={projectId}
-                    onChange={e => setProjectId(e.target.value)}
-                    className="bg-transparent text-sm text-black dark:text-white focus:outline-none appearance-none pr-4"
-                  >
-                    <option value="" className="bg-white dark:bg-[#0f0f0f]">No Project</option>
-                    {user.projects.map((proj, idx) => (
-                      <option key={idx} value={proj} className="bg-white dark:bg-[#0f0f0f]">
-                        {proj}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
               {/* Assignee */}
               {workspaceMembers.length > 0 && (
-                <div className="flex items-center bg-zinc-50 dark:bg-white/5 rounded-lg border border-zinc-200 dark:border-white/10 p-1 px-3">
-                  <UserIcon className="w-4 h-4 text-zinc-500 dark:text-zinc-400 mr-2" />
+                <div className="flex items-center bg-surface-container-low rounded-xl border border-outline-variant p-2.5">
+                  <UserIcon className="w-4 h-4 text-primary mr-2 flex-shrink-0" />
                   <select 
                     value={assigneeId}
                     onChange={e => setAssigneeId(e.target.value)}
-                    className="bg-transparent text-sm text-black dark:text-white focus:outline-none appearance-none pr-4"
+                    className="bg-transparent text-xs font-mono text-on-surface focus:outline-none w-full cursor-pointer"
                   >
-                    <option value="" className="bg-white dark:bg-[#0f0f0f]">Unassigned</option>
+                    <option value="" className="bg-surface-container text-on-surface">Unassigned</option>
                     {workspaceMembers.map(m => (
-                      <option key={m.user._id} value={m.user._id} className="bg-white dark:bg-[#0f0f0f]">
+                      <option key={m.user._id} value={m.user._id} className="bg-surface-container text-on-surface">
                         {m.user.name} ({m.role})
                       </option>
                     ))}
@@ -258,10 +248,10 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
             <button 
               type="button"
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="flex items-center text-sm text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white transition mb-4"
+              className="flex items-center text-xs font-mono uppercase font-bold text-on-surface-variant hover:text-primary transition-colors cursor-pointer py-1"
             >
               {showAdvanced ? <ChevronUp className="w-4 h-4 mr-1" /> : <ChevronDown className="w-4 h-4 mr-1" />}
-              Advanced Options
+              Additional Parameters
             </button>
 
             {/* Advanced Fields */}
@@ -271,34 +261,34 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden space-y-4"
+                  className="overflow-hidden space-y-3 pt-1"
                 >
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="flex items-center text-xs font-semibold text-zinc-500 mb-1.5 uppercase">
-                        <Clock className="w-3 h-3 mr-1" /> Time Estimate (mins)
+                      <label className="flex items-center text-[10px] font-mono font-bold text-on-surface-variant mb-1 uppercase">
+                        <Clock className="w-3 h-3 mr-1 text-primary" /> Est. Duration (mins)
                       </label>
                       <input 
                         type="number" 
                         value={timeEstimate}
                         onChange={e => setTimeEstimate(e.target.value)}
                         placeholder="e.g. 45"
-                        className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-lg p-2 text-sm text-black dark:text-white focus:outline-none"
+                        className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
                       />
                     </div>
                     <div>
-                      <label className="flex items-center text-xs font-semibold text-zinc-500 mb-1.5 uppercase">
-                        <Battery className="w-3 h-3 mr-1" /> Energy Level
+                      <label className="flex items-center text-[10px] font-mono font-bold text-on-surface-variant mb-1 uppercase">
+                        <Battery className="w-3 h-3 mr-1 text-primary" /> Energy Requirement
                       </label>
                       <select 
                         value={energyLevel}
                         onChange={e => setEnergyLevel(e.target.value)}
-                        className="w-full bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-lg p-2.5 text-sm text-black dark:text-white focus:outline-none appearance-none"
+                        className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary uppercase cursor-pointer transition-colors"
                       >
-                        <option value="" className="bg-white dark:bg-[#0f0f0f]">Any</option>
-                        <option value="high" className="bg-white dark:bg-[#0f0f0f]">High Energy</option>
-                        <option value="medium" className="bg-white dark:bg-[#0f0f0f]">Medium Energy</option>
-                        <option value="low" className="bg-white dark:bg-[#0f0f0f]">Low Energy</option>
+                        <option value="" className="bg-surface-container">Any Energy</option>
+                        <option value="high" className="bg-surface-container">High Focus</option>
+                        <option value="medium" className="bg-surface-container">Standard</option>
+                        <option value="low" className="bg-surface-container">Low Routine</option>
                       </select>
                     </div>
                   </div>
@@ -308,26 +298,28 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between p-4 border-t border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-black/20">
-            <div className="text-xs text-zinc-500 flex items-center">
-              <span className="border border-zinc-300 dark:border-zinc-700 rounded px-1.5 py-0.5 mr-1 font-mono">⌘</span>
-              <span className="border border-zinc-300 dark:border-zinc-700 rounded px-1.5 py-0.5 mr-2 font-mono">Enter</span>
+          <div className="flex items-center justify-between p-3 md:p-4 border-t border-outline-variant bg-surface-container flex-shrink-0">
+            <div className="text-[11px] text-outline font-mono hidden sm:flex items-center">
+              <span className="border border-outline-variant px-1 mr-1">⌘/Ctrl</span>
+              <span className="border border-outline-variant px-1 mr-1.5">Enter</span>
               to save
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 ml-auto">
               <button 
+                type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-black dark:hover:text-white transition"
+                className="px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-on-surface-variant hover:text-on-surface border border-outline-variant hover:border-primary rounded-md transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button 
+                type="button"
                 onClick={handleSubmit}
                 disabled={loading || !title.trim()}
-                className="px-6 py-2 text-sm font-semibold bg-black text-white dark:bg-white dark:text-black rounded-lg hover:bg-zinc-800 dark:hover:bg-gray-200 transition disabled:opacity-50 flex items-center shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+                className="px-5 py-2 text-xs font-mono font-bold uppercase tracking-wider bg-primary text-on-primary border border-primary hover:opacity-90 rounded-md transition-opacity disabled:opacity-40 cursor-pointer shadow-sm"
               >
-                {loading ? 'Saving...' : 'Create Task'}
+                {loading ? 'Saving...' : 'Deploy Mandate'}
               </button>
             </div>
           </div>

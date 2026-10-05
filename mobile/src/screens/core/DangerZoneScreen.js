@@ -33,7 +33,7 @@ const DangerZoneScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Background Gradient Mock */}
+        {/* Background Atmosphere */}
         <View style={[styles.gradientBg, { backgroundColor: 'rgba(186, 26, 26, 0.05)' }]} />
 
         <View style={[styles.mainContent, { paddingHorizontal: spacing.gutter, paddingTop: spacing.lg }]}>
@@ -110,26 +110,6 @@ const DangerZoneScreen = ({ navigation }) => {
           </View>
         </View>
       </ScrollView>
-
-      {/* Bottom Nav Mock */}
-      <View style={[styles.bottomNav, { backgroundColor: colors.surface, borderTopColor: colors.outlineVariant }]}>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="grid-view" size={24} color={colors.secondary} />
-          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4 }]}>DASHBOARD</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="precision-manufacturing" size={24} color={colors.secondary} />
-          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4 }]}>ASSETS</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="warning" size={24} color={colors.secondary} />
-          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4 }]}>ALERTS</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItemActive, { borderTopColor: colors.primary }]}>
-          <MaterialIcons name="settings" size={24} color={colors.primary} />
-          <Text style={[typography.labelSm, { color: colors.primary, marginTop: 4 }]}>SYSTEM</Text>
-        </TouchableOpacity>
-      </View>
 
       {/* Modal */}
       <Modal

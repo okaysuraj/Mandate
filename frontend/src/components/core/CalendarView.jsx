@@ -8,7 +8,7 @@ import axios from 'axios';
 import EventModal from '../ui/EventModal';
 import { useSocket } from '../../context/SocketContext';
 
-const CalendarView = ({ todos }) => {
+const CalendarView = ({ todos = [] }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -16,8 +16,8 @@ const CalendarView = ({ todos }) => {
   const { socket } = useSocket();
 
   const days = useMemo(() => {
-    const start = startOfWeek(startOfMonth(currentDate));
-    const end = endOfWeek(endOfMonth(currentDate));
+    const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 });
+    const end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 1 });
     return eachDayOfInterval({ start, end });
   }, [currentDate]);
 
@@ -39,7 +39,7 @@ const CalendarView = ({ todos }) => {
       socket.off("event_created", handleEventCreated);
       socket.off("event_updated", handleEventUpdated);
       socket.off("event_deleted", handleEventDeleted);
-    }
+    };
   }, [socket]);
 
   const fetchEvents = async () => {
@@ -54,7 +54,7 @@ const CalendarView = ({ todos }) => {
   const isValidDate = (d) => d instanceof Date && !isNaN(d);
 
   const getTodosForDay = (day) => {
-    return todos.filter(todo => {
+    return (todos || []).filter(todo => {
       if (!todo.dueDate) return false;
       const d = new Date(todo.dueDate);
       return isValidDate(d) && isSameDay(d, day);
@@ -78,27 +78,38 @@ const CalendarView = ({ todos }) => {
   };
 
   return (
-    <div className="w-full flex flex-col bg-white dark:bg-[#0A0A0A] border-t border-[#F0F0F0] pt-6">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold font-['Space_Grotesk'] tracking-tight">
+    <div className="w-full flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl p-4 text-on-surface shadow-sm">
+      <div className="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant">
+        <h2 className="text-xl md:text-2xl font-black font-mono tracking-tight uppercase text-on-surface">
           {format(currentDate, 'MMMM yyyy')}
         </h2>
-        <div className="flex items-center gap-4">
-          <button onClick={() => openCreateModal()} className="flex items-center gap-2 text-sm font-bold bg-[#1A1A1A] dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg">
-            <Plus size={16} /> New Event
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => openCreateModal()} 
+            className="flex items-center gap-1.5 text-xs font-mono font-bold bg-primary text-on-primary px-3.5 py-1.5 rounded-lg uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+          >
+            <Plus size={14} /> New Event
           </button>
-          <button onClick={prevMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
-            <ChevronLeft size={20} />
-          </button>
-          <button onClick={nextMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
-            <ChevronRight size={20} />
-          </button>
+          <div className="flex items-center border border-outline-variant bg-surface-container-lowest rounded-lg overflow-hidden">
+            <button 
+              onClick={prevMonth} 
+              className="w-8 h-8 flex items-center justify-center hover:bg-surface-container transition-colors border-r border-outline-variant text-on-surface cursor-pointer"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button 
+              onClick={nextMonth} 
+              className="w-8 h-8 flex items-center justify-center hover:bg-surface-container transition-colors text-on-surface cursor-pointer"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 border border-[#EDEDF0] rounded-lg overflow-hidden">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((dayName) => (
-          <div key={dayName} className="py-3 text-center text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-[#EDEDF0] bg-[#F9F9FB]">
+      <div className="grid grid-cols-7 border border-outline-variant rounded-lg overflow-hidden">
+        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((dayName) => (
+          <div key={dayName} className="py-2.5 text-center text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-widest border-b border-r border-outline-variant bg-surface-container-low last:border-r-0">
             {dayName}
           </div>
         ))}
@@ -111,54 +122,52 @@ const CalendarView = ({ todos }) => {
           return (
             <div 
               key={day.toString()} 
-              className={`min-h-[120px] p-2 border-b border-r border-[#EDEDF0] dark:border-gray-800 relative group ${
-                !isCurrentMonth ? 'bg-gray-50 dark:bg-[#050505] text-gray-400' : 'bg-white dark:bg-[#1A1A1A]'
-              } ${idx % 7 === 6 ? 'border-r-0' : ''} ${
-                idx >= days.length - 7 ? 'border-b-0' : ''
-              }`}
+              className={`min-h-[85px] sm:min-h-[110px] p-2 border-b border-r border-outline-variant relative group ${
+                !isCurrentMonth ? 'bg-surface-container-low/40 text-on-surface-variant/40' : 'bg-surface-container-lowest text-on-surface'
+              } ${idx % 7 === 6 ? 'border-r-0' : ''}`}
             >
-              <div className="flex justify-between items-start mb-2">
-                <div className={`text-xs font-bold flex items-center justify-center w-6 h-6 rounded-full ${
-                  isToday(day) ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-black' : ''
+              <div className="flex justify-between items-start mb-1">
+                <div className={`text-xs font-mono font-bold flex items-center justify-center w-5 h-5 rounded-full ${
+                  isToday(day) ? 'bg-primary text-on-primary' : 'text-on-surface'
                 }`}>
                   {format(day, 'd')}
                 </div>
                 <button 
                   onClick={() => openCreateModal(day)}
-                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-opacity"
+                  className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-surface-container text-on-surface-variant hover:text-on-surface rounded transition-opacity cursor-pointer"
                 >
                   <Plus size={12} />
                 </button>
               </div>
               
               <div className="flex flex-col gap-1">
-                {/* Render Events */}
+                {/* Events */}
                 {dayEvents.map(event => (
                   <div 
                     key={event._id}
                     onClick={() => { setEditingEvent(event); setIsEventModalOpen(true); }}
-                    className="text-[10px] font-semibold truncate px-2 py-1 rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 cursor-pointer flex items-center gap-1"
+                    className="text-[9px] font-mono font-bold truncate px-1.5 py-0.5 rounded bg-surface-container-highest text-primary border border-primary/30 cursor-pointer flex items-center gap-1 uppercase"
                     title={event.title}
                   >
-                    {event.meetingLink && <Video size={10} />}
+                    {event.meetingLink && <Video size={9} />}
                     <span>{isValidDate(new Date(event.startTime)) ? format(new Date(event.startTime), 'HH:mm') : ''}</span>
                     <span className="truncate">{event.title}</span>
                   </div>
                 ))}
                 
-                {/* Render Todos */}
+                {/* Todos */}
                 {dayTodos.map(todo => (
                   <div 
                     key={todo._id} 
-                    className="text-[10px] font-semibold truncate px-2 py-1 rounded bg-[#F9F9FB] dark:bg-[#111] border border-[#EDEDF0] dark:border-gray-800 flex items-center gap-1"
+                    className="text-[9px] font-mono font-semibold truncate px-1.5 py-0.5 rounded bg-surface-container border border-outline-variant flex items-center gap-1"
                     title={todo.title}
                   >
                     <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                      todo.status === 'completed' ? 'bg-green-500' :
-                      todo.priority === 'high' ? 'bg-red-500' :
-                      todo.priority === 'medium' ? 'bg-yellow-500' : 'bg-gray-400'
+                      todo.status === 'completed' ? 'bg-tertiary' :
+                      todo.priority === 'high' ? 'bg-error' :
+                      todo.priority === 'medium' ? 'bg-primary' : 'bg-outline'
                     }`} />
-                    <span className={todo.status === 'completed' ? 'line-through text-gray-400' : 'dark:text-white'}>
+                    <span className={todo.status === 'completed' ? 'line-through text-on-surface-variant' : 'text-on-surface'}>
                       {todo.title}
                     </span>
                   </div>

@@ -12,42 +12,56 @@ const SecuritySettingsPage = () => {
 
   return (
     <AppLayout>
-      <div className="max-w-4xl pt-xl md:pt-2xl space-y-xl pb-2xl">
-        <div>
-          <p className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest mb-xs">Preferences</p>
-          <h1 className="font-headline-lg text-headline-lg text-primary font-black uppercase">Security & Login</h1>
+      <div className="max-w-4xl mx-auto w-full px-4 md:px-6 py-6 space-y-6 pb-20">
+        <div className="border-b border-outline-variant pb-5">
+          <p className="font-label-caps text-xs text-on-surface-variant uppercase tracking-widest mb-1">Preferences</p>
+          <h1 className="font-headline-lg text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight">Security &amp; Login</h1>
+          <p className="text-xs md:text-sm text-on-surface-variant mt-1">Multi-factor authorization and biometric sign-in keys.</p>
         </div>
 
-        <div className="bg-surface-container-lowest border border-outline-variant p-xl space-y-lg">
-          <div className="flex items-center justify-between border-b border-outline-variant pb-md">
-            <div>
-              <p className="font-body-md font-bold text-primary">Two-Factor Authentication</p>
-              <p className="text-on-surface-variant text-sm">Protect workspace sign-ins using a second verification step.</p>
+        <div className="bg-surface-container-lowest border border-outline-variant p-5 md:p-6 rounded-2xl shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/60 pb-5">
+            <div className="space-y-0.5">
+              <p className="font-body-md font-bold text-sm text-on-surface">Two-Factor Authentication (2FA)</p>
+              <p className="text-on-surface-variant text-xs">Protect workspace sign-ins using an authenticator app TOTP code.</p>
             </div>
             <button
               onClick={() => setTwoFactorEnabled((value) => !value)}
-              className={`px-md py-2 rounded-full font-label-caps text-xs transition-colors cursor-pointer ${twoFactorEnabled ? "bg-primary text-on-primary" : "border border-outline-variant text-on-surface-variant"}`}
+              className={`min-h-[40px] px-4 rounded-xl font-label-caps text-xs font-bold transition-all cursor-pointer ${
+                twoFactorEnabled 
+                  ? "bg-tertiary-container text-on-tertiary-container border border-outline-variant" 
+                  : "bg-surface-container border border-outline-variant text-on-surface-variant hover:text-on-surface"
+              }`}
             >
-              {twoFactorEnabled ? "Enabled" : "Disabled"}
+              {twoFactorEnabled ? "Active / Enabled" : "Disabled"}
             </button>
           </div>
 
-          <div className="flex items-center justify-between border-b border-outline-variant pb-md">
-            <div>
-              <p className="font-body-md font-bold text-primary">Passkeys & Security Keys</p>
-              <p className="text-on-surface-variant text-sm">Allow passwordless sign-in from supported biometric devices.</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/60 pb-5">
+            <div className="space-y-0.5">
+              <p className="font-body-md font-bold text-sm text-on-surface">Passkeys &amp; Hardware Security Keys</p>
+              <p className="text-on-surface-variant text-xs">Allow passwordless sign-in from WebAuthn, Touch ID, or FIDO2 keys.</p>
             </div>
             <button
               onClick={() => setPasskeysEnabled((value) => !value)}
-              className={`px-md py-2 rounded-full font-label-caps text-xs transition-colors cursor-pointer ${passkeysEnabled ? "bg-primary text-on-primary" : "border border-outline-variant text-on-surface-variant"}`}
+              className={`min-h-[40px] px-4 rounded-xl font-label-caps text-xs font-bold transition-all cursor-pointer ${
+                passkeysEnabled 
+                  ? "bg-tertiary-container text-on-tertiary-container border border-outline-variant" 
+                  : "bg-surface-container border border-outline-variant text-on-surface-variant hover:text-on-surface"
+              }`}
             >
-              {passkeysEnabled ? "Enabled" : "Disabled"}
+              {passkeysEnabled ? "Active / Enabled" : "Disabled"}
             </button>
           </div>
 
-          <button onClick={handleSave} className="bg-primary text-on-primary px-xl py-md rounded-full font-label-caps text-label-caps hover:opacity-90 cursor-pointer">
-            Save Security Settings
-          </button>
+          <div className="flex justify-end pt-2">
+            <button 
+              onClick={handleSave} 
+              className="min-h-[44px] px-6 py-2.5 bg-primary text-on-primary rounded-xl font-label-caps text-xs font-bold shadow-xs hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+            >
+              Save Security Settings
+            </button>
+          </div>
         </div>
       </div>
     </AppLayout>

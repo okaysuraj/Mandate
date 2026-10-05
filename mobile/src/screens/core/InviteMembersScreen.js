@@ -1,65 +1,81 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, TextInput } from 'react-native';
+import { 
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, 
+  SafeAreaView, TextInput, ActivityIndicator, Alert 
+} from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 
 const InviteMembersScreen = ({ navigation }) => {
-  const { colors, typography, spacing, borderRadius } = useTheme();
+  const { colors, typography, spacing } = useTheme();
+  const { user } = useAuth();
 
-  const [clearanceLevel, setClearanceLevel] = useState('L1_READ');
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState('Viewer'); // 'Viewer', 'Editor', 'Admin'
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(null);
+
+  const handleInvite = async () => {
+    if (!email.trim() || !email.includes('@')) {
+      Alert.alert('Validation Error', 'Please enter a valid operator email address.');
+      return;
+    }
+
+    if (!user?.activeWorkspace) {
+      Alert.alert('Context Error', 'No active workspace selected.');
+      return;
+    }
+
+    setLoading(true);
+    setStatusMessage(null);
+    try {
+      await api.post(`/workspaces/${user.activeWorkspace}/members`, {
+        email: email.trim().toLowerCase(),
+        role
+      });
+      Alert.alert('Provisioned', `Operator credentials granted for ${email} with role [${role.toUpperCase()}].`, [
+        { text: 'Done', onPress: () => navigation.goBack() }
+      ]);
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to provision operator';
+      Alert.alert('Provisioning Error', msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Top Navigation Shell */}
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
         <View style={styles.headerLeft}>
-          <MaterialIcons name="terminal" size={24} color={colors.primary} />
-          <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2, marginLeft: 8 }]}>MANDATE OS</Text>
+          <MaterialIcons name="security" size={24} color={colors.primary} />
+          <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2, marginLeft: 8 }]}>
+            CREDENTIAL PROVISIONING
+          </Text>
         </View>
-        <TouchableOpacity style={styles.iconBtn}>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <MaterialIcons name="close" size={24} color={colors.secondary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
-        
         {/* Header */}
         <View style={styles.pageHeader}>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 4 }]}>Invite Operator</Text>
-          <Text style={[typography.bodyMd, { color: colors.secondary, opacity: 0.7 }]}>Initialize credential provisioning protocol.</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 4 }]}>
+            Invite Operator
+          </Text>
+          <Text style={[typography.bodyMd, { color: colors.secondary, opacity: 0.8 }]}>
+            Initialize workspace credential authorization protocol.
+          </Text>
         </View>
 
-        {/* Progress Indicator */}
-        <View style={styles.progressIndicator}>
-          <View style={styles.progressStep}>
-            <View style={[styles.stepCircle, { backgroundColor: colors.primary }]}>
-              <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>01</Text>
-            </View>
-            <Text style={[typography.labelCaps, { color: colors.primary, marginTop: 8 }]}>AUTH</Text>
-          </View>
-          <View style={[styles.progressLine, { backgroundColor: colors.outlineVariant }]} />
-          
-          <View style={styles.progressStep}>
-            <View style={[styles.stepCircle, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>02</Text>
-            </View>
-            <Text style={[typography.labelCaps, { color: colors.secondary, opacity: 0.5, marginTop: 8 }]}>ASSETS</Text>
-          </View>
-          <View style={[styles.progressLine, { backgroundColor: colors.outlineVariant }]} />
-
-          <View style={styles.progressStep}>
-            <View style={[styles.stepCircle, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>03</Text>
-            </View>
-            <Text style={[typography.labelCaps, { color: colors.secondary, opacity: 0.5, marginTop: 8 }]}>REVIEW</Text>
-          </View>
-        </View>
-
-        {/* Onboarding Steps Container */}
+        {/* Steps Container */}
         <View style={styles.stepsContainer}>
-          
           {/* STEP 01: Credential Provisioning */}
-          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
             <View style={styles.stepHeader}>
               <MaterialIcons name="badge" size={20} color={colors.primary} />
               <Text style={[typography.labelCaps, { color: colors.primary }]}>01 CREDENTIAL PROVISIONING</Text>
@@ -68,137 +84,126 @@ const InviteMembersScreen = ({ navigation }) => {
             <View style={styles.stepContent}>
               {/* Email Input */}
               <View style={styles.inputGroup}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginBottom: 4 }]}>OPERATOR IDENTIFIER (EMAIL)</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginBottom: 4 }]}>
+                  OPERATOR IDENTIFIER (EMAIL)
+                </Text>
                 <TextInput 
                   style={[styles.textInput, typography.labelSm, { borderBottomColor: colors.outlineVariant, color: colors.primary }]}
-                  placeholder="OPERATOR@MANDATE.SYS"
-                  placeholderTextColor={colors.surfaceDim}
+                  placeholder="operator@mandate.sys"
+                  placeholderTextColor={colors.outline}
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
                 />
               </View>
 
-              {/* Cluster Dropdown Mock */}
+              {/* Cluster Workspace Context */}
               <View style={styles.inputGroup}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginBottom: 4 }]}>SYSTEM CLUSTER</Text>
-                <View style={[styles.dropdownMock, { backgroundColor: colors.surfaceContainerLow }]}>
-                  <Text style={[typography.labelSm, { color: colors.primary }]}>CORE_INFRA_NORTH</Text>
-                  <MaterialIcons name="expand-more" size={20} color={colors.secondary} />
+                <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginBottom: 4 }]}>
+                  ACTIVE WORKSPACE
+                </Text>
+                <View style={[styles.clusterBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+                  <Text style={[typography.labelCaps, { color: colors.primary, fontSize: 11 }]}>
+                    {user?.activeWorkspace ? `WORKSPACE_ID: ${user.activeWorkspace.substring(0, 10).toUpperCase()}` : 'DEFAULT_CLUSTER'}
+                  </Text>
+                  <MaterialIcons name="verified-user" size={16} color={colors.onTertiaryContainer} />
                 </View>
               </View>
 
               {/* Clearance Level */}
               <View style={styles.inputGroup}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginBottom: 12 }]}>CLEARANCE LEVEL</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginBottom: 12 }]}>
+                  CLEARANCE ROLE
+                </Text>
                 <View style={styles.clearanceGrid}>
-                  <TouchableOpacity 
-                    style={[
-                      styles.clearanceBtn, 
-                      clearanceLevel === 'L1_READ' ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.outlineVariant }
-                    ]}
-                    onPress={() => setClearanceLevel('L1_READ')}
-                  >
-                    <Text style={[typography.labelCaps, { color: clearanceLevel === 'L1_READ' ? colors.onPrimary : colors.secondary }]}>L1_READ</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[
-                      styles.clearanceBtn, 
-                      clearanceLevel === 'L2_EXEC' ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.outlineVariant }
-                    ]}
-                    onPress={() => setClearanceLevel('L2_EXEC')}
-                  >
-                    <Text style={[typography.labelCaps, { color: clearanceLevel === 'L2_EXEC' ? colors.onPrimary : colors.secondary }]}>L2_EXEC</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[
-                      styles.clearanceBtn, 
-                      clearanceLevel === 'L3_ADMIN' ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.outlineVariant }
-                    ]}
-                    onPress={() => setClearanceLevel('L3_ADMIN')}
-                  >
-                    <Text style={[typography.labelCaps, { color: clearanceLevel === 'L3_ADMIN' ? colors.onPrimary : colors.secondary }]}>L3_ADMIN</Text>
-                  </TouchableOpacity>
+                  {[
+                    { key: 'Viewer', label: 'L1_VIEWER' },
+                    { key: 'Editor', label: 'L2_EDITOR' },
+                    { key: 'Admin', label: 'L3_ADMIN' }
+                  ].map((lvl) => {
+                    const isSelected = role === lvl.key;
+                    return (
+                      <TouchableOpacity 
+                        key={lvl.key}
+                        style={[
+                          styles.clearanceBtn, 
+                          isSelected 
+                            ? { backgroundColor: colors.primary, borderColor: colors.primary } 
+                            : { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }
+                        ]}
+                        onPress={() => setRole(lvl.key)}
+                      >
+                        <Text style={[typography.labelCaps, { color: isSelected ? colors.onPrimary : colors.secondary, fontSize: 10 }]}>
+                          {lvl.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
             </View>
           </View>
 
-          {/* STEP 02: Protocol Preview */}
-          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
-            <View style={[styles.stepHeader, { justifyContent: 'space-between' }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <MaterialIcons name="checklist" size={20} color={colors.primary} />
-                <Text style={[typography.labelCaps, { color: colors.primary }]}>02 PROTOCOL PREVIEW</Text>
-              </View>
-              <View style={[styles.autoGenBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>AUTO-GEN</Text>
-              </View>
+          {/* STEP 02: Permission Matrix */}
+          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
+            <View style={styles.stepHeader}>
+              <MaterialIcons name="security" size={20} color={colors.primary} />
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>02 PERMISSION MATRIX</Text>
             </View>
 
             <View style={styles.protocolList}>
-              <View style={[styles.protocolItem, { borderBottomColor: colors.surfaceContainer }]}>
+              <View style={[styles.protocolItem, { borderBottomColor: colors.outlineVariant }]}>
                 <View style={styles.protocolItemLeft}>
-                  <MaterialIcons name="vpn-key" size={16} color={colors.secondary} />
-                  <Text style={[typography.labelSm, { color: colors.onSurface }]}>SSH RSA-4096 Key</Text>
+                  <MaterialIcons name="visibility" size={16} color={colors.secondary} />
+                  <Text style={[typography.labelSm, { color: colors.onSurface }]}>Read Telemetry & Mandates</Text>
                 </View>
-                <MaterialIcons name="check-circle" size={16} color={colors.tertiaryFixedDim} />
+                <MaterialIcons name="check-circle" size={16} color={colors.onTertiaryContainer} />
               </View>
-              <View style={[styles.protocolItem, { borderBottomColor: colors.surfaceContainer }]}>
+              <View style={[styles.protocolItem, { borderBottomColor: colors.outlineVariant }]}>
                 <View style={styles.protocolItemLeft}>
-                  <MaterialIcons name="cloud-sync" size={16} color={colors.secondary} />
-                  <Text style={[typography.labelSm, { color: colors.onSurface }]}>Cloud Enclave Access</Text>
+                  <MaterialIcons name="edit" size={16} color={colors.secondary} />
+                  <Text style={[typography.labelSm, { color: colors.onSurface }]}>Execute & Create Tasks</Text>
                 </View>
-                <MaterialIcons name="check-circle" size={16} color={colors.tertiaryFixedDim} />
+                <MaterialIcons 
+                  name={role === 'Editor' || role === 'Admin' ? 'check-circle' : 'cancel'} 
+                  size={16} 
+                  color={role === 'Editor' || role === 'Admin' ? colors.onTertiaryContainer : colors.outlineVariant} 
+                />
               </View>
-              <View style={[styles.protocolItem, { borderBottomColor: colors.surfaceContainer }]}>
+              <View style={[styles.protocolItem, { borderBottomColor: colors.outlineVariant }]}>
                 <View style={styles.protocolItemLeft}>
-                  <MaterialIcons name="terminal" size={16} color={colors.secondary} />
-                  <Text style={[typography.labelSm, { color: colors.onSurface }]}>CLI Toolbelt v4.0</Text>
+                  <MaterialIcons name="admin-panel-settings" size={16} color={colors.secondary} />
+                  <Text style={[typography.labelSm, { color: colors.onSurface }]}>Workspace Administration</Text>
                 </View>
-                <MaterialIcons name="check-circle" size={16} color={colors.tertiaryFixedDim} />
+                <MaterialIcons 
+                  name={role === 'Admin' ? 'check-circle' : 'cancel'} 
+                  size={16} 
+                  color={role === 'Admin' ? colors.onTertiaryContainer : colors.outlineVariant} 
+                />
               </View>
             </View>
           </View>
-
-          {/* STEP 03: Pending Approvals */}
-          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
-            <View style={styles.stepHeader}>
-              <MaterialIcons name="hourglass-top" size={20} color={colors.primary} />
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>03 PENDING APPROVALS</Text>
-            </View>
-
-            <View style={[styles.approvalBox, { backgroundColor: colors.surfaceContainerLow }]}>
-              <View style={[styles.approvalIconBg, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-                <MaterialIcons name="security" size={20} color={colors.secondary} />
-              </View>
-              <View style={styles.approvalContent}>
-                <Text style={[typography.labelSm, { color: colors.primary }]}>Security Lead Approval</Text>
-                <Text style={[typography.labelCaps, { color: colors.secondary, opacity: 0.6, fontSize: 10, marginTop: 4 }]}>REQUIRED FOR LEVEL 1+</Text>
-              </View>
-              <View style={[styles.pendingBadge, { backgroundColor: colors.surfaceContainerHigh }]}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 9 }]}>PENDING</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Decorative Visual Spacer */}
-          <View style={[styles.spacerBox, { borderColor: colors.outlineVariant }]}>
-            <View style={styles.spacerContent}>
-              <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2, fontSize: 9, marginBottom: 8 }]}>SYSTEM READY</Text>
-              <View style={styles.dotsContainer}>
-                <View style={[styles.pulseDot, { backgroundColor: colors.primary }]} />
-                <View style={[styles.pulseDot, { backgroundColor: colors.primary }]} />
-                <View style={[styles.pulseDot, { backgroundColor: colors.primary }]} />
-              </View>
-            </View>
-          </View>
-
         </View>
       </ScrollView>
 
       {/* Bottom Action Bar */}
       <View style={[styles.bottomActionBar, { backgroundColor: colors.surface, borderTopColor: colors.outlineVariant }]}>
-        <TouchableOpacity style={[styles.executeBtn, { backgroundColor: colors.primary }]}>
-          <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2 }]}>EXECUTE INVITE</Text>
-          <MaterialIcons name="send" size={16} color={colors.onPrimary} style={{ marginLeft: 8 }} />
+        <TouchableOpacity 
+          style={[styles.executeBtn, { backgroundColor: colors.primary }, loading && { opacity: 0.7 }]}
+          onPress={handleInvite}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color={colors.onPrimary} />
+          ) : (
+            <>
+              <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2 }]}>
+                EXECUTE INVITE
+              </Text>
+              <MaterialIcons name="send" size={16} color={colors.onPrimary} style={{ marginLeft: 8 }} />
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -211,8 +216,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24, // px-gutter
-    height: 64, // h-16
+    paddingHorizontal: 20,
+    height: 64,
     borderBottomWidth: 1,
   },
   headerLeft: {
@@ -224,76 +229,50 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 20,
   },
   container: {
     flexGrow: 1,
-    padding: 16, // px-md
-    paddingTop: 32, // pt-24 approx
-    paddingBottom: 128, // pb-32 approx
+    padding: 16,
+    paddingBottom: 100,
     maxWidth: 600,
     alignSelf: 'center',
     width: '100%',
   },
   pageHeader: {
-    marginBottom: 32, // mb-lg
-  },
-  progressIndicator: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 32,
-    paddingHorizontal: 4,
-  },
-  progressStep: {
-    alignItems: 'center',
-  },
-  stepCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  progressLine: {
-    flex: 1,
-    height: 1,
-    marginHorizontal: 16,
-    marginTop: 16, // Align with center of circles
+    marginVertical: 16,
   },
   stepsContainer: {
-    gap: 16, // space-y-md
+    gap: 16,
   },
   bentoCard: {
     borderWidth: 1,
     borderRadius: 8,
-    padding: 32, // p-lg
-    backgroundColor: '#ffffff',
+    padding: 16,
   },
   stepHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 16, // mb-md
+    marginBottom: 16,
   },
   stepContent: {
-    gap: 32, // space-y-lg
+    gap: 16,
   },
   inputGroup: {
     width: '100%',
   },
   textInput: {
-    paddingVertical: 8,
+    height: 44,
     borderBottomWidth: 1,
-    width: '100%',
+    paddingVertical: 8,
   },
-  dropdownMock: {
+  clusterBox: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 12,
-    borderRadius: 4,
-    marginTop: 4,
+    borderRadius: 6,
+    borderWidth: 1,
   },
   clearanceGrid: {
     flexDirection: 'row',
@@ -301,16 +280,11 @@ const styles = StyleSheet.create({
   },
   clearanceBtn: {
     flex: 1,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderRadius: 4,
+    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  autoGenBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    borderWidth: 1,
+    borderRadius: 6,
   },
   protocolList: {
     gap: 8,
@@ -319,71 +293,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderBottomWidth: 1,
   },
   protocolItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  approvalBox: {
-    flexDirection: 'row',
-    padding: 16, // p-md
-    borderRadius: 8,
-    alignItems: 'flex-start',
-    gap: 16,
-  },
-  approvalIconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  approvalContent: {
-    flex: 1,
-  },
-  pendingBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  spacerBox: {
-    height: 128, // h-32
-    borderRadius: 8,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  spacerContent: {
-    alignItems: 'center',
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  pulseDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    gap: 10,
   },
   bottomActionBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 24, // p-gutter
+    padding: 16,
     borderTopWidth: 1,
   },
   executeBtn: {
+    height: 48,
+    borderRadius: 6,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 56, // h-14
-    borderRadius: 28,
-  }
+  },
 });
 
 export default InviteMembersScreen;
