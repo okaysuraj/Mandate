@@ -2,26 +2,15 @@
 
 Audit date: 6 October 2026. **Production readiness and full 1:1 feature/component parity are not certified.** Significant authorization, validation, data-integrity and fabricated-data issues have been fixed. The remaining release requirements are listed below. Provider credentials will be supplied later, as requested by the project owner.
 
-## Scope and evidence
+This document preserves development gaps and database recovery notes from the audit before repository cleanup. GitHub Actions, root audit/profiling/font maintenance scripts, backend tests and their dependencies were subsequently removed at the owner's request. Generated JSON reports and the historical performance report were also removed. Dependency counts and verification outcomes described here are historical.
 
-The repository inventory covers 441 files across backend, frontend, mobile, shared source, configuration and assets. Dependencies, generated bundles, private environment files and credential files are excluded. [source-inventory.json](source-inventory.json) records each included path, size, SHA-256, structural verification and mapped feature keys. Syntax and relative imports were checked for every JavaScript source file; JSON files were parsed. These checks are structural evidence, not proof that every file has received an exhaustive semantic security review.
+## Review scope
 
-Manual review and remediation focused on authentication, tenant authorization, input handling, CRUD controllers, models, sockets, provider integrations, scheduled jobs, client caches, page data sources and web/mobile feature mappings. [PARITY.md](PARITY.md) and [feature-parity.json](feature-parity.json) describe all 153 catalog entries and their implementation limits.
+The audit covered backend, frontend, mobile, shared source, configuration and assets. Dependencies, generated bundles, private environment files and credential files were excluded. Syntax, relative imports and JSON parsing were checked at the time; the generated inventory has been removed.
 
-| Verification | Result | Scope and limits |
-| --- | --- | --- |
-| Backend security/API/shared performance tests | 38 passed | Real Express endpoints and an isolated MongoDB replica set with actual database validators; Firebase identity verification is mocked at the provider boundary only. |
-| Shared feature data loading | 153 catalog entries passed | Both clients share the tested endpoint/field helper. This is API coverage, not 153 complete browser/device acceptance tests. |
-| Frontend lint | Passed | No errors or warnings. |
-| Web production build | Passed | Vite bundle compiled. |
-| Native export | Android and iOS passed | Hermes bundles compiled; physical device/emulator interactions, SecureStore persistence and push delivery remain unverified. |
-| Expo dependency compatibility | Passed | SDK-compatible versions, including notifications, document picker and SecureStore. |
-| Public browser smoke | Seven routes passed | Landing, login, register, password recovery, pricing, privacy and security rendered without JavaScript page errors. Existing client API configuration was used; this does not establish that the deployed backend contains these local changes. |
-| Connected database audit | Passed | 19 model collections, zero invalid documents, broken/cross-workspace references or missing expected indexes; transactions supported. |
-| Cloudinary live check | Failed: HTTP 401 | Supplied credentials are invalid. No successful test upload occurred. |
-| Stripe / Gemini live verification | Not run | Required credentials are missing. |
+Manual review and remediation focused on authentication, tenant authorization, input handling, CRUD controllers, models, sockets, provider integrations, scheduled jobs, client caches, page data sources and web/mobile feature mappings. [PARITY.md](PARITY.md) describes all 153 catalog entries and their implementation limits; the live catalog remains in [shared/featureCatalog.json](../shared/featureCatalog.json).
 
-Evidence: [database-audit.json](database-audit.json), [database-migration.json](database-migration.json), [database-repair-summary.json](database-repair-summary.json), [browser-smoke.json](browser-smoke.json), [configuration-status.json](configuration-status.json), [dependency-audit.json](dependency-audit.json). Configuration flags are presence checks and do not establish credential validity. The repository's tests and verification commands reproduce the code checks.
+Local builds and code checks passed during the audit, but physical device interactions, SecureStore persistence, push delivery and authenticated end-to-end behavior remain unverified. The Cloudinary live check returned HTTP 401; Stripe and Gemini live checks were not run because required credentials were missing. These outcomes must be rechecked against the release configuration.
 
 ## Security and integrity fixes
 
@@ -61,7 +50,7 @@ Business records and metrics come from backend endpoints and database records. T
 
 The former specialized mock screens were largely replaced with common real-data interfaces. **Shared generic CRUD is not a complete implementation of every advertised advanced feature.** Finance/forecasting/invoice/procurement/compliance/partner/customer-journey screens currently store actual records but do not implement their full domain engines. Dependency maps, timelines, capacity/workload analysis and custom analytics still need specialized behavior and acceptance tests. Offline pages report connectivity; an offline mutation queue, conflict handling and recovery are not implemented. Integration OAuth adapters are not implemented. These gaps are explicit in the parity matrix.
 
-Presentation text, navigation definitions, colors, icons, empty-state instructions and form defaults remain static. Reusable presentation components receive real data from their page/hooks rather than each issuing duplicate database requests. Synthetic records are confined to isolated backend tests; the legacy seeder signatures exist only in the database repair tool.
+Presentation text, navigation definitions, colors, icons, empty-state instructions and form defaults remain static. Reusable presentation components receive real data from their page/hooks rather than each issuing duplicate database requests. The isolated backend tests and their synthetic fixtures have been removed; the legacy seeder signatures exist only in the database repair tool.
 
 ## Dependency status
 
@@ -75,23 +64,23 @@ Safe package updates and targeted overrides removed reported production advisori
 
 Counts include affected transitive packages, not necessarily distinct vulnerabilities. Remaining root advisories concern `braces`, `node-forge` and `sprintf-js`, with propagated tooling chains. The mobile npm production tree includes Expo/Metro build tooling; these counts do not establish which vulnerable modules execute inside the shipped Hermes bundle. They still require resolution and review. npm's proposed automatic fixes include disruptive downgrades of Expo/React Native/Jest or unsupported dependency changes; those were not forced. Full-tree remediation remains open.
 
-The GitHub verification workflow uses commit-pinned actions, read-only repository permissions and production dependency gates. The mobile audit gate currently fails because these advisories remain. The workflow has been added locally and has not run on GitHub. Build/test checks passing locally do not override a failed security gate.
+The `.github` directory and all GitHub Actions workflows have been removed, as requested by the owner. The root verification commands have also been removed. Local frontend lint/build, mobile export and database audit commands remain available. Passing builds do not resolve dependency advisories.
 
 ## Remaining release requirements
 
 1. Configure valid Cloudinary credentials, Stripe secret/webhook/price IDs, and Gemini key/model in `backend/.env` or the deployment secret store. Verify private JPEG/PNG/PDF upload/download, Stripe checkout/renewal/cancellation/webhook retries, and AI generation against real providers. The owner will supply credentials later; secrets must not be pasted into reports or committed.
-2. Resolve or apply reviewed fixes for remaining dependency advisories. Keep the mobile release gate failing until this is addressed. Review the remaining moderate backend test-tool advisories as well.
+2. Recheck dependency advisories after the removal of test-only tooling and resolve or apply reviewed fixes for remaining advisories, including the mobile dependencies.
 3. Complete the advanced domain workflows and specialized views in [PARITY.md](PARITY.md), then run feature-by-feature authenticated web and native acceptance tests. Full feature/component parity remains an open objective.
 4. Verify Firebase registration, email verification, password recovery, native SecureStore persistence, workspace switching, permissions, uploads, push delivery and reconnects on actual Android/iOS builds. Authenticated browser/device end-to-end testing was not possible without test-account access.
 5. Publish approved privacy/terms/legal/security content through the protected publisher API. No production public policy records were seeded. Review deletion/export/retention requirements; account deletion, member removal and workspace deletion workflows are not implemented.
 6. Implement provider integration adapters where required. Add billing management/portal workflows and verify entitlement enforcement and subscription history against the intended product rules.
 7. Validate production infrastructure: TLS, proxy-hop configuration, Firebase allowed domains, Netlify CSP, secret rotation, least-privilege Atlas access, backups, restore drills, monitoring and alerting. Local readiness checks verify database connection, not every infrastructure control.
-8. Run load/concurrency/recovery tests and native device profiling. Feature screens now fetch 50 records per page and analytics use MongoDB aggregation. Core schedules/boards still load all lightweight task summaries; reference metadata, saved-view results and exports need scale testing. See [PERFORMANCE.md](PERFORMANCE.md) for measured improvements and limits. Multiple instances require a shared rate-limit store and Socket.IO adapter, plus a coordinated scheduler. Recurrence/reminder downtime recovery and missed executions need operational verification.
+8. Run load/concurrency/recovery tests and native device profiling. Feature screens now fetch 50 records per page and analytics use MongoDB aggregation. Core schedules/boards still load all lightweight task summaries; reference metadata, saved-view results and exports need scale testing. Native frame rate, memory use and deployed performance still require measurement. Multiple instances require a shared rate-limit store and Socket.IO adapter, plus a coordinated scheduler. Recurrence/reminder downtime recovery and missed executions need operational verification.
 
 ## Reproduce the checks
 
-Install each package with `npm ci --prefix backend`, `npm ci --prefix frontend` and `npm ci --prefix mobile`. Configure the three private environment files from their `.env.example` files.
+Install each package with `npm ci --prefix backend`, `npm ci --prefix frontend` and `npm ci --prefix mobile`. Configure each project's private `.env` using the variables documented in the [root README](../README.md) and [backend setup](../backend/README.md).
 
-Run `npm run verify` for source inventory, backend tests, frontend lint and web build. Tailwind 4 requires modern browsers (Safari 16.4+, Chrome 111+, Firefox 128+); verify the intended browser support matrix against the [official upgrade guide](https://tailwindcss.com/docs/upgrade-guide). Run `npm run verify:mobile` for native exports and `npx expo install --check` from `mobile` for SDK compatibility. Run `npm run db:audit --prefix backend` for the connected database. Run `npm audit --omit=dev --prefix <package>` and full `npm audit --prefix <package>` separately to review dependency risks. `db:migrate` and `db:repair -- --apply` change the database and should run only as deliberate operator actions.
+Run `npm run lint --prefix frontend` and `npm run build --prefix frontend` for local web checks. Tailwind 4 requires modern browsers (Safari 16.4+, Chrome 111+, Firefox 128+); verify the intended browser support matrix against the [official upgrade guide](https://tailwindcss.com/docs/upgrade-guide). Run `npm run export:audit --prefix mobile` for native exports and `npx expo install --check` from `mobile` for SDK compatibility. Run `npm run db:audit --prefix backend` for the connected database. Run `npm audit --omit=dev --prefix <package>` and full `npm audit --prefix <package>` separately to review dependency risks. `db:migrate` and `db:repair -- --apply` change the database and should run only as deliberate operator actions.
 
-No release/deployment, GitHub publication or app-store submission was performed. Code and evidence are available in the workspace for review.
+This document does not certify a deployed release or app-store build.

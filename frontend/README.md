@@ -10,7 +10,6 @@ This directory contains the React-based Single Page Application (SPA) for Mandat
 - **State Management:** React Context API
 - **Data Fetching:** Axios
 - **Real-Time:** Socket.io-client
-- **Testing:** Playwright E2E
 
 ## Architecture & Layouts
 The frontend is composed of contextual layouts utilizing a highly responsive sidebar architecture.
@@ -18,11 +17,12 @@ The frontend is composed of contextual layouts utilizing a highly responsive sid
 ## Environment Variables
 Create a `.env` file in this directory:
 ```env
-VITE_API_URL=http://localhost:5001
+VITE_API_BASE_URL=http://localhost:5001
 ```
+
+Add `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, and `VITE_FIREBASE_APP_ID` using the Firebase web app configuration for the backend's project. For production builds, set `VITE_API_BASE_URL` to the HTTPS backend origin. Restart Vite after changing environment variables.
 
 ## Available Scripts
 
 - `npm run dev`: Starts the Vite development server with HMR.
 - `npm run build`: Compiles and minifies the application for production deployment.
-- `npx playwright test`: Runs the automated End-to-End browser test suite.

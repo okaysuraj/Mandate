@@ -1,6 +1,6 @@
 # Web and mobile parity status
 
-The shared catalog contains 153 feature entries. Both clients use the same field definitions, validation conversions and endpoint selection. The API test suite loads every entry against the actual Express application and an isolated MongoDB replica set.
+The [shared catalog](../shared/featureCatalog.json) contains 153 feature entries. Both clients use the same field definitions, validation conversions and endpoint selection. The former API test suite loaded every entry against the actual Express application and an isolated MongoDB replica set; that suite was removed during repository cleanup. The table below preserves the development gaps recorded at the time of the audit.
 
 This establishes a real-data baseline. It does not certify full 1:1 feature/component parity. Several former static mock screens now use shared CRUD or task-list interfaces. Their original charts, advanced workflows and specialized layouts have not been recreated or acceptance-tested. Generic records alone do not implement forecasting, invoicing/accounting, procurement workflows, compliance certification, customer journeys or vendor integrations.
 

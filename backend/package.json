@@ -8,7 +8,6 @@
     "server": "node --watch src/server.js",
     "client": "npm run dev --prefix ../frontend",
     "dev:all": "node src/scripts/devServers.js",
-    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "db:audit": "node src/scripts/databaseAudit.js",
     "db:migrate": "node src/scripts/databaseAudit.js --apply",
     "db:repair": "node src/scripts/repairDatabase.js",
@@ -33,13 +32,6 @@
     "node-cron": "^4.4.1",
     "socket.io": "^4.8.3",
     "stripe": "^22.3.0"
-  },
-  "devDependencies": {
-    "cross-env": "^10.1.0",
-    "jest": "^30.4.2",
-    "mongodb-memory-server": "^11.2.0",
-    "socket.io-client": "^4.8.4",
-    "supertest": "^7.2.2"
   },
   "engines": {
     "node": ">=22"
