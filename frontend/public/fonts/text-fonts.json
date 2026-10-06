@@ -1,0 +1,76 @@
+{
+  "source": "https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400..800&family=JetBrains+Mono:wght@400..700&display=swap",
+  "license": "OFL-1.1",
+  "fonts": [
+    {
+      "family": "Hanken Grotesk",
+      "range": "cyrillic-ext",
+      "file": "hanken-grotesk-cyrillic-ext-7ba47c78279d.woff2",
+      "bytes": 1668,
+      "sha256": "7ba47c78279dc529afe577dc2476bc8fd3c0e32f78efa26dca9f9382d49a157d"
+    },
+    {
+      "family": "Hanken Grotesk",
+      "range": "vietnamese",
+      "file": "hanken-grotesk-vietnamese-992b5d147edd.woff2",
+      "bytes": 9320,
+      "sha256": "992b5d147edde9d637ce22e7bb9cc9e6909c05410226b36a2e581ada9877eb4a"
+    },
+    {
+      "family": "Hanken Grotesk",
+      "range": "latin-ext",
+      "file": "hanken-grotesk-latin-ext-768af2923e0a.woff2",
+      "bytes": 19588,
+      "sha256": "768af2923e0ab1549f1dfba0a5c8ea749c4c01f01d8e77ffaf7fcd12f57a0a24"
+    },
+    {
+      "family": "Hanken Grotesk",
+      "range": "latin",
+      "file": "hanken-grotesk-latin-e9201eddf1d4.woff2",
+      "bytes": 34704,
+      "sha256": "e9201eddf1d41d0b62253295d869ce3cf65768f7102b797f02c7f8c876b4a9d5"
+    },
+    {
+      "family": "JetBrains Mono",
+      "range": "cyrillic-ext",
+      "file": "jetbrains-mono-cyrillic-ext-62213be8a78b.woff2",
+      "bytes": 1640,
+      "sha256": "62213be8a78b42f1e29d1452d91e2f8b3e745572a9dd98d3941e39fa00b37d76"
+    },
+    {
+      "family": "JetBrains Mono",
+      "range": "cyrillic",
+      "file": "jetbrains-mono-cyrillic-e17cfd15fb96.woff2",
+      "bytes": 8872,
+      "sha256": "e17cfd15fb96909d64095015f958207063a0c07191da3512df7d560a781aebdf"
+    },
+    {
+      "family": "JetBrains Mono",
+      "range": "greek",
+      "file": "jetbrains-mono-greek-0a557721b1f8.woff2",
+      "bytes": 6836,
+      "sha256": "0a557721b1f8b36d3f3f84442689a71ca4a744300abcb46a1953f51bfc663b66"
+    },
+    {
+      "family": "JetBrains Mono",
+      "range": "vietnamese",
+      "file": "jetbrains-mono-vietnamese-c89b9cc0bc62.woff2",
+      "bytes": 5888,
+      "sha256": "c89b9cc0bc6262bd4f8d8494b6961601f3aefa829d08c2e3635f4d501d3a47c2"
+    },
+    {
+      "family": "JetBrains Mono",
+      "range": "latin-ext",
+      "file": "jetbrains-mono-latin-ext-db5ff4db83e5.woff2",
+      "bytes": 11624,
+      "sha256": "db5ff4db83e580426280e9337a58dc57d3a83784a1b03ad80914651594441d52"
+    },
+    {
+      "family": "JetBrains Mono",
+      "range": "latin",
+      "file": "jetbrains-mono-latin-83c005d49d8a.woff2",
+      "bytes": 31432,
+      "sha256": "83c005d49d8a6a50474c73a5a36ac0468076e9c4a29da7bdb14995d80560a5be"
+    }
+  ]
+}

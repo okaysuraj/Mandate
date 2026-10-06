@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { useState, useRef, useEffect } from "react";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { ChevronDown, Building, Plus } from "lucide-react";
@@ -24,7 +25,7 @@ const WorkspaceSwitcher = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!newWorkspaceName.trim()) return;
-    await createWorkspace(newWorkspaceName);
+    try{await createWorkspace(newWorkspaceName);}catch(error){toast.error(error.response?.data?.message||'Could not create workspace');return;}
     setNewWorkspaceName("");
     setIsCreating(false);
   };
@@ -54,8 +55,8 @@ const WorkspaceSwitcher = () => {
               {workspaces.map((ws) => (
                 <button
                   key={ws._id}
-                  onClick={() => {
-                    switchWorkspace(ws._id);
+                  onClick={async () => {
+                    try{await switchWorkspace(ws._id);}catch(error){toast.error(error.response?.data?.message||'Could not switch workspace');return;}
                     setIsOpen(false);
                   }}
                   className={`w-full text-left px-3 py-2 text-xs font-mono uppercase rounded-xl flex items-center justify-between border transition-all cursor-pointer ${
@@ -72,7 +73,7 @@ const WorkspaceSwitcher = () => {
               ))}
             </div>
           </div>
-          
+
           <div className="p-3 bg-surface-container-lowest">
             {isCreating ? (
               <form onSubmit={handleCreate} className="flex flex-col gap-2">

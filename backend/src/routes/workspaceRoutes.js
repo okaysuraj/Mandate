@@ -2,6 +2,7 @@ import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import {
   createWorkspace,
+  getWorkspace, updateWorkspace, transferOwnership,
   getWorkspaces,
   switchActiveWorkspace,
   getWorkspaceMembers,
@@ -18,4 +19,6 @@ router.route("/:id/members").get(protect, getWorkspaceMembers).post(protect, add
 router.route("/:id/members/:userId").put(protect, updateMemberRole);
 router.route("/:id/integrations").put(protect, toggleIntegration);
 
+router.route("/:id").get(protect, getWorkspace).put(protect, updateWorkspace);
+router.put("/:id/owner", protect, transferOwnership);
 export default router;

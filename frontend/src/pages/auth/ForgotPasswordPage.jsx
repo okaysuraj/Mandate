@@ -18,7 +18,7 @@ const ForgotPasswordPage = () => {
       setIsSent(true);
       toast.success("Recovery instructions dispatched.");
     } catch (err) {
-      console.error(err);
+      console.error(err.name);
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ const ForgotPasswordPage = () => {
 
             <div className="text-xs font-mono text-on-surface-variant pt-2 border-t border-outline-variant/50 flex justify-between">
               <span>REGION: GLOBAL-PRIMARY</span>
-              <span className="text-tertiary">UPTIME: 99.98%</span>
+              <span className="text-tertiary">PASSWORD RECOVERY</span>
             </div>
           </div>
 
@@ -92,8 +92,8 @@ const ForgotPasswordPage = () => {
                   type="submit"
                   disabled={loading || isSent}
                   className={`w-full min-h-[44px] text-on-primary font-label-caps text-xs font-bold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer ${
-                    isSent || loading 
-                      ? 'bg-surface-container-high text-on-surface-variant cursor-not-allowed border border-outline-variant' 
+                    isSent || loading
+                      ? 'bg-surface-container-high text-on-surface-variant cursor-not-allowed border border-outline-variant'
                       : 'bg-primary hover:opacity-90 active:scale-[0.98]'
                   }`}
                 >
@@ -116,7 +116,7 @@ const ForgotPasswordPage = () => {
                   <span className="material-symbols-outlined text-xl mt-0.5">check_circle</span>
                   <div className="text-xs">
                     <h3 className="font-mono font-bold tracking-wide uppercase">RECOVERY PROTOCOL DISPATCHED</h3>
-                    <p className="mt-1 leading-relaxed opacity-90">Instructions have been sent to <span className="font-mono font-bold">{email}</span>. Check your inbox and spam filters.</p>
+                    <p className="mt-1 leading-relaxed opacity-90">If an account exists for <span className="font-mono font-bold">{email}</span>, you will receive reset instructions. Check your inbox and spam filters.</p>
                   </div>
                 </div>
               )}

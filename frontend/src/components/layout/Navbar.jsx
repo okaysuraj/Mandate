@@ -1,3 +1,5 @@
+import api from "../../lib/axios";
+import toast from "react-hot-toast";
 import { Link, useLocation } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect, useRef } from "react";
@@ -5,7 +7,7 @@ import NotificationBell from "../common/NotificationBell";
 import GlobalSearchBar from "../common/GlobalSearchBar";
 
 const Navbar = ({ variant = "app", onToggleSidebar }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -16,7 +18,7 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
     const syncTheme = () => {
       const isDark =
         localStorage.getItem("theme") === "dark" ||
-        (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        ((!("theme" in localStorage)||localStorage.getItem("theme")==="system") && window.matchMedia("(prefers-color-scheme: dark)").matches);
       setIsDarkMode(isDark);
       if (isDark) {
         document.documentElement.classList.add("dark");
@@ -44,7 +46,8 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
     };
   }, []);
 
-  const toggleDarkMode = () => {
+  const toggleDarkMode = async () => {
+    if(user){try{const {data}=await api.put('/users/profile',{preferences:{theme:isDarkMode?'light':'dark'}});updateUser(data);}catch(error){toast.error(error.response?.data?.message||'Cannot save theme');return;}}
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     if (newMode) {
@@ -81,7 +84,7 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
           </nav>
         </div>
         <div className="flex items-center gap-2">
-          <button 
+          <button
             onClick={toggleDarkMode}
             className="w-10 h-10 rounded-md border border-outline-variant hover:border-primary bg-surface-container-lowest flex items-center justify-center text-primary transition-colors cursor-pointer"
             title="Toggle theme"
@@ -95,7 +98,7 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
             <>
               <NotificationBell />
               <div className="relative" ref={dropdownRef}>
-                <button 
+                <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant hover:border-primary flex items-center justify-center cursor-pointer overflow-hidden"
                 >
@@ -117,7 +120,7 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
                     <Link to="/theme-appearance" className="block px-3.5 py-2 font-label-caps text-xs text-on-surface hover:bg-surface-container transition-colors uppercase">
                       THEME & CONTRAST
                     </Link>
-                    <button 
+                    <button
                       onClick={() => { setDropdownOpen(false); logout(); }}
                       className="w-full text-left px-3.5 py-2 font-label-caps text-xs text-error hover:bg-error/10 transition-colors border-t border-outline-variant uppercase cursor-pointer"
                     >
@@ -147,7 +150,7 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
     <header className="fixed top-0 left-0 right-0 h-16 z-50 bg-surface-container-lowest border-b border-outline-variant/70 shadow-xs flex justify-between items-center px-3 md:px-6">
       {/* Left: Hamburger & Brand */}
       <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-        <button 
+        <button
           onClick={onToggleSidebar}
           className="w-10 h-10 rounded-md border border-outline-variant hover:border-primary bg-surface-container-lowest hover:bg-surface-container text-primary transition-colors cursor-pointer flex items-center justify-center active:scale-95"
           title="Toggle Navigation Menu"
@@ -177,7 +180,7 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
         </button>
 
         {/* Theme Toggle */}
-        <button 
+        <button
           onClick={toggleDarkMode}
           className="w-10 h-10 rounded-md border border-outline-variant hover:border-primary bg-surface-container-lowest hover:bg-surface-container transition-colors cursor-pointer active:scale-95 flex items-center justify-center text-primary"
           title="Toggle Theme (Dark / Light)"

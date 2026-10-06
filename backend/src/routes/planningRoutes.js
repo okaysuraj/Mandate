@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getSuggestions,
+  getMandateHistory,
   getDailyMandate,
   lockDailyMandate
 } from "../controllers/planningController.js";
@@ -17,4 +18,5 @@ router.route("/daily")
 router.route("/lock")
   .post(protect, lockDailyMandate);
 
+router.get("/history",protect,getMandateHistory);
 export default router;

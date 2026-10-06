@@ -1,11 +1,6 @@
 import { Link, useLocation } from "react-router";
 
-const navItems = [
-  { path: "/dashboard", icon: "dashboard", label: "Dashboard" },
-  { path: "/today", icon: "event_upcoming", label: "Today" },
-  { path: "/kanban", icon: "view_kanban", label: "Kanban" },
-  { path: "/calendar", icon: "calendar_today", label: "Calendar" },
-];
+
 
 const BottomNav = ({ onOpenMenu, onNewTask }) => {
   const location = useLocation();

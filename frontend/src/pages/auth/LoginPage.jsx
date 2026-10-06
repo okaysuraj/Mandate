@@ -8,7 +8,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, authError } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -53,15 +53,15 @@ const LoginPage = () => {
                   <span className="material-symbols-outlined text-3xl">terminal</span>
                 </div>
                 <span className="font-mono text-xs font-bold text-on-surface uppercase tracking-wider">SECURE NODE GATEWAY</span>
-                <span className="text-[11px] font-mono text-on-surface-variant">TLS 1.3 &bull; AES-256 E2EE SESSION</span>
+                <span className="text-[11px] font-mono text-on-surface-variant">Sign in with your verified email</span>
               </div>
             </div>
 
             <div className="flex items-center justify-between text-xs font-mono text-on-surface-variant pt-2 border-t border-outline-variant/50">
-              <span>STATUS: NOMINAL</span>
+              <span>VERIFIED EMAIL REQUIRED</span>
               <span className="flex items-center gap-1.5 text-tertiary">
                 <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse" />
-                ONLINE
+                SIGN IN
               </span>
             </div>
           </div>
@@ -79,7 +79,8 @@ const LoginPage = () => {
               <p className="font-body-md text-xs md:text-sm text-on-surface-variant mt-1">Enter your credentials to access your workspace</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {authError&&<p role="alert" className="text-error">{authError}</p>}
+              <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <label
                   htmlFor="email"
@@ -145,7 +146,7 @@ const LoginPage = () => {
             <div className="mt-6 pt-5 border-t border-outline-variant/60 flex flex-col gap-3">
               <div className="flex items-center gap-2.5 p-3 bg-surface-container/60 rounded-xl border border-outline-variant/60 text-xs font-mono text-on-surface-variant">
                 <span className="material-symbols-outlined text-primary text-base">verified_user</span>
-                <span>Encrypted with AES-256 standard protocols</span>
+                <span>Authentication provided by Firebase</span>
               </div>
               <div className="text-center text-xs text-on-surface-variant">
                 Don't have an account?{" "}

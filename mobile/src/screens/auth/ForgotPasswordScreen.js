@@ -1,18 +1,18 @@
 import React, { useState } from "react";
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  KeyboardAvoidingView, 
-  Platform, 
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
   ActivityIndicator,
   ScrollView,
   ImageBackground
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialIcons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -29,14 +29,10 @@ const ForgotPasswordScreen = ({ navigation }) => {
     try {
       await resetPassword(email);
       setIsSent(true);
-      
-      // Auto-navigate back or let user know. For now just show success state in place.
-      setTimeout(() => {
-        // Option to go back to login automatically
-        // navigation.navigate("Login");
-      }, 3000);
+
+
     } catch (error) {
-      // error handled in context
+      alert(error.message);
     } finally {
       setLoading(false);
     }
@@ -44,16 +40,16 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} bounces={false}>
-          
+
           {/* Header Branding Section */}
           <View style={styles.headerSection}>
-            <TouchableOpacity 
-              style={[styles.backButton, { marginBottom: spacing.md }]} 
+            <TouchableOpacity
+              style={[styles.backButton, { marginBottom: spacing.md }]}
               onPress={() => navigation.goBack()}
             >
               <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
@@ -83,7 +79,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
                     PROTOCOL INITIATED
                   </Text>
                   <Text style={[typography.bodyMd, { color: colors.secondary, textAlign: 'center' }]}>
-                    Recovery link transmitted to authorized terminal at {email}.
+                    If an account exists for {email}, you will receive password reset instructions.
                   </Text>
                 </View>
               ) : (
@@ -94,9 +90,9 @@ const ForgotPasswordScreen = ({ navigation }) => {
                     </Text>
                     <TextInput
                       style={[
-                        styles.inputUnderline, 
-                        typography.labelSm, 
-                        { 
+                        styles.inputUnderline,
+                        typography.labelSm,
+                        {
                           borderBottomColor: colors.surfaceDim,
                           color: colors.primary,
                           paddingVertical: spacing.md
@@ -114,9 +110,9 @@ const ForgotPasswordScreen = ({ navigation }) => {
                     </Text>
                   </View>
 
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={[
-                      styles.primaryButton, 
+                      styles.primaryButton,
                       { backgroundColor: colors.primary, borderRadius: borderRadius.full },
                       loading && { opacity: 0.7 }
                     ]}
@@ -143,9 +139,9 @@ const ForgotPasswordScreen = ({ navigation }) => {
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
                   <MaterialIcons name="verified-user" size={24} color={colors.primary} style={{ marginTop: 2 }} />
                   <View style={{ flex: 1 }}>
-                    <Text style={[typography.labelCaps, { color: colors.primary }]}>ENCRYPTION LEVEL 7</Text>
+                    <Text style={[typography.labelCaps, { color: colors.primary }]}>FIREBASE PASSWORD RECOVERY</Text>
                     <Text style={[typography.bodyMd, { color: colors.secondary, fontSize: 12, lineHeight: 16, marginTop: spacing.xs }]}>
-                      All recovery requests are processed via end-to-end hardware-isolated modules (HSM) to ensure credential integrity.
+                      Use the reset link sent to your registered email address to choose a new password.
                     </Text>
                   </View>
                 </View>
@@ -153,22 +149,22 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
               {/* Asset Recovery Image Module */}
               <View style={[styles.bentoCard, styles.imageModule]}>
-                <ImageBackground 
-                  source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD86vli8THQNz76t9TzftVxhDW58pEmgI4yiffsPSIwcv7B4eaMdmM7WR6NGmZSteX8QrmYT-XMSVO7M2Ii3v29jhnEyh-fANZSsF0nR156OPHQQI7a3wltS_j3l37Dzvc5ORGohocbrmNZQ2J2zkYCmz1Eooedwwwey7-oO5rslF76SUPEjRTDIcph1LbUfrvUdJKOurHxHabLYf6hwkTxrSTRFr694W6WrvjX-aiWwenuApKm-Bccqg' }}
+                <ImageBackground
+                  source={require('../../../assets/logo.png')}
                   style={StyleSheet.absoluteFillObject}
                 >
                   <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.6)' }]} />
                 </ImageBackground>
                 <View style={{ position: 'absolute', bottom: spacing.md, left: spacing.md }}>
-                  <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>NODE: RECOVERY-04</Text>
+                  <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>PASSWORD RECOVERY</Text>
                 </View>
               </View>
 
               {/* Assistance Card */}
               <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.surfaceDim, padding: spacing.md, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}>
                 <Text style={[typography.labelCaps, { color: colors.secondary }]}>HAVE AN ISSUE?</Text>
-                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={[typography.labelSm, { color: colors.primary, textDecorationLine: 'underline' }]}>CONTACT ARCHITECT</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('Login')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={[typography.labelSm, { color: colors.primary, textDecorationLine: 'underline' }]}>RETURN TO SIGN IN</Text>
                   <MaterialIcons name="arrow-outward" size={14} color={colors.primary} style={{ marginLeft: spacing.xs }} />
                 </TouchableOpacity>
               </View>

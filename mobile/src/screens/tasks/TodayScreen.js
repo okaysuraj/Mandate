@@ -1,7 +1,10 @@
-import React, { useEffect, useMemo } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
+import {useIsFocused} from '@react-navigation/native';
+import useVisibleTasks from '../../hooks/useVisibleTasks';
+import { todaySchedule, activeFocusTask } from '../../../../shared/taskSchedule';
+import React, { useEffect } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialIcons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "../../context/AuthContext";
 import { useDataStore } from "../../store/useDataStore";
 import { useTheme } from "../../context/ThemeContext";
@@ -9,14 +12,18 @@ import AppHeader from "../../components/layout/AppHeader";
 
 const TodayScreen = ({ navigation }) => {
   const { user } = useAuth();
-  const { tasks, loading, loadTasks } = useDataStore((state) => state);
+  const tasks = useVisibleTasks();
+  const focused = useIsFocused();
+  const storeWorkspaceId = useDataStore(state => state.workspaceId);
+  const loading = useDataStore(state => state.loading);
+  const loadTasks = useDataStore(state => state.loadTasks);
   const { colors, typography } = useTheme();
 
   useEffect(() => {
-    if (user) {
+    if (user && focused && storeWorkspaceId) {
       loadTasks();
     }
-  }, [user, loadTasks]);
+  }, [user, loadTasks, focused, storeWorkspaceId]);
 
   const activeTasks = Array.isArray(tasks) ? tasks : (Array.isArray(tasks?.data) ? tasks.data : []);
 
@@ -29,24 +36,10 @@ const TodayScreen = ({ navigation }) => {
     })
     .replace(/\//g, ".");
 
-  // Focus task: urgent/high priority active task, or first active task
-  const focusTask =
-    activeTasks.find(
-      (t) =>
-        t.status !== "completed" &&
-        t.status !== "done" &&
-        (t.priority === "urgent" || t.priority === "high")
-    ) ||
-    activeTasks.find((t) => t.status !== "completed" && t.status !== "done") ||
-    activeTasks[0];
+  const focusTask = activeFocusTask(activeTasks);
+  const scheduledTasks = todaySchedule(activeTasks, user?.timezone || 'UTC');
 
-  const scheduledTasks = useMemo(() => {
-    return [...activeTasks]
-      .sort((a, b) => new Date(a.dueDate || 0) - new Date(b.dueDate || 0))
-      .slice(0, 10);
-  }, [activeTasks]);
-
-  const focusIdStr = String(focusTask?._id || focusTask?.id || "0000");
+  const focusIdStr = String(focusTask?._id || focusTask?.id || "");
   const refCode =
     focusIdStr.length >= 4
       ? focusIdStr.slice(-4).toUpperCase()
@@ -130,17 +123,18 @@ const TodayScreen = ({ navigation }) => {
     <SafeAreaView edges={["top"]} style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <AppHeader title="TODAY" navigation={navigation} />
 
-      <ScrollView
+      <FlatList
         contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl
             refreshing={loading}
-            onRefresh={loadTasks}
+            onRefresh={()=>loadTasks({force:true})}
             tintColor={colors.primary}
           />
         }
         showsVerticalScrollIndicator={false}
-      >
+       data={scheduledTasks} keyExtractor={task=>task._id} initialNumToRender={6} maxToRenderPerBatch={6} windowSize={5}
+ ListHeaderComponent={<View style={{gap:16}}>
         {/* ACTIVE FOCUS SECTION (Hero Card matching web TodayPage.jsx) */}
         <View
           style={[
@@ -251,7 +245,7 @@ const TodayScreen = ({ navigation }) => {
         </View>
 
         {/* SCHEDULED TASKS SECTION */}
-        <View style={styles.scheduledSection}>
+        
           <View style={[styles.sectionHeaderRow, { borderBottomColor: colors.outlineVariant }]}>
             <View style={styles.sectionHeaderLeft}>
               <MaterialIcons name="schedule" size={20} color={colors.primary} />
@@ -265,23 +259,13 @@ const TodayScreen = ({ navigation }) => {
           </View>
 
           {/* Tasks List */}
-          <View
-            style={[
-              styles.protocolsListCard,
-              {
-                backgroundColor: colors.surfaceContainerLowest,
-                borderColor: colors.outlineVariant,
-              },
-            ]}
-          >
-            {scheduledTasks.length === 0 ? (
-              <View style={styles.emptyProtocolsBox}>
+          </View>}
+ ListEmptyComponent={<View style={styles.emptyProtocolsBox}>
                 <Text style={[styles.emptyProtocolsText, { color: colors.onSurfaceVariant }]}>
                   NO TASKS SCHEDULED
                 </Text>
-              </View>
-            ) : (
-              scheduledTasks.map((task, i) => {
+              </View>}
+ renderItem={({item:task,index:i})=>{
                 const taskId = String(task._id || task.id || i);
                 const isDone = task.status === "completed" || task.status === "done";
                 const isFocus =
@@ -293,10 +277,18 @@ const TodayScreen = ({ navigation }) => {
                       hour: "2-digit",
                       minute: "2-digit",
                     })
-                  : `${String(8 + i).padStart(2, "0")}:00`;
+                  : 'No due time';
 
                 return (
-                  <TouchableOpacity
+                  <View
+            style={[
+              styles.protocolsListCard,
+              {
+                backgroundColor: colors.surfaceContainerLowest,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          ><TouchableOpacity
                     key={taskId}
                     onPress={() =>
                       navigation.navigate("TaskDetail", { task, taskId })
@@ -380,12 +372,10 @@ const TodayScreen = ({ navigation }) => {
                         color={colors.onSurfaceVariant}
                       />
                     </TouchableOpacity>
-                  </TouchableOpacity>
+                  </TouchableOpacity></View>
                 );
-              })
-            )}
-          </View>
-        </View>
+              }}
+ ListFooterComponent={<View style={{gap:16}}>
 
         {/* ANALYTICS BENTO SECTION */}
         <View style={styles.bentoSection}>
@@ -460,7 +450,7 @@ const TodayScreen = ({ navigation }) => {
               {focusTask ? focusTask.title : "All Tasks Clear"}
             </Text>
             <Text style={[styles.activeDirectiveMeta, { color: colors.onSurfaceVariant }]}>
-              Priority: {focusTask?.priority?.toUpperCase() || "MEDIUM"} • Status:{" "}
+              Priority: {focusTask?.priority?.toUpperCase() || "Unassigned"} • Status:{" "}
               {focusTask?.status?.toUpperCase() || "IDLE"}
             </Text>
 
@@ -483,7 +473,7 @@ const TodayScreen = ({ navigation }) => {
         </View>
 
         <View style={{ height: 32 }} />
-      </ScrollView>
+      </View>}/>
     </SafeAreaView>
   );
 };

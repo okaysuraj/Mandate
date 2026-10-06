@@ -1,3 +1,5 @@
+import useVisibleTasks from '../../hooks/useVisibleTasks';
+import { todaySchedule, activeFocusTask } from '../../../../shared/taskSchedule';
 import React, { useEffect } from "react";
 import AppLayout from "../../components/layout/AppLayout";
 import { useAuth } from "../../context/AuthContext";
@@ -5,30 +7,28 @@ import { useNavigate } from "react-router";
 import { useDataStore } from "../../store/useDataStore";
 
 const TodayPage = () => {
-  const { tasks, loading, loadTasks } = useDataStore();
+  const storeWorkspaceId = useDataStore(state => state.workspaceId);
+  const tasks = useVisibleTasks();
+  const loading = useDataStore(state => state.loading);
+  const loadTasks = useDataStore(state => state.loadTasks);
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
+    if (user && storeWorkspaceId) {
       loadTasks();
     }
-  }, [user, loadTasks]);
+  }, [user, loadTasks, storeWorkspaceId]);
 
   const activeTasks = Array.isArray(tasks) ? tasks : [];
 
   const today = new Date();
   const dayStr = today.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '.');
 
-  const focusTask = activeTasks.find(t => t.status !== "completed" && (t.priority === "urgent" || t.priority === "high"))
-    || activeTasks.find(t => t.status !== "completed")
-    || activeTasks[0];
+  const focusTask = activeFocusTask(activeTasks);
+  const scheduledTasks = todaySchedule(activeTasks, user?.timezone || 'UTC');
 
-  const scheduledTasks = [...activeTasks]
-    .sort((a, b) => new Date(a.dueDate || 0) - new Date(b.dueDate || 0))
-    .slice(0, 10);
-
-  const focusIdStr = String(focusTask?._id || focusTask?.id || "0000");
+  const focusIdStr = String(focusTask?._id || focusTask?.id || "");
   const refCode = focusIdStr.length >= 4 ? focusIdStr.slice(-4).toUpperCase() : focusIdStr.toUpperCase();
   const mndCode = focusIdStr.length >= 3 ? focusIdStr.slice(-3).toUpperCase() : focusIdStr.toUpperCase();
 
@@ -81,14 +81,14 @@ const TodayPage = () => {
             <div className="flex flex-wrap items-center gap-3 pt-2">
               {focusTask && (
                 <>
-                  <button 
+                  <button
                     onClick={() => navigate(`/focus/${focusTask._id || focusTask.id}`)}
                     className="bg-primary text-on-primary px-5 sm:px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
                   >
                     <span>START SESSION</span>
                     <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>play_arrow</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => navigate(`/tasks/${focusTask._id || focusTask.id}`)}
                     className="border border-outline-variant bg-surface-container-low text-on-surface px-5 sm:px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-surface-container hover:text-primary transition-all cursor-pointer"
                   >
@@ -125,14 +125,14 @@ const TodayPage = () => {
                 const isFocus = String(task._id || task.id) === String(focusTask?._id || focusTask?.id);
 
                 return (
-                  <div 
-                    key={taskId} 
+                  <div
+                    key={taskId}
                     className={`group p-4 sm:p-5 hover:bg-surface-container-low transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 relative ${task.status === "completed" ? "opacity-60 hover:opacity-100" : ""}`}
                   >
                     {isFocus && <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>}
                     <div className="flex items-start sm:items-center gap-4 min-w-0">
                       <div className="font-mono text-xs sm:text-sm font-bold text-on-surface-variant w-14 sm:w-16 shrink-0 pt-0.5 sm:pt-0">
-                        {task.dueDate ? new Date(task.dueDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : `${String(8 + i).padStart(2, '0')}:00`}
+                        {task.dueDate ? new Date(task.dueDate).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'No due time'}
                       </div>
                       <div className="space-y-1 min-w-0 flex-1">
                         <h3 className={`font-bold text-sm sm:text-base uppercase tracking-tight text-on-surface truncate ${task.status === "completed" ? "line-through text-on-surface-variant" : ""}`}>
@@ -149,7 +149,7 @@ const TodayPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center justify-end gap-2 shrink-0">
-                      <button 
+                      <button
                         onClick={() => navigate(`/tasks/${taskId}`)}
                         aria-label="View task details"
                         className="w-9 h-9 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-on-primary transition-all cursor-pointer"
@@ -177,7 +177,7 @@ const TodayPage = () => {
             </div>
             <div className="bg-surface-container-low border border-outline-variant rounded-lg p-4 space-y-3">
               <div className="w-full bg-surface-container-high h-3 rounded-full overflow-hidden">
-                <div 
+                <div
                   className="bg-primary h-full transition-all duration-500 rounded-full"
                   style={{ width: `${scheduledTasks.length > 0 ? Math.round((scheduledTasks.filter(t => t.status === "completed").length / scheduledTasks.length) * 100) : 0}%` }}
                 ></div>
@@ -191,7 +191,7 @@ const TodayPage = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="lg:col-span-4 bg-surface-container-high border border-outline-variant p-5 sm:p-6 flex flex-col justify-between rounded-xl shadow-sm space-y-4">
             <div>
               <h4 className="font-label-caps text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-2">Priority Focus</h4>
@@ -200,19 +200,19 @@ const TodayPage = () => {
                   {focusTask ? focusTask.title : "All Tasks Clear"}
                 </div>
                 <p className="text-[11px] text-on-surface-variant uppercase tracking-wider font-mono">
-                  Priority: {focusTask?.priority?.toUpperCase() || "MEDIUM"} • Status: {focusTask?.status?.toUpperCase() || "IDLE"}
+                  Priority: {focusTask?.priority?.toUpperCase() || "Unassigned"} • Status: {focusTask?.status?.toUpperCase() || "IDLE"}
                 </p>
               </div>
             </div>
             {focusTask ? (
-              <button 
+              <button
                 onClick={() => navigate(`/focus/${focusTask._id || focusTask.id}`)}
                 className="w-full py-2.5 bg-primary text-on-primary font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all rounded-full cursor-pointer shadow-sm"
               >
                 ENTER FOCUS MODE
               </button>
             ) : (
-              <button 
+              <button
                 onClick={() => navigate("/kanban")}
                 className="w-full py-2.5 border border-outline-variant bg-surface-container-low text-on-surface font-bold text-xs uppercase tracking-wider hover:bg-surface-container hover:text-primary transition-all rounded-full cursor-pointer"
               >

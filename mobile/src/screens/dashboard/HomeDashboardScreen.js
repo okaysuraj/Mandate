@@ -1,37 +1,42 @@
+import {useIsFocused} from '@react-navigation/native';
+import useVisibleTasks from '../../hooks/useVisibleTasks';
+import useLoopAnimation from '../../hooks/useLoopAnimation';
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Animated, Easing, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialIcons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useTheme } from "../../context/ThemeContext";
+import { useWorkspace } from "../../context/WorkspaceContext";
 import { useAuth } from "../../context/AuthContext";
 import { useDataStore } from "../../store/useDataStore";
 import { useSocket } from "../../context/SocketContext";
 import AppHeader from "../../components/layout/AppHeader";
 import api from "../../services/api";
+import {subscribeRefresh} from '../../../../shared/socketRefresh';
 
 const HomeDashboardScreen = ({ navigation }) => {
   const { colors, typography, isDark } = useTheme();
   const { user } = useAuth();
-  const { tasks, loadTasks } = useDataStore((state) => state);
+  const {activeWorkspace}=useWorkspace();
+  const workspaceId=activeWorkspace?._id;
+  const [error,setError]=useState('');
+  const tasks = useVisibleTasks();
+  const focused = useIsFocused();
+  const storeWorkspaceId = useDataStore(state => state.workspaceId);
+  const loadTasks = useDataStore(state => state.loadTasks);
   const { socket } = useSocket();
 
+  const dashboardRequest=useRef(null);
+  useEffect(()=>()=>dashboardRequest.current?.abort(),[workspaceId,focused]);
   const [analytics, setAnalytics] = useState(null);
+  useEffect(()=>setAnalytics(null),[workspaceId]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   // Radar spinner animation matching web animate-[spin_10s_linear_infinite]
   const spinValue = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.timing(spinValue, {
-        toValue: 1,
-        duration: 10000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    ).start();
-  }, [spinValue]);
+  useLoopAnimation(spinValue, 10000);
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
@@ -39,42 +44,30 @@ const HomeDashboardScreen = ({ navigation }) => {
   });
 
   const fetchDashboardData = useCallback(async () => {
+    dashboardRequest.current?.abort();const controller=new AbortController();dashboardRequest.current=controller;
     try {
-      if (typeof loadTasks === "function") {
-        await loadTasks();
-      }
-      const analyticsRes = await api.get("/tasks/analytics").catch(() => null);
+      if(!workspaceId)return;setError('');
+      const [,analyticsRes] = await Promise.all([loadTasks(),api.get("/tasks/analytics",{params:{workspaceId},signal:controller.signal})]);
       if (analyticsRes?.data) {
-        setAnalytics(analyticsRes.data);
+        if(!controller.signal.aborted)setAnalytics(analyticsRes.data);
       }
     } catch (err) {
-      console.warn("Dashboard data fetch error:", err?.message || err);
+      if(!controller.signal.aborted)setError(err.response?.data?.message||'Could not load dashboard analytics');
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if(!controller.signal.aborted)setLoading(false);
+      if(!controller.signal.aborted)setRefreshing(false);
     }
-  }, [loadTasks]);
+  }, [loadTasks,workspaceId]);
 
   useEffect(() => {
-    if (user) fetchDashboardData();
-  }, [user, fetchDashboardData]);
+    if (user && focused && storeWorkspaceId) fetchDashboardData();
+  }, [user, fetchDashboardData, focused, storeWorkspaceId]);
 
-  useEffect(() => {
-    if (!socket || typeof socket.on !== "function") return;
-    socket.on("task:created", fetchDashboardData);
-    socket.on("task:updated", fetchDashboardData);
-    socket.on("task:deleted", fetchDashboardData);
-    return () => {
-      if (typeof socket.off === "function") {
-        socket.off("task:created", fetchDashboardData);
-        socket.off("task:updated", fetchDashboardData);
-        socket.off("task:deleted", fetchDashboardData);
-      }
-    };
-  }, [socket, fetchDashboardData]);
+  useEffect(()=>focused?subscribeRefresh(socket,fetchDashboardData):undefined,[socket,fetchDashboardData,focused]);
 
   const onRefresh = () => {
     setRefreshing(true);
+    useDataStore.getState().loadTasks({force:true});
     fetchDashboardData();
   };
 
@@ -105,8 +98,8 @@ const HomeDashboardScreen = ({ navigation }) => {
     (t) => !t?.priority || t?.priority === "low"
   ).length;
 
-  const deepWorkRatio = analytics?.deepWorkRatio ?? 0;
-  const avgLatency = analytics?.averageResolutionLatency ?? "0h 0m";
+  const deepWorkRatio = analytics?.highPriorityTaskPercentage ?? 0;
+  const avgLatency = analytics?.averageResolutionLatency ?? "Unavailable";
 
   // Recent activity sorted by updatedAt / createdAt
   const recentActivity = [...taskList]
@@ -134,6 +127,7 @@ const HomeDashboardScreen = ({ navigation }) => {
   return (
     <SafeAreaView edges={["top"]} style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <AppHeader title="DASHBOARD" navigation={navigation} />
+      {error&&<Text accessibilityRole="alert" style={{color:colors.error,padding:16}}>{error}</Text>}
 
       <ScrollView
         contentContainerStyle={styles.container}
@@ -159,7 +153,7 @@ const HomeDashboardScreen = ({ navigation }) => {
           <View style={[styles.liveBadge, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
             <View style={[styles.liveDot, { backgroundColor: colors.onTertiaryContainer }]} />
             <Text style={[styles.liveText, { color: colors.onTertiaryContainer }]}>
-              ONLINE
+              {socket?.connected?'Connected':'Disconnected'}
             </Text>
           </View>
         </View>
@@ -250,7 +244,7 @@ const HomeDashboardScreen = ({ navigation }) => {
             </Text>
           </View>
 
-          {/* Card 3: Deep Work Ratio */}
+          {/* Card 3: High priority tasks */}
           <View
             style={[
               styles.bentoCard,
@@ -262,7 +256,7 @@ const HomeDashboardScreen = ({ navigation }) => {
           >
             <View style={styles.cardTopRow}>
               <Text style={[styles.metricLabel, { color: colors.onSurfaceVariant }]}>
-                DEEP WORK RATIO
+                HIGH PRIORITY TASKS
               </Text>
               <MaterialIcons name="speed" size={18} color={colors.outline} />
             </View>
@@ -298,11 +292,11 @@ const HomeDashboardScreen = ({ navigation }) => {
         >
           <View style={styles.pulseHeader}>
             <Text style={[styles.pulseTitle, { color: colors.primary }]}>
-              Activity & Realtime Updates
+              Recent Task Updates
             </Text>
             <View style={[styles.pulseBadge, { backgroundColor: colors.tertiaryContainer, borderColor: colors.outlineVariant }]}>
               <Text style={[styles.pulseBadgeText, { color: colors.onTertiaryContainer }]}>
-                LIVE ACTIVITY
+                {socket?.connected?'Live updates':'Connection unavailable'}
               </Text>
             </View>
           </View>
@@ -381,7 +375,7 @@ const HomeDashboardScreen = ({ navigation }) => {
                 ]}
               >
                 <Text style={[styles.logTime, { color: colors.onSurface }]}>
-                  [{formatTime(new Date())}] IDLE
+                  No task updates
                 </Text>
                 <Text style={[styles.logTaskTitle, { color: colors.onSurfaceVariant }]}>
                   No recent activity recorded
@@ -391,7 +385,7 @@ const HomeDashboardScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Pinned Tasks */}
+        {/* Priority Tasks */}
         <View
           style={[
             styles.pinnedCard,
@@ -403,7 +397,7 @@ const HomeDashboardScreen = ({ navigation }) => {
         >
           <View style={styles.pinnedHeader}>
             <Text style={[styles.pinnedTitle, { color: colors.primary }]}>
-              Pinned Tasks
+              Priority Tasks
             </Text>
             <TouchableOpacity onPress={() => navigation.navigate("Today")}>
               <Text style={[styles.viewAllText, { color: colors.outline }]}>VIEW ALL</Text>

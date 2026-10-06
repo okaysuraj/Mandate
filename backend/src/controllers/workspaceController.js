@@ -1,175 +1,70 @@
-import Workspace from "../models/Workspace.js";
-import User from "../models/User.js";
-
-// @desc    Create a new workspace
-// @route   POST /api/workspaces
-// @access  Private
-export const createWorkspace = async (req, res) => {
-  try {
-    const { name } = req.body;
-
-    const workspace = await Workspace.create({
-      name,
-      owner: req.user.id,
-      members: [{ user: req.user.id, role: "Admin" }],
-    });
-
-    const user = await User.findById(req.user.id);
-    user.workspaces.push(workspace._id);
-    if (!user.activeWorkspace) {
-      user.activeWorkspace = workspace._id;
-    }
-    await user.save();
-
-    res.status(201).json(workspace);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-// @desc    Get user's workspaces
-// @route   GET /api/workspaces
-// @access  Private
-export const getWorkspaces = async (req, res) => {
-  try {
-    const workspaces = await Workspace.find({
-      "members.user": req.user.id,
-    });
-    res.json(workspaces);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-// @desc    Switch active workspace
-// @route   PUT /api/workspaces/:id/active
-// @access  Private
-export const switchActiveWorkspace = async (req, res) => {
-  try {
-    const workspace = await Workspace.findById(req.params.id);
-    if (!workspace) {
-      return res.status(404).json({ message: "Workspace not found" });
-    }
-
-    const isMember = workspace.members.find(
-      (m) => m.user.toString() === req.user.id.toString()
-    );
-
-    if (!isMember) {
-      return res.status(403).json({ message: "Not a member of this workspace" });
-    }
-
-    const user = await User.findById(req.user.id);
-    user.activeWorkspace = workspace._id;
-    await user.save();
-
-    res.json({ message: "Active workspace updated", activeWorkspace: workspace._id });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-// @desc    Get workspace members
-// @route   GET /api/workspaces/:id/members
-// @access  Private
-export const getWorkspaceMembers = async (req, res) => {
-  try {
-    const workspace = await Workspace.findById(req.params.id).populate('members.user', 'name email');
-    if (!workspace) return res.status(404).json({ message: "Workspace not found" });
-    
-    // Check if requester is a member
-    const isMember = workspace.members.some(m => m.user._id.toString() === req.user.id.toString());
-    if (!isMember) return res.status(403).json({ message: "Not authorized" });
-    
-    res.json(workspace.members);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// @desc    Update member role
-// @route   PUT /api/workspaces/:id/members/:userId
-// @access  Private (Owner/Admin only)
-export const updateMemberRole = async (req, res) => {
-  try {
-    const { role } = req.body;
-    const workspace = await Workspace.findById(req.params.id);
-    
-    // Check if requester is Admin/Owner
-    const requester = workspace.members.find(m => m.user.toString() === req.user.id.toString());
-    if (!requester || requester.role !== 'Admin') {
-      return res.status(403).json({ message: "Only Admins can update roles" });
-    }
-    
-    const member = workspace.members.find(m => m.user.toString() === req.params.userId);
-    if (!member) return res.status(404).json({ message: "User not found in workspace" });
-    
-    member.role = role;
-    await workspace.save();
-    
-    res.json(workspace.members);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// @desc    Toggle integration
-// @route   PUT /api/workspaces/:id/integrations
-// @access  Private
-export const toggleIntegration = async (req, res) => {
-  try {
-    const { integration, state } = req.body;
-    const workspace = await Workspace.findById(req.params.id);
-    
-    if (!workspace) return res.status(404).json({ message: "Workspace not found" });
-    
-    // Check if requester is Admin
-    const requester = workspace.members.find(m => m.user.toString() === req.user.id.toString());
-    if (!requester || requester.role !== 'Admin') {
-      return res.status(403).json({ message: "Only Admins can configure integrations" });
-    }
-    
-    if (integration === "slack") workspace.integrations.slack = state;
-    if (integration === "googleCalendar") workspace.integrations.googleCalendar = state;
-    
-    await workspace.save();
-    
-    res.json(workspace.integrations);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// @desc    Add member to workspace
-// @route   POST /api/workspaces/:id/members
-// @access  Private (Admin only)
-export const addWorkspaceMember = async (req, res) => {
-  try {
-    const { email, role = "Viewer" } = req.body;
-    const workspace = await Workspace.findById(req.params.id);
-    if (!workspace) return res.status(404).json({ message: "Workspace not found" });
-
-    const requester = workspace.members.find(m => m.user.toString() === req.user.id.toString());
-    if (!requester || requester.role !== "Admin") {
-      return res.status(403).json({ message: "Only Admins can invite or add members" });
-    }
-
-    const targetUser = await User.findOne({ email });
-    if (!targetUser) {
-      return res.status(404).json({ message: "User with this email not found" });
-    }
-
-    const alreadyMember = workspace.members.some(m => m.user.toString() === targetUser._id.toString());
-    if (alreadyMember) {
-      return res.status(400).json({ message: "User is already a member of this workspace" });
-    }
-
-    workspace.members.push({ user: targetUser._id, role });
-    await workspace.save();
-
-    const populated = await Workspace.findById(req.params.id).populate("members.user", "name email");
-    res.status(201).json(populated.members);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+import mongoose from 'mongoose';
+import Workspace from '../models/Workspace.js';
+import User from '../models/User.js';
+import { workspaceAccess, idString, assertId, roleFor } from '../utils/access.js';
+import { handler, pick, HttpError, pagination } from '../utils/http.js';
+export const createWorkspace = handler(async (req, res) => {
+  let workspace;
+  await mongoose.connection.transaction(async session => {
+    [workspace] = await Workspace.create([{ name: req.body.name, type: req.body.type || 'team', owner: req.user._id, members: [{ user: req.user._id, role: 'Admin' }] }], { session });
+    await User.updateOne({ _id: req.user._id }, { $addToSet: { workspaces: workspace._id } }, { session, runValidators: true });
+  });
+  res.status(201).json(workspace);
+});
+export const getWorkspaces = handler(async (req, res) => {
+  const {limit,skip}=pagination(req.query);
+  res.json(await Workspace.find({ $or: [{ owner: req.user._id }, { 'members.user': req.user._id }] }).sort({createdAt:1}).skip(skip).limit(limit));
+});
+export const getWorkspace = handler(async (req,res)=>res.json(await workspaceAccess(req.user, req.params.id)));
+export const updateWorkspace = handler(async (req,res)=>{
+  const workspace=await workspaceAccess(req.user,req.params.id,true,true);
+  Object.assign(workspace,pick(req.body,['name','type'])); await workspace.save(); res.json(workspace);
+});
+export const switchActiveWorkspace = handler(async (req, res) => {
+  const workspace = await workspaceAccess(req.user, req.params.id);
+  await User.updateOne({ _id: req.user._id }, { $set: { activeWorkspace: workspace._id }, $addToSet: { workspaces: workspace._id } }, { runValidators: true });
+  res.json({ activeWorkspace: workspace._id });
+});
+export const getWorkspaceMembers = handler(async (req, res) => {
+  const workspace = await workspaceAccess(req.user, req.params.id);
+  await workspace.populate('members.user', 'name email avatar');
+  res.json(workspace.members.filter(m=>m.user));
+});
+export const updateMemberRole = handler(async (req, res) => {
+  const workspace = await workspaceAccess(req.user, req.params.id, true, true);
+  assertId(req.params.userId, 'userId');
+  if (!['Admin','Editor','Viewer'].includes(req.body.role)) throw new HttpError(400,'Invalid role');
+  if (idString(workspace.owner) === req.params.userId) throw new HttpError(400,'Workspace owner must remain an Admin');
+  const member = workspace.members.find(m=>idString(m.user)===req.params.userId);
+  if (!member) throw new HttpError(404,'Member not found');
+  member.role=req.body.role; await workspace.save();
+  // Drop existing subscriptions when a member's permissions change.
+  req.io?.in('user:'+req.params.userId).socketsLeave(idString(workspace._id));
+  res.json(workspace.members);
+});
+export const toggleIntegration = handler(async (req,res)=>{
+  await workspaceAccess(req.user,req.params.id,true,true);
+  throw new HttpError(503,'Integration requires a configured provider connection');
+});
+export const addWorkspaceMember = handler(async (req,res)=>{
+  const workspace=await workspaceAccess(req.user,req.params.id,true,true);
+  const { email, role='Viewer' }=req.body;
+  if (typeof email!=='string' || !['Admin','Editor','Viewer'].includes(role)) throw new HttpError(400,'Valid email and role required');
+  const target=await User.findOne({email:email.trim().toLowerCase()});
+  if(!target) throw new HttpError(404,'Registered user not found');
+  await mongoose.connection.transaction(async session=>{
+   const current=await Workspace.findOne({_id:workspace._id,'members.user':{$ne:target._id}}).session(session);
+   if(!current)throw new HttpError(409,'User is already a member');
+   current.members.push({user:target._id,role});await current.save({session});
+   const user=await User.findById(target._id).session(session);user.workspaces.addToSet(workspace._id);await user.save({session});
+  });
+  const updated=await Workspace.findById(workspace._id).populate('members.user','name email avatar');
+  res.status(201).json(updated.members);
+});
+export const transferOwnership = handler(async(req,res)=>{
+  const workspace=await workspaceAccess(req.user,req.params.id,true,true);
+  if(roleFor(workspace,req.user._id)!=='Owner') throw new HttpError(403,'Only the owner can transfer ownership');
+  const member=workspace.members.find(m=>idString(m.user)===assertId(req.body.userId,'userId'));
+  if(!member) throw new HttpError(400,'New owner must be a member');
+  workspace.owner=member.user;member.role='Admin';await workspace.save();res.json(workspace);
+});

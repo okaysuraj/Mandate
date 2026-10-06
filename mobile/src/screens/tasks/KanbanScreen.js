@@ -1,14 +1,15 @@
+import {useIsFocused} from '@react-navigation/native';
+import useVisibleTasks from '../../hooks/useVisibleTasks';
+import { useWorkspace } from '../../context/WorkspaceContext';
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, TextInput, Dimensions } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, RefreshControl, TextInput, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialIcons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "../../context/AuthContext";
-import { useSocket } from "../../context/SocketContext";
 import { useDataStore } from "../../store/useDataStore";
 import { useTheme } from "../../context/ThemeContext";
 import AppHeader from "../../components/layout/AppHeader";
 
-const { width } = Dimensions.get("window");
 
 const COLUMNS = [
   { id: "pending", title: "Backlog", status: "pending" },
@@ -18,27 +19,41 @@ const COLUMNS = [
 ];
 
 const KanbanScreen = ({ navigation }) => {
+  const {width} = useWindowDimensions();
   const { user } = useAuth();
-  const { tasks, loading, loadTasks, subscribeToSocket, moveTask } =
-    useDataStore((state) => state);
-  const { socket } = useSocket();
+  const tasks = useVisibleTasks();
+  const focused = useIsFocused();
+  const storeWorkspaceId = useDataStore(state => state.workspaceId);
+  const loading = useDataStore(state => state.loading);
+  const loadTasks = useDataStore(state => state.loadTasks);
+  const moveTask = useDataStore(state => state.moveTask);
+  const reorderTasks = useDataStore(state => state.reorderTasks);
   const { colors, typography } = useTheme();
 
+  const { activeWorkspace } = useWorkspace();
+  const role = activeWorkspace?.members?.find(member => String(member.user?._id || member.user) === String(user?._id))?.role;
+  const canEdit = String(activeWorkspace?.owner?._id || activeWorkspace?.owner) === String(user?._id) || ['Admin', 'Editor'].includes(role);
+  const [actionError, setActionError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const perform = async action => { setActionError(''); setSaving(true); try { await action(); } catch(error) { setActionError(error.response?.data?.message || 'Unable to save changes'); } finally { setSaving(false); } };
+  const shiftTask = (task, direction) => {
+   const column = tasks.filter(item => item.status === task.status).sort((a,b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+   const index = column.findIndex(item => item._id === task._id), target = index + direction;
+   if (target < 0 || target >= column.length) return;
+   [column[index], column[target]] = [column[target], column[index]];
+   const order = new Map(column.map((item,i) => [item._id,i]));
+   return perform(() => reorderTasks(tasks.map(item => order.has(item._id) ? {...item, orderIndex: order.get(item._id)} : item)));
+  };
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const scrollViewRef = useRef(null);
 
   useEffect(() => {
-    if (user) loadTasks();
-  }, [user, loadTasks]);
-
-  useEffect(() => {
-    if (!socket) return;
-    return subscribeToSocket(socket);
-  }, [socket, subscribeToSocket]);
+    if (user && focused && storeWorkspaceId) loadTasks();
+  }, [user, loadTasks, focused, storeWorkspaceId]);
 
   const onRefresh = async () => {
-    await loadTasks();
+    await loadTasks({force:true});
   };
 
   const filteredTasks = useMemo(() => {
@@ -233,10 +248,10 @@ const KanbanScreen = ({ navigation }) => {
         </View>
 
         {/* Quick Status Transition Actions */}
-        <View style={[styles.statusActionsRow, { borderTopColor: colors.outlineVariant }]}>
+        {canEdit && <View style={[styles.statusActionsRow, { borderTopColor: colors.outlineVariant }]}><TouchableOpacity disabled={saving} accessibilityLabel="Move task earlier" onPress={() => shiftTask(task,-1)}><MaterialIcons name="arrow-upward" size={18} color={colors.onSurface} /></TouchableOpacity><TouchableOpacity disabled={saving} accessibilityLabel="Move task later" onPress={() => shiftTask(task,1)}><MaterialIcons name="arrow-downward" size={18} color={colors.onSurface} /></TouchableOpacity>
           {colStatus !== "pending" ? (
             <TouchableOpacity
-              onPress={() => moveTask(task._id || task.id, "pending")}
+              disabled={saving} onPress={() => perform(() => moveTask(task._id || task.id, "pending"))}
               style={[styles.transitionBtn, { backgroundColor: colors.surfaceContainerHigh }]}
             >
               <Text style={[styles.transitionBtnText, { color: colors.secondary }]}>TO BACKLOG</Text>
@@ -245,7 +260,7 @@ const KanbanScreen = ({ navigation }) => {
 
           {colStatus !== "in-progress" ? (
             <TouchableOpacity
-              onPress={() => moveTask(task._id || task.id, "in-progress")}
+              disabled={saving} onPress={() => perform(() => moveTask(task._id || task.id, "in-progress"))}
               style={[styles.transitionBtn, { backgroundColor: colors.primary }]}
             >
               <Text style={[styles.transitionBtnText, { color: colors.onPrimary }]}>START</Text>
@@ -254,7 +269,7 @@ const KanbanScreen = ({ navigation }) => {
 
           {colStatus !== "validation" ? (
             <TouchableOpacity
-              onPress={() => moveTask(task._id || task.id, "validation")}
+              disabled={saving} onPress={() => perform(() => moveTask(task._id || task.id, "validation"))}
               style={[styles.transitionBtn, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, borderWidth: 1 }]}
             >
               <Text style={[styles.transitionBtnText, { color: colors.onSurfaceVariant }]}>VALIDATE</Text>
@@ -263,13 +278,13 @@ const KanbanScreen = ({ navigation }) => {
 
           {colStatus !== "completed" ? (
             <TouchableOpacity
-              onPress={() => moveTask(task._id || task.id, "completed")}
+              disabled={saving} onPress={() => perform(() => moveTask(task._id || task.id, "completed"))}
               style={[styles.transitionBtn, { backgroundColor: colors.tertiary }]}
             >
               <Text style={[styles.transitionBtnText, { color: colors.onTertiary }]}>DEPLOY</Text>
             </TouchableOpacity>
           ) : null}
-        </View>
+        </View>}
       </TouchableOpacity>
     );
   };
@@ -277,6 +292,7 @@ const KanbanScreen = ({ navigation }) => {
   return (
     <SafeAreaView edges={["top"]} style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <AppHeader title="KANBAN" navigation={navigation} />
+      {actionError ? <Text accessibilityRole="alert" style={{color:colors.error,padding:12}}>{actionError}</Text> : null}
 
       {/* Board Header matching web KanbanPage.jsx */}
       <View style={[styles.boardHeader, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
@@ -372,8 +388,14 @@ const KanbanScreen = ({ navigation }) => {
           const colTasks = getColumnTasks(col.status);
 
           return (
-            <ScrollView
+            <FlatList
               key={col.id}
+              data={colTasks}
+              keyExtractor={task=>task._id}
+              renderItem={({item})=>renderCard(item,col.status)}
+              initialNumToRender={5}
+              maxToRenderPerBatch={5}
+              windowSize={5}
               style={{ width }}
               contentContainerStyle={styles.columnScrollContent}
               refreshControl={
@@ -384,8 +406,7 @@ const KanbanScreen = ({ navigation }) => {
                 />
               }
               showsVerticalScrollIndicator={false}
-            >
-              {colTasks.length === 0 ? (
+              ListEmptyComponent={
                 <View style={[styles.emptyColumnBox, { borderColor: colors.outlineVariant }]}>
                   <MaterialIcons name="add-task" size={28} color={colors.outline} style={{ marginBottom: 6 }} />
                   <Text style={[styles.emptyColumnTitle, { color: colors.onSurfaceVariant }]}>
@@ -400,10 +421,8 @@ const KanbanScreen = ({ navigation }) => {
                     </Text>
                   </TouchableOpacity>
                 </View>
-              ) : (
-                colTasks.map((t) => renderCard(t, col.status))
-              )}
-            </ScrollView>
+              }
+            />
           );
         })}
       </ScrollView>

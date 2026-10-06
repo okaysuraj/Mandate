@@ -1,62 +1,25 @@
-import cron from "node-cron";
-import Task from "../models/Task.js";
-import Notification from "../models/Notification.js";
-import { Server } from "socket.io";
-
-// Initialize cron jobs
-export const initReminderService = (io) => {
-  // Run every minute
-  cron.schedule("* * * * *", async () => {
-    try {
-      const now = new Date();
-      // Look for tasks due in the next 15 minutes that haven't been reminded yet
-      // For simplicity in this demo, we'll just check tasks due exactly in 15 mins (rounded to minute)
-      const in15Mins = new Date(now.getTime() + 15 * 60000);
-      
-      const upcomingTasks = await Task.find({
-        status: { $ne: "completed" },
-        dueDate: {
-          $gte: new Date(in15Mins.setSeconds(0, 0)),
-          $lte: new Date(in15Mins.setSeconds(59, 999))
-        }
-      }).lean();
-
-      for (const task of upcomingTasks) {
-        // Create notification for the creator
-        const notification = await Notification.create({
-          user: task.creatorId,
-          title: "Upcoming Deadline",
-          message: `Task "${task.title}" is due in 15 minutes!`,
-          type: "reminder",
-          relatedEntityId: task._id,
-          workspaceId: task.workspaceId
-        });
-
-        // Broadcast to specific user room if we were tracking individual user rooms,
-        // but since we track workspaces, broadcast to workspace
-        if (io) {
-          io.to(task.workspaceId?.toString()).emit("notification_created", notification);
-        }
-
-        // Create notification for assignee if different from creator
-        if (task.assigneeId && task.assigneeId.toString() !== task.creatorId.toString()) {
-          const assigneeNotif = await Notification.create({
-            user: task.assigneeId,
-            title: "Upcoming Deadline",
-            message: `Task "${task.title}" assigned to you is due in 15 minutes!`,
-            type: "reminder",
-            relatedEntityId: task._id,
-            workspaceId: task.workspaceId
-          });
-          if (io) {
-            io.to(task.workspaceId?.toString()).emit("notification_created", assigneeNotif);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Reminder service error:", error);
-    }
-  });
-
-  console.log("Reminder service initialized.");
-};
+import cron from 'node-cron';
+import Task from '../models/Task.js';
+import Notification from '../models/Notification.js';
+import User from '../models/User.js';
+import Workspace from '../models/Workspace.js';
+import { Expo } from 'expo-server-sdk';
+const expo=new Expo();
+export const initReminderService=io=>cron.schedule('* * * * *',async()=>{
+ try{
+  const now=new Date();
+  const upcoming=Task.find({status:{$nin:['completed','archived']},dueDate:{$gte:now,$lte:new Date(now.getTime()+15*60000)}}).cursor();
+  for await(const task of upcoming){
+   const workspace=await Workspace.findById(task.workspaceId);if(!workspace)continue;
+   const members=new Set([String(workspace.owner),...workspace.members.map(m=>String(m.user))]);
+   for(const userId of new Set([String(task.creatorId),...(task.assigneeId?[String(task.assigneeId)]:[])])){
+    if(!members.has(userId))continue;
+    const user=await User.findById(userId);if(!user||user.preferences.notifications==='light')continue;
+    let notification;
+    try{notification=await Notification.create({user:userId,title:'Upcoming deadline',message:'Task "'+task.title+'" is due within 15 minutes.',type:'reminder',relatedEntityId:task._id,workspaceId:task.workspaceId,dedupeKey:'deadline:'+task._id+':'+task.dueDate.toISOString()+':'+userId});}catch(error){if(error.code===11000)continue;throw error;}
+    io?.to('user:'+userId).emit('notification_created',notification);
+    if(Expo.isExpoPushToken(user.expoPushToken))try{await expo.sendPushNotificationsAsync([{to:user.expoPushToken,title:notification.title,body:notification.message,data:{taskId:String(task._id)}}]);}catch(error){console.error('Push delivery failed:',error.name);}
+   }
+  }
+ }catch(error){console.error('Reminder job failed:',error.name);}
+},{timezone:'UTC'});

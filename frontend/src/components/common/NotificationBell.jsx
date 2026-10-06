@@ -1,27 +1,29 @@
+import { Link } from 'react-router';
 import { useState, useEffect, useRef } from "react";
 import api from "../../lib/axios";
 import { useSocket } from "../../context/SocketContext";
 import { useAuth } from "../../context/AuthContext";
 
 const NotificationBell = () => {
+  const [error,setError]=useState('');
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const { socket } = useSocket();
   const { user } = useAuth();
+  const userId=user?._id;
   const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-    }
-  }, [user]);
+  useEffect(()=>{
+    setNotifications([]);setError('');if(!userId)return;
+    const controller=new AbortController();api.get('/notifications',{params:{limit:50,page:1},signal:controller.signal}).then(({data})=>{if(!controller.signal.aborted)setNotifications(Array.isArray(data)?data:data.data);}).catch(error=>{if(!controller.signal.aborted)setError(error.response?.data?.message||'Could not load notifications');});return()=>controller.abort();
+  },[userId]);
 
   useEffect(() => {
     if (!socket || !user) return;
 
     const handleNewNotification = (notification) => {
       if (notification.user === user._id) {
-        setNotifications((prev) => [notification, ...prev]);
+        setNotifications((prev) => [notification, ...prev.filter(item=>item._id!==notification._id)].slice(0,50));
       }
     };
 
@@ -42,21 +44,12 @@ const NotificationBell = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const fetchNotifications = async () => {
-    try {
-      const { data } = await api.get("/notifications");
-      setNotifications(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Failed to load notifications", error);
-    }
-  };
-
   const markAllAsRead = async () => {
     try {
       await api.put("/notifications/read");
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (error) {
-      console.error("Failed to mark read", error);
+      setError(error.response?.data?.message||'Could not update notifications');
     }
   };
 
@@ -66,7 +59,7 @@ const NotificationBell = () => {
       await api.delete(`/notifications/${id}`);
       setNotifications((prev) => prev.filter((n) => n._id !== id));
     } catch (error) {
-      console.error("Failed to clear notification", error);
+      setError(error.response?.data?.message||'Could not update notifications');
     }
   };
 
@@ -75,7 +68,7 @@ const NotificationBell = () => {
       await api.delete("/notifications");
       setNotifications([]);
     } catch (error) {
-      console.error("Failed to clear all notifications", error);
+      setError(error.response?.data?.message||'Could not update notifications');
     }
   };
 
@@ -122,7 +115,7 @@ const NotificationBell = () => {
             )}
           </div>
 
-          <div className="max-h-80 overflow-y-auto p-2 flex flex-col gap-2 custom-scrollbar">
+          <div className="max-h-80 overflow-y-auto p-2 flex flex-col gap-2 custom-scrollbar">{error&&<p role="alert">{error}</p>}
             {notifications.length === 0 ? (
               <div className="py-8 text-center text-on-surface-variant font-mono text-xs">
                 No active notifications
@@ -154,6 +147,7 @@ const NotificationBell = () => {
               ))
             )}
           </div>
+          <Link className="block p-3 text-sm text-center border-t border-outline-variant text-primary" to="/notification-center">View all notifications</Link>
         </div>
       )}
     </div>

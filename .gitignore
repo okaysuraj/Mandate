@@ -32,3 +32,9 @@ dist-ssr
 playwright-report/
 test-results/
 blob-report/
+# Credentials and generated audit bundles
+.env.*
+!.env.example
+*serviceAccount*.json
+*service-account*.json
+dist-audit/

@@ -1,3 +1,4 @@
+import { schemaPolicy, safeUrl } from './schemaPolicy.js';
 import mongoose from "mongoose";
 
 const automationSchema = new mongoose.Schema(
@@ -11,6 +12,7 @@ const automationSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 10000,
     },
     trigger: {
       type: String,
@@ -36,8 +38,11 @@ const automationSchema = new mongoose.Schema(
       default: true,
     }
   },
-  { timestamps: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true }
 );
+
+automationSchema.index({workspaceId:1,createdAt:-1});
+schemaPolicy(automationSchema);
 
 const Automation = mongoose.model("Automation", automationSchema);
 export default Automation;

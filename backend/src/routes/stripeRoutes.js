@@ -1,5 +1,5 @@
 import express from "express";
-import { createCheckoutSession, webhook } from "../controllers/stripeController.js";
+import { createCheckoutSession, webhook, getPlans } from "../controllers/stripeController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -10,4 +10,5 @@ router.post("/create-checkout-session", protect, createCheckoutSession);
 // Webhook route needs raw body parser, handled in server.js before body-parser
 router.post("/webhook", express.raw({ type: "application/json" }), webhook);
 
+router.get("/plans", getPlans);
 export default router;

@@ -1,461 +1,136 @@
-import Task from "../models/Task.js";
-import Activity from "../models/Activity.js";
-import User from "../models/User.js";
-import Workspace from "../models/Workspace.js";
-import { runAutomations } from "./automationsController.js";
+import mongoose from 'mongoose';
+import FocusSession from '../models/FocusSession.js';
+import Review from '../models/Review.js';
+import Task from '../models/Task.js';
+import Activity from '../models/Activity.js';
+import Comment from '../models/Comment.js';
+import Goal from '../models/Goal.js';
+import DailyMandate from '../models/DailyMandate.js';
+import { handler, HttpError, pagination } from '../utils/http.js';
+import { workspaceAccess, resourceAccess, idString, assertId } from '../utils/access.js';
+import { validateTaskData } from '../utils/taskData.js';
+import { runAutomations } from './automationsController.js';
 
-export const getTasks = async (req, res) => {
-  try {
-    const { status, priority, projectId, parentTaskId, workspaceId, page = 1, limit = 10 } = req.query;
-    
-    // Build query scoped by workspace or user
-    let baseFilter = {};
-    if (workspaceId) {
-      baseFilter = { workspaceId };
-    } else if (req.user?.activeWorkspace) {
-      baseFilter = {
-        $or: [
-          { workspaceId: req.user.activeWorkspace },
-          { creatorId: req.user.id },
-          { assigneeId: req.user.id }
-        ]
-      };
-    } else {
-      baseFilter = {
-        $or: [
-          { creatorId: req.user.id },
-          { assigneeId: req.user.id }
-        ]
-      };
-    }
-
-    const query = { ...baseFilter };
-    if (status) query.status = status;
-    if (priority) query.priority = priority;
-    if (projectId) query.projectId = projectId;
-    if (parentTaskId) {
-      if (parentTaskId === 'null' || parentTaskId === 'none') {
-        query.parentTaskId = { $exists: false };
-      } else {
-        query.parentTaskId = parentTaskId;
-      }
-    }
-
-    const pageNumber = parseInt(page, 10);
-    const limitNumber = parseInt(limit, 10);
-    const startIndex = (pageNumber - 1) * limitNumber;
-
-    const total = await Task.countDocuments(query);
-    const tasks = await Task.find(query)
-      .sort({ createdAt: -1 })
-      .skip(startIndex)
-      .limit(limitNumber)
-      .lean();
-
-    res.status(200).json({
-      data: tasks,
-      pagination: {
-        total,
-        page: pageNumber,
-        pages: Math.ceil(total / limitNumber),
-      },
-    });
-  } catch (error) {
-    console.error("Error in getTasks controller", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
+const log = async (req,task,action,session) => (await Activity.create([{workspaceId:task.workspaceId,entityType:'task',entityId:task._id,userId:req.user._id,action}],{session}))[0];
+const emit = (req, task, event, payload = task) => req.io?.to(idString(task.workspaceId)).emit(event, payload);
+const complete = (data, task) => {
+  if (data.status !== undefined) data.completedAt = data.status === 'completed' ? (task?.completedAt || new Date()) : null;
 };
-
-export const getTaskById = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id)
-      .populate("creatorId", "name email avatar")
-      .populate("assigneeId", "name email avatar")
-      .lean();
-
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
-    }
-
-    if (task.creatorId.toString() !== req.user.id && task.assigneeId?.toString() !== req.user.id) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
-
-    res.status(200).json(task);
-  } catch (error) {
-    console.error("Error in getTaskById controller", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
+export const getTasks = handler(async (req, res) => {
+  const workspace = await workspaceAccess(req.user, req.query.workspaceId);
+  const query = { workspaceId: workspace._id };
+  for (const field of ['status', 'priority', 'projectId', 'assigneeId']) if (req.query[field]) query[field] = req.query[field];
+  if (req.query.parentTaskId !== undefined) query.parentTaskId = ['null', 'none'].includes(req.query.parentTaskId) ? null : assertId(req.query.parentTaskId);
+  const { page, limit, skip } = pagination(req.query);
+  if (req.query.view && !['summary','options'].includes(req.query.view)) throw new HttpError(400, 'Unsupported task view');
+  const records = Task.find(query).sort({ orderIndex: 1, createdAt: -1, _id: -1 }).skip(skip).limit(limit);
+  if (req.query.view === 'summary') records.select('-attachments -subtasks');
+  if (req.query.view === 'options') records.select('title workspaceId');
+  const [total, data] = await Promise.all([Task.countDocuments(query), records.lean()]);
+  res.json({ data, pagination: { total, page, pages: Math.ceil(total / limit), limit } });
+});
+export const getTaskById = handler(async (req, res) => {
+  const { resource } = await resourceAccess(Task, req.user, req.params.id);
+  res.json(await resource.populate([{ path: 'creatorId', select: 'name email avatar' }, { path: 'assigneeId', select: 'name email avatar' }]));
+});
+export const createTask = handler(async (req, res) => {
+  const workspace = await workspaceAccess(req.user, req.body.workspaceId, true);
+  const data = await validateTaskData(req.body, workspace);
+  complete(data);
+  const task = await Task.create({ ...data, creatorId: req.user._id, workspaceId: workspace._id });
+  await log(req, task, 'created');
+  await runAutomations('task_created', task, req.io);
+  emit(req, task, 'task:created');
+  res.status(201).json(task);
+});
+export const updateTask = handler(async (req, res) => {
+  const { resource: task, workspace } = await resourceAccess(Task, req.user, req.params.id, true);
+  if (req.body.workspaceId && idString(req.body.workspaceId) !== idString(workspace._id)) throw new HttpError(400, 'Moving tasks between workspaces is not supported');
+  const data = await validateTaskData(req.body, workspace, task);
+  const previousStatus = task.status, previousPriority = task.priority;
+  complete(data, task);
+  Object.assign(task, data);
+  await task.save();
+  await log(req, task, data.status === 'completed' && previousStatus !== 'completed' ? 'completed' : 'updated');
+  if (task.status !== previousStatus) await runAutomations('status_changed', task, req.io);
+  if (task.priority !== previousPriority) await runAutomations('priority_changed', task, req.io);
+  emit(req, task, 'task:updated');
+  res.json(task);
+});
+const removeTask = async (req, task, session) => {
+  await FocusSession.updateMany({taskId:task._id},{$set:{taskId:null}},{session});
+  await Review.updateMany({taskId:task._id},{$set:{taskId:null}},{session});
+  await Comment.deleteMany({ taskId: task._id }, {session});
+  await Task.updateMany({ workspaceId: task.workspaceId, parentTaskId: task._id }, { $set: { parentTaskId: null } }, { runValidators: true, session });
+  await Goal.updateMany({ workspaceId: task.workspaceId }, { $pull: { linkedTasks: task._id } },{session});
+  await DailyMandate.updateMany({ tasks: task._id }, { $pull: { tasks: task._id } },{session});
+  await task.deleteOne({session});
+  await log(req, task, 'deleted',session);
 };
-
-export const createTask = async (req, res) => {
-  try {
-    const {
-      title,
-      description,
-      intent,
-      status,
-      priority,
-      dueDate,
-      startDate,
-      projectId,
-      workspaceId,
-      parentTaskId,
-      tags,
-      timeSpent,
-      timeEstimate,
-      energyLevel,
-      recurrenceRule,
-      subtasks,
-      attachments,
-    } = req.body;
-
-    if (!title) {
-      return res.status(400).json({ message: "Please add a title" });
-    }
-
-    // Resolve valid workspaceId
-    let finalWorkspaceId = workspaceId || req.user.activeWorkspace;
-    if (!finalWorkspaceId) {
-      const existingWs = await Workspace.findOne({
-        $or: [{ owner: req.user.id }, { "members.user": req.user.id }],
-      });
-      if (existingWs) {
-        finalWorkspaceId = existingWs._id;
-      } else {
-        const newWs = await Workspace.create({
-          name: "Personal Workspace",
-          owner: req.user.id,
-          members: [{ user: req.user.id, role: "Admin" }],
-        });
-        finalWorkspaceId = newWs._id;
-      }
-    }
-
-    const task = await Task.create({
-      title,
-      description: description || "",
-      intent: intent || "",
-      status: status || "pending",
-      priority: priority || "medium",
-      dueDate: dueDate || null,
-      startDate: startDate || null,
-      projectId: projectId || null,
-      parentTaskId: parentTaskId || null,
-      tags: tags || [],
-      timeSpent: timeSpent || 0,
-      timeEstimate: timeEstimate || 0,
-      energyLevel: energyLevel || null,
-      recurrenceRule: recurrenceRule || "",
-      subtasks: subtasks || [],
-      attachments: attachments || [],
-      creatorId: req.user.id,
-      workspaceId: finalWorkspaceId,
-    });
-    
-    // Log activity
-    await Activity.create({
-      entityType: "task",
-      entityId: task._id,
-      userId: req.user.id,
-      action: "created",
-    });
-    
-    if (req.io && task.workspaceId) {
-      req.io.to(task.workspaceId.toString()).emit("task:created", task);
-    }
-    
-    // Trigger automations asynchronously
-    runAutomations("task_created", task, req.io);
-    
-    res.status(201).json(task);
-  } catch (error) {
-    console.error("Error in createTask controller", error);
-    if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map((e) => e.message);
-      return res.status(400).json({ message: "Validation error", errors: messages });
-    }
-    if (error.name === "CastError") {
-      return res.status(400).json({ message: `Invalid format for ${error.path}: ${error.value}` });
-    }
-    res.status(500).json({ message: "Internal server error", error: error.message });
+export const deleteTask = handler(async (req, res) => {
+  const { resource } = await resourceAccess(Task, req.user, req.params.id, true);
+  await mongoose.connection.transaction(session=>removeTask(req,resource,session));
+  emit(req,resource,'task:deleted',resource._id);
+  res.json({ id: req.params.id, message: 'Task deleted' });
+});
+export const duplicateTask = handler(async (req, res) => {
+  const { resource } = await resourceAccess(Task, req.user, req.params.id, true);
+  const data = resource.toObject();
+  for (const key of ['_id', '__v', 'createdAt', 'updatedAt', 'recurrenceSourceId']) delete data[key];
+  Object.assign(data, { title: (data.title.slice(0,193) + ' (Copy)'), status: 'pending', completedAt: null, timeSpent: 0, creatorId: req.user._id });
+  data.subtasks = data.subtasks.map(s => ({ title: s.title, isCompleted: false }));
+  const task = await Task.create(data);
+  await log(req, task, 'duplicated');
+  emit(req, task, 'task:created');
+  res.status(201).json(task);
+});
+export const bulkAction = handler(async (req, res) => {
+  const { taskIds, action, updates = {} } = req.body;
+  if (!Array.isArray(taskIds) || !taskIds.length || taskIds.length > 100 || !['edit','delete'].includes(action)) throw new HttpError(400, 'Invalid bulk action');
+  const authorized = [];
+  for (const id of [...new Set(taskIds)]) {
+    const { resource: task, workspace } = await resourceAccess(Task, req.user, id, true);
+    const data = action === 'edit' ? await validateTaskData(updates, workspace, task) : {};
+    complete(data, task);
+    if (action === 'edit') { task.set(data); await task.validate(); }
+    authorized.push(task);
   }
-};
-
-export const updateTask = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id);
-
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
-    }
-
-    const isCreatorOrAssignee = task.creatorId?.toString() === req.user.id || task.assigneeId?.toString() === req.user.id;
-    let isAuthorized = isCreatorOrAssignee;
-
-    if (!isAuthorized && task.workspaceId) {
-      if (req.user.activeWorkspace && task.workspaceId.toString() === req.user.activeWorkspace.toString()) {
-        isAuthorized = true;
-      } else {
-        const workspace = await Workspace.findById(task.workspaceId);
-        if (workspace) {
-          const isOwner = workspace.owner?.toString() === req.user.id;
-          const member = workspace.members?.find(m => m.user?.toString() === req.user.id);
-          const canEdit = member && (member.role === 'Admin' || member.role === 'Editor');
-          isAuthorized = isOwner || canEdit;
-        }
-      }
-    }
-
-    if (!isAuthorized) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
-
-    const updatedTask = await Task.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-
-    // Track status completion
-    if (req.body.status === "completed" && task.status !== "completed") {
-      updatedTask.completedAt = new Date();
-      await updatedTask.save();
-      
-      await Activity.create({
-        entityType: "task",
-        entityId: task._id,
-        userId: req.user.id,
-        action: "completed",
-      });
-      
-      // Streak Logic
-      const user = await User.findById(req.user.id);
-      if (user) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        const lastActive = user.lastActiveDate ? new Date(user.lastActiveDate) : null;
-        if (lastActive) lastActive.setHours(0, 0, 0, 0);
-        
-        if (!lastActive || lastActive.getTime() < today.getTime()) {
-          // Check if yesterday was active
-          const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-          if (lastActive && lastActive.getTime() === yesterday.getTime()) {
-            user.currentStreak += 1;
-          } else {
-            user.currentStreak = 1;
-          }
-          if (user.currentStreak > user.longestStreak) {
-            user.longestStreak = user.currentStreak;
-          }
-          user.lastActiveDate = new Date();
-          await user.save();
-        }
-      }
-    }
-
-    if (req.io) {
-      req.io.to(updatedTask.workspaceId?.toString()).emit("task:updated", updatedTask);
-    }
-
-    // Trigger automations asynchronously if status or priority changed
-    if (req.body.status && req.body.status !== task.status) {
-      runAutomations("status_changed", updatedTask, req.io);
-    } else if (req.body.priority && req.body.priority !== task.priority) {
-      runAutomations("priority_changed", updatedTask, req.io);
-    }
-
-    res.status(200).json(updatedTask);
-  } catch (error) {
-    console.error("Error in updateTask controller", error);
-    if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map((e) => e.message);
-      return res.status(400).json({ message: "Validation error", errors: messages });
-    }
-    if (error.name === "CastError") {
-      return res.status(400).json({ message: `Invalid format for ${error.path}: ${error.value}` });
-    }
-    res.status(500).json({ message: "Internal server error", error: error.message });
+  // Validate every record and permission before making any changes.
+  await mongoose.connection.transaction(async session=>{
+   for (const task of authorized) {
+    if(action==='delete')await removeTask(req,task,session);
+    else{await task.save({session});await log(req,task,'updated',session);}
+   }
+  });
+  for(const task of authorized)emit(req,task,action==='delete'?'task:deleted':'task:updated',action==='delete'?task._id:task);
+  res.json({ message: 'Bulk action completed', count: authorized.length });
+});
+export const reorderTasks = handler(async (req, res) => {
+  if (!Array.isArray(req.body.tasks) || req.body.tasks.length > 200) throw new HttpError(400, 'Invalid tasks array');
+  const records = [];
+  for (const item of req.body.tasks) {
+    if (!item || typeof item !== 'object' || !Number.isSafeInteger(item.orderIndex) || item.orderIndex < 0) throw new HttpError(400, 'Invalid orderIndex');
+    const { resource } = await resourceAccess(Task, req.user, item._id, true);
+    records.push({ resource, orderIndex: item.orderIndex });
   }
-};
-
-export const deleteTask = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id);
-
-    if (!task) {
-      return res.status(404).json({ message: "Task not found" });
-    }
-
-    let isAuthorized = task.creatorId.toString() === req.user.id;
-    if (!isAuthorized && task.workspaceId) {
-      const workspace = await Workspace.findById(task.workspaceId);
-      if (workspace) {
-        const isOwner = workspace.owner?.toString() === req.user.id;
-        const member = workspace.members?.find(m => m.user?.toString() === req.user.id);
-        const canDelete = member && member.role === 'Admin';
-        isAuthorized = isOwner || canDelete;
-      }
-    }
-
-    if (!isAuthorized) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
-
-    await task.deleteOne();
-
-    await Activity.create({
-      entityType: "task",
-      entityId: task._id,
-      userId: req.user.id,
-      action: "deleted",
-    });
-
-    if (req.io) {
-      req.io.to(task.workspaceId?.toString()).emit("task:deleted", task._id);
-    }
-
-    res.status(200).json({ id: req.params.id, message: "Task deleted successfully" });
-  } catch (error) {
-    console.error("Error in deleteTask controller", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-export const duplicateTask = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id);
-    if (!task) return res.status(404).json({ message: "Task not found" });
-    if (task.creatorId.toString() !== req.user.id && task.assigneeId?.toString() !== req.user.id) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
-
-    const newTaskData = task.toObject();
-    delete newTaskData._id;
-    delete newTaskData.createdAt;
-    delete newTaskData.updatedAt;
-    delete newTaskData.completedAt;
-    newTaskData.title = `${newTaskData.title} (Copy)`;
-    newTaskData.status = "pending";
-    newTaskData.timeSpent = 0;
-
-    const duplicatedTask = await Task.create(newTaskData);
-    
-    if (req.io) {
-      req.io.to(duplicatedTask.workspaceId.toString()).emit("task:created", duplicatedTask);
-    }
-    res.status(201).json(duplicatedTask);
-  } catch (error) {
-    console.error("Error in duplicateTask:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-export const bulkAction = async (req, res) => {
-  try {
-    const { taskIds, action, updates } = req.body;
-    if (!Array.isArray(taskIds) || taskIds.length === 0) {
-      return res.status(400).json({ message: "taskIds array is required" });
-    }
-    
-    // verify ownership roughly (assuming user can act on tasks in their workspace)
-    const tasks = await Task.find({ _id: { $in: taskIds }, creatorId: req.user.id });
-    const validTaskIds = tasks.map(t => t._id);
-
-    if (action === "delete") {
-      await Task.deleteMany({ _id: { $in: validTaskIds } });
-      validTaskIds.forEach(id => {
-        if (req.io) req.io.emit("task:deleted", id);
-      });
-      return res.status(200).json({ message: "Tasks deleted" });
-    } else if (action === "edit") {
-      await Task.updateMany({ _id: { $in: validTaskIds } }, { $set: updates });
-      const updatedTasks = await Task.find({ _id: { $in: validTaskIds } });
-      updatedTasks.forEach(task => {
-        if (req.io) req.io.to(task.workspaceId?.toString()).emit("task:updated", task);
-      });
-      return res.status(200).json({ message: "Tasks updated" });
-    }
-    
-    res.status(400).json({ message: "Invalid action" });
-  } catch (error) {
-    console.error("Error in bulkAction:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-export const reorderTasks = async (req, res) => {
-  try {
-    const { tasks } = req.body; // array of { _id, orderIndex }
-    if (!Array.isArray(tasks)) return res.status(400).json({ message: "tasks array required" });
-
-    const bulkOps = tasks.map(t => ({
-      updateOne: {
-        filter: { 
-          _id: t._id,
-          $or: [
-            { creatorId: req.user.id },
-            { assigneeId: req.user.id },
-            { workspaceId: req.user.activeWorkspace || req.user.id }
-          ]
-        },
-        update: { $set: { orderIndex: t.orderIndex } }
-      }
-    }));
-
-    if (bulkOps.length > 0) {
-      await Task.bulkWrite(bulkOps);
-    }
-    
-    res.status(200).json({ message: "Tasks reordered successfully" });
-  } catch (error) {
-    console.error("Error in reorderTasks:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-export const getAnalytics = async (req, res) => {
-  try {
-    const query = { workspaceId: req.user.activeWorkspace || req.user.id };
-    const allTasks = await Task.find(query);
-    
-    let completedTasks = 0;
-    let totalResolutionTime = 0;
-    let deepWorkTotal = 0;
-    
-    const activeTasks = allTasks.filter(t => t.status !== "completed" && t.status !== "archived").length;
-    
-    allTasks.forEach(task => {
-      if (task.status === "completed") {
-        completedTasks++;
-        if (task.completedAt && task.createdAt) {
-          totalResolutionTime += (new Date(task.completedAt) - new Date(task.createdAt));
-        }
-      }
-      if (task.priority === "high" || task.priority === "urgent") {
-        deepWorkTotal++;
-      }
-    });
-
-    const averageResolutionTimeMs = completedTasks > 0 ? (totalResolutionTime / completedTasks) : 0;
-    
-    // Calculate genuine deep work ratio based on high and urgent priority tasks
-    const deepWorkRatio = allTasks.length > 0 ? Math.round((deepWorkTotal / allTasks.length) * 100) : 0;
-    
-    const latencyStr = averageResolutionTimeMs > 0 
-      ? `${Math.floor(averageResolutionTimeMs / (1000 * 60 * 60))}h ${Math.floor((averageResolutionTimeMs % (1000 * 60 * 60)) / (1000 * 60))}m`
-      : "0h 0m";
-
-    res.status(200).json({
-      totalTasks: allTasks.length,
-      completedTasks,
-      activeTasks,
-      deepWorkRatio,
-      averageResolutionLatency: latencyStr,
-    });
-  } catch (error) {
-    console.error("Error in getAnalytics:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
+  await mongoose.connection.transaction(async session=>{for(const {resource,orderIndex}of records){resource.orderIndex=orderIndex;await resource.save({session});}});
+  for(const {resource}of records)emit(req,resource,'task:updated');
+  res.json({ message: 'Tasks reordered' });
+});
+export const getAnalytics = handler(async (req, res) => {
+  const workspace = await workspaceAccess(req.user, req.query.workspaceId);
+  const completed = {$eq:['$status','completed']};
+  const active = {$not:[{$in:['$status',['completed','archived']]}]};
+  const [summary] = await Task.aggregate([
+    {$match:{workspaceId:workspace._id}},
+    {$group:{_id:null,totalTasks:{$sum:1},completedTasks:{$sum:{$cond:[completed,1,0]}},
+      activeTasks:{$sum:{$cond:[active,1,0]}},highPriorityTasks:{$sum:{$cond:[{$in:['$priority',['high','urgent']]},1,0]}},
+      latency:{$avg:{$cond:[{$and:[completed,{$ne:['$completedAt',null]},{$ne:['$createdAt',null]}]},{$max:[0,{$subtract:['$completedAt','$createdAt']}]},null]}},
+      totalTimeSpent:{$sum:'$timeSpent'},estimatedMinutes:{$sum:'$timeEstimate'},
+      overdueTasks:{$sum:{$cond:[{$and:[active,{$ne:['$dueDate',null]},{$lt:['$dueDate',new Date()]}]},1,0]}},
+    }},
+  ]);
+  const {totalTasks=0,completedTasks=0,activeTasks=0,highPriorityTasks=0,latency=0,totalTimeSpent=0,estimatedMinutes=0,overdueTasks=0} = summary || {};
+  res.json({totalTasks,completedTasks,activeTasks,highPriorityTaskPercentage:totalTasks?Math.round(highPriorityTasks/totalTasks*100):0,
+    averageResolutionLatency:Math.floor((latency||0)/3600000)+'h '+Math.floor((latency||0)%3600000/60000)+'m',totalTimeSpent,estimatedMinutes,overdueTasks});
+});

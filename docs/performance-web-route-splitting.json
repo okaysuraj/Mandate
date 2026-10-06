@@ -1,0 +1,153 @@
+{
+  "checkedAt": "2026-10-06T09:51:22.924Z",
+  "label": "route-splitting",
+  "environment": "Headless Chromium, 390x844, 4x CPU throttle, fresh context, local production preview, heap after explicit GC; 3 samples per public route. Gzip is calculated, not server transfer.",
+  "summary": [
+    {
+      "route": "/",
+      "scriptBytes": 886636,
+      "scriptGzipBytes": 253800,
+      "heapBytes": 2932512,
+      "taskSeconds": 0.700958,
+      "first-contentful-paint": 456,
+      "domCount": 115
+    },
+    {
+      "route": "/login",
+      "scriptBytes": 810803,
+      "scriptGzipBytes": 240758,
+      "heapBytes": 2815668,
+      "taskSeconds": 0.630742,
+      "first-contentful-paint": 448,
+      "domCount": 84
+    },
+    {
+      "route": "/forgot-password",
+      "scriptBytes": 810031,
+      "scriptGzipBytes": 240689,
+      "heapBytes": 2806560,
+      "taskSeconds": 0.582501,
+      "first-contentful-paint": 428,
+      "domCount": 72
+    }
+  ],
+  "samples": [
+    {
+      "route": "/",
+      "run": 0,
+      "scriptBytes": 886636,
+      "scriptGzipBytes": 253800,
+      "scriptCount": 9,
+      "heapBytes": 2932324,
+      "taskSeconds": 0.740369,
+      "first-paint": 3156,
+      "first-contentful-paint": 3224,
+      "domCount": 115,
+      "errors": []
+    },
+    {
+      "route": "/",
+      "run": 1,
+      "scriptBytes": 886636,
+      "scriptGzipBytes": 253800,
+      "scriptCount": 9,
+      "heapBytes": 2932512,
+      "taskSeconds": 0.670842,
+      "first-paint": 176,
+      "first-contentful-paint": 388,
+      "domCount": 115,
+      "errors": []
+    },
+    {
+      "route": "/",
+      "run": 2,
+      "scriptBytes": 886636,
+      "scriptGzipBytes": 253800,
+      "scriptCount": 9,
+      "heapBytes": 2933084,
+      "taskSeconds": 0.700958,
+      "first-paint": 220,
+      "first-contentful-paint": 456,
+      "domCount": 115,
+      "errors": []
+    },
+    {
+      "route": "/login",
+      "run": 0,
+      "scriptBytes": 810803,
+      "scriptGzipBytes": 240758,
+      "scriptCount": 8,
+      "heapBytes": 2815668,
+      "taskSeconds": 0.630742,
+      "first-paint": 212,
+      "first-contentful-paint": 448,
+      "domCount": 84,
+      "errors": []
+    },
+    {
+      "route": "/login",
+      "run": 1,
+      "scriptBytes": 810803,
+      "scriptGzipBytes": 240758,
+      "scriptCount": 8,
+      "heapBytes": 2815732,
+      "taskSeconds": 0.627075,
+      "first-paint": 212,
+      "first-contentful-paint": 452,
+      "domCount": 84,
+      "errors": []
+    },
+    {
+      "route": "/login",
+      "run": 2,
+      "scriptBytes": 810803,
+      "scriptGzipBytes": 240758,
+      "scriptCount": 8,
+      "heapBytes": 2815016,
+      "taskSeconds": 0.645238,
+      "first-paint": 208,
+      "first-contentful-paint": 428,
+      "domCount": 84,
+      "errors": []
+    },
+    {
+      "route": "/forgot-password",
+      "run": 0,
+      "scriptBytes": 810031,
+      "scriptGzipBytes": 240689,
+      "scriptCount": 8,
+      "heapBytes": 2805784,
+      "taskSeconds": 0.602877,
+      "first-paint": 196,
+      "first-contentful-paint": 404,
+      "domCount": 72,
+      "errors": []
+    },
+    {
+      "route": "/forgot-password",
+      "run": 1,
+      "scriptBytes": 810031,
+      "scriptGzipBytes": 240689,
+      "scriptCount": 8,
+      "heapBytes": 2806560,
+      "taskSeconds": 0.582501,
+      "first-paint": 200,
+      "first-contentful-paint": 428,
+      "domCount": 72,
+      "errors": []
+    },
+    {
+      "route": "/forgot-password",
+      "run": 2,
+      "scriptBytes": 810031,
+      "scriptGzipBytes": 240689,
+      "scriptCount": 8,
+      "heapBytes": 2806564,
+      "taskSeconds": 0.563929,
+      "first-paint": 228,
+      "first-contentful-paint": 448,
+      "domCount": 72,
+      "errors": []
+    }
+  ]
+}

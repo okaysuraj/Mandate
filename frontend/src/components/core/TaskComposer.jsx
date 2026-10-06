@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, Calendar, Flag, Folder, Zap, 
-  ChevronDown, ChevronUp, Clock, Battery, Sparkles 
+import { motion as Motion, AnimatePresence } from 'framer-motion';
+import {
+  X, Calendar, Flag, Folder, Zap,
+  ChevronDown, ChevronUp, Clock, Battery, Sparkles
 } from 'lucide-react';
 import api from '../../lib/axios';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
+import { useWorkspace } from '../../context/WorkspaceContext';
 import { User as UserIcon } from 'lucide-react';
 
-const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
+const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialStatus = 'pending', initialDueDate = '' }) => {
   const [title, setTitle] = useState('');
   const [intent, setIntent] = useState('');
   const [tags, setTags] = useState('');
@@ -18,9 +18,10 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
   const [projectId, setProjectId] = useState('');
   const [assigneeId, setAssigneeId] = useState('');
   const [workspaceMembers, setWorkspaceMembers] = useState([]);
-  
-  const { user } = useAuth();
-  
+
+  const { activeWorkspace } = useWorkspace();
+  const [projects,setProjects]=useState([]);
+
   // Advanced fields
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [recurrence, setRecurrence] = useState('');
@@ -38,19 +39,20 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
       setTitle('');
       setIntent('');
       setTags('');
-      setDueDate('');
+      setDueDate(initialDueDate);
+      setProjectId('');setRecurrence('');setTimeEstimate('');setEnergyLevel('');
       setPriority('medium');
       setAssigneeId('');
       setShowAdvanced(false);
-      
+
       // Fetch members
-      if (user?.activeWorkspace) {
-        api.get(`/workspaces/${user.activeWorkspace}/members`)
-          .then(res => setWorkspaceMembers(res.data))
-          .catch(err => console.error(err));
+      if (activeWorkspace?._id) {
+        const controller=new AbortController();
+        Promise.all([api.get('/workspaces/'+activeWorkspace._id+'/members',{signal:controller.signal}),api.get('/projects',{params:{workspaceId:activeWorkspace._id,limit:200},signal:controller.signal})]).then(([members,projects])=>{setWorkspaceMembers(members.data);setProjects(projects.data.data||projects.data);}).catch(err=>{if(!controller.signal.aborted)toast.error(err.response?.data?.message||'Could not load task options');});
+        return()=>controller.abort();
       }
     }
-  }, [isOpen, user]);
+  }, [isOpen, activeWorkspace?._id, initialDueDate]);
 
   const handleParse = async () => {
     if (!title.trim()) return;
@@ -63,7 +65,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
       if (data.priority) setPriority(data.priority);
       if (data.intent) setIntent(data.intent);
       toast.success('Parsed successfully!', { id: 'parse-toast' });
-    } catch (error) {
+    } catch {
       toast.error('Failed to parse input', { id: 'parse-toast' });
     } finally {
       setIsParsing(false);
@@ -78,6 +80,8 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
     try {
       const res = await api.post('/tasks', {
         title,
+        workspaceId: activeWorkspace?._id,
+        status: initialStatus,
         intent,
         dueDate: dueDate || undefined,
         priority,
@@ -89,12 +93,12 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
         assigneeId: assigneeId || undefined,
         tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
       });
-      
+
       toast.success('Mandate registered');
       if (onTaskCreated) onTaskCreated(res.data);
       onClose();
     } catch (error) {
-      console.error('Failed to create task:', error);
+      console.error('Failed to create task:', error.name);
       toast.error('Failed to register mandate');
     } finally {
       setLoading(false);
@@ -117,16 +121,16 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
         {/* Backdrop */}
-        <motion.div 
+        <Motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
           className="absolute inset-0 bg-black/75 backdrop-blur-sm"
         />
-        
+
         {/* Modal */}
-        <motion.div 
+        <Motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 30 }}
@@ -141,8 +145,8 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
                 Create New Task
               </h3>
             </div>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="w-8 h-8 rounded-full border border-outline-variant hover:border-primary flex items-center justify-center text-on-surface hover:text-primary transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
@@ -153,15 +157,15 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
           <div className="p-4 md:p-6 overflow-y-auto custom-scrollbar space-y-5">
             {/* Title & AI Parse */}
             <div className="relative">
-              <input 
+              <input
                 ref={titleInputRef}
-                type="text" 
+                type="text"
                 placeholder="Task title (e.g. Deploy v2.4 to staging #infra p1)"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 className="w-full bg-transparent text-xl md:text-2xl font-mono font-bold text-on-surface placeholder:text-outline focus:outline-none pr-10 border-b border-outline-variant pb-2"
               />
-              <button 
+              <button
                 onClick={handleParse}
                 disabled={isParsing || !title.trim()}
                 title="AI Task Breakdown"
@@ -177,7 +181,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
                 <Zap className="w-3.5 h-3.5 mr-1" />
                 Key Objective / Purpose
               </label>
-              <textarea 
+              <textarea
                 placeholder="Detail purpose, expected outcome, or context..."
                 value={intent}
                 onChange={e => setIntent(e.target.value)}
@@ -190,8 +194,8 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
               {/* Due Date */}
               <div className="flex items-center bg-surface-container-low rounded-xl border border-outline-variant p-2.5">
                 <Calendar className="w-4 h-4 text-primary mr-2 flex-shrink-0" />
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   value={dueDate}
                   onChange={e => setDueDate(e.target.value)}
                   className="bg-transparent text-xs font-mono text-on-surface focus:outline-none w-full"
@@ -201,7 +205,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
               {/* Priority */}
               <div className="flex items-center bg-surface-container-low rounded-xl border border-outline-variant p-2.5">
                 <Flag className={`w-4 h-4 mr-2 flex-shrink-0 ${priority === 'high' ? 'text-error' : priority === 'medium' ? 'text-tertiary' : 'text-on-surface-variant'}`} />
-                <select 
+                <select
                   value={priority}
                   onChange={e => setPriority(e.target.value)}
                   className="bg-transparent text-xs font-mono uppercase text-on-surface focus:outline-none w-full cursor-pointer"
@@ -215,8 +219,8 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
               {/* Tags */}
               <div className="flex items-center bg-surface-container-low rounded-xl border border-outline-variant p-2.5">
                 <span className="text-primary font-mono font-bold mr-2 text-xs">#</span>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="tags (comma separated)"
                   value={tags}
                   onChange={e => setTags(e.target.value)}
@@ -224,11 +228,13 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
                 />
               </div>
 
+              <label className="text-xs">Project<select value={projectId} onChange={e=>setProjectId(e.target.value)} className="w-full bg-surface-container p-2"><option value="">None</option>{projects.map(p=><option key={p._id} value={p._id}>{p.name}</option>)}</select></label>
+              <label className="text-xs">Repeat<select value={recurrence} onChange={e=>setRecurrence(e.target.value)} className="w-full bg-surface-container p-2"><option value="">Never</option>{['daily','weekly','monthly'].map(v=><option key={v}>{v}</option>)}</select></label>
               {/* Assignee */}
               {workspaceMembers.length > 0 && (
                 <div className="flex items-center bg-surface-container-low rounded-xl border border-outline-variant p-2.5">
                   <UserIcon className="w-4 h-4 text-primary mr-2 flex-shrink-0" />
-                  <select 
+                  <select
                     value={assigneeId}
                     onChange={e => setAssigneeId(e.target.value)}
                     className="bg-transparent text-xs font-mono text-on-surface focus:outline-none w-full cursor-pointer"
@@ -245,7 +251,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
             </div>
 
             {/* Advanced Toggle */}
-            <button 
+            <button
               type="button"
               onClick={() => setShowAdvanced(!showAdvanced)}
               className="flex items-center text-xs font-mono uppercase font-bold text-on-surface-variant hover:text-primary transition-colors cursor-pointer py-1"
@@ -257,7 +263,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
             {/* Advanced Fields */}
             <AnimatePresence>
               {showAdvanced && (
-                <motion.div 
+                <Motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
@@ -268,8 +274,8 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
                       <label className="flex items-center text-[10px] font-mono font-bold text-on-surface-variant mb-1 uppercase">
                         <Clock className="w-3 h-3 mr-1 text-primary" /> Est. Duration (mins)
                       </label>
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         value={timeEstimate}
                         onChange={e => setTimeEstimate(e.target.value)}
                         placeholder="e.g. 45"
@@ -280,7 +286,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
                       <label className="flex items-center text-[10px] font-mono font-bold text-on-surface-variant mb-1 uppercase">
                         <Battery className="w-3 h-3 mr-1 text-primary" /> Energy Requirement
                       </label>
-                      <select 
+                      <select
                         value={energyLevel}
                         onChange={e => setEnergyLevel(e.target.value)}
                         className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary uppercase cursor-pointer transition-colors"
@@ -292,7 +298,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
                       </select>
                     </div>
                   </div>
-                </motion.div>
+                </Motion.div>
               )}
             </AnimatePresence>
           </div>
@@ -304,16 +310,16 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
               <span className="border border-outline-variant px-1 mr-1.5">Enter</span>
               to save
             </div>
-            
+
             <div className="flex gap-2 ml-auto">
-              <button 
+              <button
                 type="button"
                 onClick={onClose}
                 className="px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-on-surface-variant hover:text-on-surface border border-outline-variant hover:border-primary rounded-md transition-colors cursor-pointer"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading || !title.trim()}
@@ -323,7 +329,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
               </button>
             </div>
           </div>
-        </motion.div>
+        </Motion.div>
       </div>
     </AnimatePresence>
   );

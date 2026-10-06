@@ -1,124 +1,126 @@
+const FeaturePage = lazy(() => import('./components/features/FeaturePage'));
+const FeatureIndexPage = lazy(() => import('./components/features/FeaturePage').then(module => ({default: module.FeatureIndexPage})));
 import { Route, Routes } from "react-router";
 
-import PrivacyPage from "./pages/core/PrivacyPage";
-import TermsPage from "./pages/core/TermsPage";
-import LegalPage from "./pages/core/LegalPage";
-import SecurityPage from "./pages/settings/SecurityPage";
+const PrivacyPage = lazy(() => import("./pages/core/PrivacyPage"));
+const TermsPage = lazy(() => import("./pages/core/TermsPage"));
+const LegalPage = lazy(() => import("./pages/core/LegalPage"));
+const SecurityPage = lazy(() => import("./pages/settings/SecurityPage"));
 
-import HomePage from "./pages/dashboard/HomePage";
-import LoginPage from "./pages/auth/LoginPage";
-import RegisterPage from "./pages/auth/RegisterPage";
-import LandingPage from "./pages/core/LandingPage";
-import PricingPage from "./pages/core/PricingPage";
-import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
-import SettingsPage from "./pages/settings/SettingsPage";
-import TeamSettingsPage from "./pages/settings/TeamSettingsPage";
-import WelcomePage from "./pages/auth/WelcomePage";
-import FocusPage from "./pages/core/FocusPage";
-import ReviewPage from "./pages/core/ReviewPage";
-import DocsPage from "./pages/core/DocsPage";
-import GoalsPage from "./pages/core/GoalsPage";
-import AutomationsPage from "./pages/automation/AutomationsPage";
-import IntegrationsPage from "./pages/core/IntegrationsPage";
-import AdminDashboard from "./pages/dashboard/AdminDashboard";
+const HomePage = lazy(() => import("./pages/dashboard/HomePage"));
+const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
+const LandingPage = lazy(() => import("./pages/core/LandingPage"));
+const PricingPage = lazy(() => import("./pages/core/PricingPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage"));
+const SettingsPage = lazy(() => import("./pages/settings/SettingsPage"));
+const TeamSettingsPage = lazy(() => import("./pages/settings/TeamSettingsPage"));
+const WelcomePage = lazy(() => import("./pages/auth/WelcomePage"));
+const FocusPage = lazy(() => import("./pages/core/FocusPage"));
+const ReviewPage = lazy(() => import("./pages/core/ReviewPage"));
+const DocsPage = lazy(() => import("./pages/core/DocsPage"));
+const GoalsPage = lazy(() => import("./pages/core/GoalsPage"));
+const AutomationsPage = lazy(() => import("./pages/automation/AutomationsPage"));
+const IntegrationsPage = lazy(() => import("./pages/core/IntegrationsPage"));
+const AdminDashboard = lazy(() => import("./pages/dashboard/AdminDashboard"));
 
 // New Pages
-import TodayPage from "./pages/tasks/TodayPage";
-import BacklogPage from "./pages/tasks/BacklogPage";
-import KanbanPage from "./pages/tasks/KanbanPage";
-import ProjectsPage from "./pages/projects/ProjectsPage";
-import CalendarPage from "./pages/planning/CalendarPage";
-import AnalyticsPage from "./pages/analytics/AnalyticsPage";
-import FirstMandatePage from "./pages/auth/FirstMandatePage";
-import SplashPage from "./pages/auth/SplashPage";
-import TaskDetailPage from "./pages/tasks/TaskDetailPage";
-import InboxPage from "./pages/tasks/InboxPage";
-import BillingPage from "./pages/settings/BillingPage";
-import CommandPalettePage from "./pages/core/CommandPalettePage";
-import ProfileSettingsPage from "./pages/settings/ProfileSettingsPage";
-import SecuritySettingsPage from "./pages/settings/SecuritySettingsPage";
-import NotificationsSettingsPage from "./pages/settings/NotificationsSettingsPage";
-import ProjectDetailPage from "./pages/projects/ProjectDetailPage";
-import TeamWorkspacePage from "./pages/dashboard/TeamWorkspacePage";
-import DailyPlanningPage from "./pages/planning/DailyPlanningPage";
-import EndOfDayReviewPage from "./pages/planning/EndOfDayReviewPage";
-import FocusSummaryPage from "./pages/core/FocusSummaryPage";
-import LockInPage from "./pages/auth/LockInPage";
-import GoalDetailPage from "./pages/core/GoalDetailPage";
-import AutomationRulesPage from "./pages/automation/AutomationRulesPage";
-import AutomationLogsPage from "./pages/automation/AutomationLogsPage";
-import DeviceManagementPage from "./pages/core/DeviceManagementPage";
-import PermissionsPage from "./pages/settings/PermissionsPage";
-import ThemeAppearancePage from "./pages/settings/ThemeAppearancePage";
-import AccountabilityMatrixPage from "./pages/core/AccountabilityMatrixPage";
-import DataExportPage from "./pages/core/DataExportPage";
-import NotificationPreferencesPage from "./pages/settings/NotificationPreferencesPage";
-import PersonalizedInsightsPage from "./pages/core/PersonalizedInsightsPage";
-import PriorityRecommendationsPage from "./pages/core/PriorityRecommendationsPage";
-import SmartReschedulingPage from "./pages/automation/SmartReschedulingPage";
-import TaskBreakdownPage from "./pages/tasks/TaskBreakdownPage";
-import GlobalSearchPage from "./pages/core/GlobalSearchPage";
-import KeyboardShortcutsPage from "./pages/core/KeyboardShortcutsPage";
-import SavedViewsPage from "./pages/core/SavedViewsPage";
-import GoalTimelinePage from "./pages/planning/GoalTimelinePage";
-import TaskTemplatesPage from "./pages/core/TaskTemplatesPage";
-import FocusModePage from "./pages/core/FocusModePage";
-import TeamHealthPage from "./pages/dashboard/TeamHealthPage";
-import WorkspaceAuditPage from "./pages/core/WorkspaceAuditPage";
-import CustomReportsPage from "./pages/analytics/CustomReportsPage";
-import DecisionLogPage from "./pages/core/DecisionLogPage";
-import AutomationPlaybooksPage from "./pages/automation/AutomationPlaybooksPage";
-import KnowledgeBasePage from "./pages/core/KnowledgeBasePage";
-import ReleaseNotesPage from "./pages/core/ReleaseNotesPage";
-import StatusCenterPage from "./pages/core/StatusCenterPage";
-import ReminderSettingsPage from "./pages/settings/ReminderSettingsPage";
-import OfflineModePage from "./pages/core/OfflineModePage";
-import MaintenanceDowntimePage from "./pages/core/MaintenanceDowntimePage";
-import MonthlyReviewPage from "./pages/planning/MonthlyReviewPage";
-import WorkstreamsPage from "./pages/projects/WorkstreamsPage";
-import MilestoneTrackerPage from "./pages/core/MilestoneTrackerPage";
-import DependencyMapPage from "./pages/core/DependencyMapPage";
-import IncidentLogPage from "./pages/core/IncidentLogPage";
-import PeopleDirectoryPage from "./pages/core/PeopleDirectoryPage";
-import WorkloadBalancerPage from "./pages/core/WorkloadBalancerPage";
-import RetentionInsightsPage from "./pages/analytics/RetentionInsightsPage";
-import CustomerJourneyPage from "./pages/core/CustomerJourneyPage";
-import PartnerPortalPage from "./pages/core/PartnerPortalPage";
-import VendorManagementPage from "./pages/core/VendorManagementPage";
-import ComplianceCenterPage from "./pages/core/ComplianceCenterPage";
-import ProcurementHubPage from "./pages/core/ProcurementHubPage";
-import SupportDeskPage from "./pages/core/SupportDeskPage";
-import KnowledgeSharePage from "./pages/core/KnowledgeSharePage";
-import FinanceOverviewPage from "./pages/core/FinanceOverviewPage";
-import BudgetPlanningPage from "./pages/core/BudgetPlanningPage";
-import InvoiceTrackerPage from "./pages/core/InvoiceTrackerPage";
-import ForecastingPage from "./pages/core/ForecastingPage";
-import ExecutiveSummaryPage from "./pages/dashboard/ExecutiveSummaryPage";
-import ImpactReportPage from "./pages/analytics/ImpactReportPage";
-import BoardViewPage from "./pages/tasks/BoardViewPage";
-import WorkspaceOverviewPage from "./pages/projects/WorkspaceOverviewPage";
-import MobileWorkspacePage from "./pages/core/MobileWorkspacePage";
-import QuickActionsPage from "./pages/core/QuickActionsPage";
-import ActivityStreamPage from "./pages/core/ActivityStreamPage";
-import AutomationCenterPage from "./pages/automation/AutomationCenterPage";
-import WorkspaceTemplatesPage from "./pages/core/WorkspaceTemplatesPage";
+const TodayPage = lazy(() => import("./pages/tasks/TodayPage"));
+const BacklogPage = lazy(() => import("./pages/tasks/BacklogPage"));
+const KanbanPage = lazy(() => import("./pages/tasks/KanbanPage"));
+const ProjectsPage = lazy(() => import("./pages/projects/ProjectsPage"));
+const CalendarPage = lazy(() => import("./pages/planning/CalendarPage"));
+const AnalyticsPage = lazy(() => import("./pages/analytics/AnalyticsPage"));
+const FirstMandatePage = lazy(() => import("./pages/auth/FirstMandatePage"));
+const SplashPage = lazy(() => import("./pages/auth/SplashPage"));
+const TaskDetailPage = lazy(() => import("./pages/tasks/TaskDetailPage"));
+const InboxPage = lazy(() => import("./pages/tasks/InboxPage"));
+const BillingPage = lazy(() => import("./pages/settings/BillingPage"));
+const CommandPalettePage = lazy(() => import("./pages/core/CommandPalettePage"));
+const ProfileSettingsPage = lazy(() => import("./pages/settings/ProfileSettingsPage"));
+const SecuritySettingsPage = lazy(() => import("./pages/settings/SecuritySettingsPage"));
+const NotificationsSettingsPage = lazy(() => import("./pages/settings/NotificationsSettingsPage"));
+const ProjectDetailPage = lazy(() => import("./pages/projects/ProjectDetailPage"));
+const TeamWorkspacePage = lazy(() => import("./pages/dashboard/TeamWorkspacePage"));
+const DailyPlanningPage = lazy(() => import("./pages/planning/DailyPlanningPage"));
+const EndOfDayReviewPage = lazy(() => import("./pages/planning/EndOfDayReviewPage"));
+const FocusSummaryPage = lazy(() => import("./pages/core/FocusSummaryPage"));
+const LockInPage = lazy(() => import("./pages/auth/LockInPage"));
+const GoalDetailPage = lazy(() => import("./pages/core/GoalDetailPage"));
+const AutomationRulesPage = lazy(() => import("./pages/automation/AutomationRulesPage"));
+const AutomationLogsPage = lazy(() => import("./pages/automation/AutomationLogsPage"));
+const DeviceManagementPage = lazy(() => import("./pages/core/DeviceManagementPage"));
+const PermissionsPage = lazy(() => import("./pages/settings/PermissionsPage"));
+const ThemeAppearancePage = lazy(() => import("./pages/settings/ThemeAppearancePage"));
+const AccountabilityMatrixPage = lazy(() => import("./pages/core/AccountabilityMatrixPage"));
+const DataExportPage = lazy(() => import("./pages/core/DataExportPage"));
+const NotificationPreferencesPage = lazy(() => import("./pages/settings/NotificationPreferencesPage"));
+const PersonalizedInsightsPage = lazy(() => import("./pages/core/PersonalizedInsightsPage"));
+const PriorityRecommendationsPage = lazy(() => import("./pages/core/PriorityRecommendationsPage"));
+const SmartReschedulingPage = lazy(() => import("./pages/automation/SmartReschedulingPage"));
+const TaskBreakdownPage = lazy(() => import("./pages/tasks/TaskBreakdownPage"));
+const GlobalSearchPage = lazy(() => import("./pages/core/GlobalSearchPage"));
+const KeyboardShortcutsPage = lazy(() => import("./pages/core/KeyboardShortcutsPage"));
+const SavedViewsPage = lazy(() => import("./pages/core/SavedViewsPage"));
+const GoalTimelinePage = lazy(() => import("./pages/planning/GoalTimelinePage"));
+const TaskTemplatesPage = lazy(() => import("./pages/core/TaskTemplatesPage"));
+const FocusModePage = lazy(() => import("./pages/core/FocusModePage"));
+const TeamHealthPage = lazy(() => import("./pages/dashboard/TeamHealthPage"));
+const WorkspaceAuditPage = lazy(() => import("./pages/core/WorkspaceAuditPage"));
+const CustomReportsPage = lazy(() => import("./pages/analytics/CustomReportsPage"));
+const DecisionLogPage = lazy(() => import("./pages/core/DecisionLogPage"));
+const AutomationPlaybooksPage = lazy(() => import("./pages/automation/AutomationPlaybooksPage"));
+const KnowledgeBasePage = lazy(() => import("./pages/core/KnowledgeBasePage"));
+const ReleaseNotesPage = lazy(() => import("./pages/core/ReleaseNotesPage"));
+const StatusCenterPage = lazy(() => import("./pages/core/StatusCenterPage"));
+const ReminderSettingsPage = lazy(() => import("./pages/settings/ReminderSettingsPage"));
+const OfflineModePage = lazy(() => import("./pages/core/OfflineModePage"));
+const MaintenanceDowntimePage = lazy(() => import("./pages/core/MaintenanceDowntimePage"));
+const MonthlyReviewPage = lazy(() => import("./pages/planning/MonthlyReviewPage"));
+const WorkstreamsPage = lazy(() => import("./pages/projects/WorkstreamsPage"));
+const MilestoneTrackerPage = lazy(() => import("./pages/core/MilestoneTrackerPage"));
+const DependencyMapPage = lazy(() => import("./pages/core/DependencyMapPage"));
+const IncidentLogPage = lazy(() => import("./pages/core/IncidentLogPage"));
+const PeopleDirectoryPage = lazy(() => import("./pages/core/PeopleDirectoryPage"));
+const WorkloadBalancerPage = lazy(() => import("./pages/core/WorkloadBalancerPage"));
+const RetentionInsightsPage = lazy(() => import("./pages/analytics/RetentionInsightsPage"));
+const CustomerJourneyPage = lazy(() => import("./pages/core/CustomerJourneyPage"));
+const PartnerPortalPage = lazy(() => import("./pages/core/PartnerPortalPage"));
+const VendorManagementPage = lazy(() => import("./pages/core/VendorManagementPage"));
+const ComplianceCenterPage = lazy(() => import("./pages/core/ComplianceCenterPage"));
+const ProcurementHubPage = lazy(() => import("./pages/core/ProcurementHubPage"));
+const SupportDeskPage = lazy(() => import("./pages/core/SupportDeskPage"));
+const KnowledgeSharePage = lazy(() => import("./pages/core/KnowledgeSharePage"));
+const FinanceOverviewPage = lazy(() => import("./pages/core/FinanceOverviewPage"));
+const BudgetPlanningPage = lazy(() => import("./pages/core/BudgetPlanningPage"));
+const InvoiceTrackerPage = lazy(() => import("./pages/core/InvoiceTrackerPage"));
+const ForecastingPage = lazy(() => import("./pages/core/ForecastingPage"));
+const ExecutiveSummaryPage = lazy(() => import("./pages/dashboard/ExecutiveSummaryPage"));
+const ImpactReportPage = lazy(() => import("./pages/analytics/ImpactReportPage"));
+const BoardViewPage = lazy(() => import("./pages/tasks/BoardViewPage"));
+const WorkspaceOverviewPage = lazy(() => import("./pages/projects/WorkspaceOverviewPage"));
+const MobileWorkspacePage = lazy(() => import("./pages/core/MobileWorkspacePage"));
+const QuickActionsPage = lazy(() => import("./pages/core/QuickActionsPage"));
+const ActivityStreamPage = lazy(() => import("./pages/core/ActivityStreamPage"));
+const AutomationCenterPage = lazy(() => import("./pages/automation/AutomationCenterPage"));
+const WorkspaceTemplatesPage = lazy(() => import("./pages/core/WorkspaceTemplatesPage"));
 
-import MeetingNotesPage from './pages/core/MeetingNotesPage';
-import StakeholderMapPage from './pages/core/StakeholderMapPage';
-import SprintBoardPage from './pages/tasks/SprintBoardPage';
-import RoadmapPage from './pages/projects/RoadmapPage';
-import ChangeRequestsPage from './pages/core/ChangeRequestsPage';
-import EscalationsPage from './pages/core/EscalationsPage';
-import RiskRegisterPage from './pages/auth/RiskRegisterPage';
-import CapacityPlanningPage from './pages/projects/CapacityPlanningPage';
-import SignalCenterPage from './pages/core/SignalCenterPage';
+const MeetingNotesPage = lazy(() => import('./pages/core/MeetingNotesPage'));
+const StakeholderMapPage = lazy(() => import('./pages/core/StakeholderMapPage'));
+const SprintBoardPage = lazy(() => import('./pages/tasks/SprintBoardPage'));
+const RoadmapPage = lazy(() => import('./pages/projects/RoadmapPage'));
+const ChangeRequestsPage = lazy(() => import('./pages/core/ChangeRequestsPage'));
+const EscalationsPage = lazy(() => import('./pages/core/EscalationsPage'));
+const RiskRegisterPage = lazy(() => import('./pages/auth/RiskRegisterPage'));
+const CapacityPlanningPage = lazy(() => import('./pages/projects/CapacityPlanningPage'));
+const SignalCenterPage = lazy(() => import('./pages/core/SignalCenterPage'));
 import ProtectedRoute from "./components/common/ProtectedRoute";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 
 const App = () => {
   useEffect(() => {
     // Initialize dark mode from local storage
-    if (localStorage.getItem("theme") === "dark" || 
+    if (localStorage.getItem("theme") === "dark" ||
         (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
       document.documentElement.classList.add("dark");
     } else {
@@ -128,7 +130,10 @@ const App = () => {
 
   return (
     <div className="w-full min-h-screen bg-background text-on-surface transition-colors duration-300 antialiased font-body-md">
+      <Suspense fallback={<div role="status" className="min-h-screen grid place-items-center text-on-surface-variant">Loading page?</div>}>
       <Routes>
+        <Route path="/features" element={<ProtectedRoute><FeatureIndexPage/></ProtectedRoute>}/>
+        <Route path="/features/:featureKey" element={<ProtectedRoute><FeaturePage/></ProtectedRoute>}/>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/pricing" element={<PricingPage />} />
@@ -138,7 +143,7 @@ const App = () => {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/legal" element={<LegalPage />} />
         <Route path="/security" element={<SecurityPage />} />
-        
+
         {/* Protected Core Routes */}
         <Route path="/dashboard" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
         <Route path="/today" element={<ProtectedRoute><TodayPage /></ProtectedRoute>} />
@@ -241,7 +246,63 @@ const App = () => {
         <Route path="/activity-stream" element={<ProtectedRoute><ActivityStreamPage /></ProtectedRoute>} />
         <Route path="/automation-center" element={<ProtectedRoute><AutomationCenterPage /></ProtectedRoute>} />
         <Route path="/workspace-templates" element={<ProtectedRoute><WorkspaceTemplatesPage /></ProtectedRoute>} />
+              <Route path="/burnout-insights" element={<ProtectedRoute><FeaturePage featureKey="burnout-insights"/></ProtectedRoute>}/>
+        <Route path="/deviation-report" element={<ProtectedRoute><FeaturePage featureKey="deviation-report"/></ProtectedRoute>}/>
+        <Route path="/personnel-ledger" element={<ProtectedRoute><FeaturePage featureKey="personnel-ledger"/></ProtectedRoute>}/>
+        <Route path="/rule-builder" element={<ProtectedRoute><FeaturePage featureKey="rule-builder"/></ProtectedRoute>}/>
+        <Route path="/smart-views" element={<ProtectedRoute><FeaturePage featureKey="smart-views"/></ProtectedRoute>}/>
+        <Route path="/commitment-history" element={<ProtectedRoute><FeaturePage featureKey="commitment-history"/></ProtectedRoute>}/>
+        <Route path="/create-goal" element={<ProtectedRoute><FeaturePage featureKey="create-goal"/></ProtectedRoute>}/>
+        <Route path="/critical-alerts" element={<ProtectedRoute><FeaturePage featureKey="critical-alerts"/></ProtectedRoute>}/>
+        <Route path="/daily-review" element={<ProtectedRoute><FeaturePage featureKey="daily-review"/></ProtectedRoute>}/>
+        <Route path="/danger-zone" element={<ProtectedRoute><FeaturePage featureKey="danger-zone"/></ProtectedRoute>}/>
+        <Route path="/digest-preview" element={<ProtectedRoute><FeaturePage featureKey="digest-preview"/></ProtectedRoute>}/>
+        <Route path="/filter-builder" element={<ProtectedRoute><FeaturePage featureKey="filter-builder"/></ProtectedRoute>}/>
+        <Route path="/focus-notes-logs" element={<ProtectedRoute><FeaturePage featureKey="focus-notes-logs"/></ProtectedRoute>}/>
+        <Route path="/focus-timer-logs" element={<ProtectedRoute><FeaturePage featureKey="focus-timer-logs"/></ProtectedRoute>}/>
+        <Route path="/goal-detail" element={<ProtectedRoute><FeaturePage featureKey="goal-detail"/></ProtectedRoute>}/>
+        <Route path="/goal-progress-tracking" element={<ProtectedRoute><FeaturePage featureKey="goal-progress-tracking"/></ProtectedRoute>}/>
+        <Route path="/invite-members" element={<ProtectedRoute><FeaturePage featureKey="invite-members"/></ProtectedRoute>}/>
+        <Route path="/list-view" element={<ProtectedRoute><FeaturePage featureKey="list-view"/></ProtectedRoute>}/>
+        <Route path="/maintenance" element={<ProtectedRoute><FeaturePage featureKey="maintenance"/></ProtectedRoute>}/>
+        <Route path="/natural-language-input" element={<ProtectedRoute><FeaturePage featureKey="natural-language-input"/></ProtectedRoute>}/>
+        <Route path="/ownership-transfer" element={<ProtectedRoute><FeaturePage featureKey="ownership-transfer"/></ProtectedRoute>}/>
+        <Route path="/priority-status" element={<ProtectedRoute><FeaturePage featureKey="priority-status"/></ProtectedRoute>}/>
+        <Route path="/protocol-paused" element={<ProtectedRoute><FeaturePage featureKey="protocol-paused"/></ProtectedRoute>}/>
+        <Route path="/quick-create" element={<ProtectedRoute><FeaturePage featureKey="quick-create"/></ProtectedRoute>}/>
+        <Route path="/reflection-history" element={<ProtectedRoute><FeaturePage featureKey="reflection-history"/></ProtectedRoute>}/>
+        <Route path="/selection-protocol" element={<ProtectedRoute><FeaturePage featureKey="selection-protocol"/></ProtectedRoute>}/>
+        <Route path="/sync-conflict-resolution" element={<ProtectedRoute><FeaturePage featureKey="sync-conflict-resolution"/></ProtectedRoute>}/>
+        <Route path="/table-view" element={<ProtectedRoute><FeaturePage featureKey="table-view"/></ProtectedRoute>}/>
+        <Route path="/tags-management" element={<ProtectedRoute><FeaturePage featureKey="tags-management"/></ProtectedRoute>}/>
+        <Route path="/team-activity" element={<ProtectedRoute><FeaturePage featureKey="team-activity"/></ProtectedRoute>}/>
+        <Route path="/home-dashboard" element={<ProtectedRoute><FeaturePage featureKey="home-dashboard"/></ProtectedRoute>}/>
+        <Route path="/timeline-view" element={<ProtectedRoute><FeaturePage featureKey="timeline-view"/></ProtectedRoute>}/>
+        <Route path="/weekly-review" element={<ProtectedRoute><FeaturePage featureKey="weekly-review"/></ProtectedRoute>}/>
+        <Route path="/create-project" element={<ProtectedRoute><FeaturePage featureKey="create-project"/></ProtectedRoute>}/>
+        <Route path="/project-calendar" element={<ProtectedRoute><FeaturePage featureKey="project-calendar"/></ProtectedRoute>}/>
+        <Route path="/project-detail" element={<ProtectedRoute><FeaturePage featureKey="project-detail"/></ProtectedRoute>}/>
+        <Route path="/account-settings" element={<ProtectedRoute><FeaturePage featureKey="account-settings"/></ProtectedRoute>}/>
+        <Route path="/initial-configuration" element={<ProtectedRoute><FeaturePage featureKey="initial-configuration"/></ProtectedRoute>}/>
+        <Route path="/notification-center" element={<ProtectedRoute><FeaturePage featureKey="notification-center"/></ProtectedRoute>}/>
+        <Route path="/preferences-behavior" element={<ProtectedRoute><FeaturePage featureKey="preferences-behavior"/></ProtectedRoute>}/>
+        <Route path="/team-settings" element={<ProtectedRoute><FeaturePage featureKey="team-settings"/></ProtectedRoute>}/>
+        <Route path="/assigned-to-me" element={<ProtectedRoute><FeaturePage featureKey="assigned-to-me"/></ProtectedRoute>}/>
+        <Route path="/create-task" element={<ProtectedRoute><FeaturePage featureKey="create-task"/></ProtectedRoute>}/>
+        <Route path="/edit-task" element={<ProtectedRoute><FeaturePage featureKey="edit-task"/></ProtectedRoute>}/>
+        <Route path="/subtask-management" element={<ProtectedRoute><FeaturePage featureKey="subtask-management"/></ProtectedRoute>}/>
+        <Route path="/task-activity-history" element={<ProtectedRoute><FeaturePage featureKey="task-activity-history"/></ProtectedRoute>}/>
+        <Route path="/task-assignment" element={<ProtectedRoute><FeaturePage featureKey="task-assignment"/></ProtectedRoute>}/>
+        <Route path="/task-attachments" element={<ProtectedRoute><FeaturePage featureKey="task-attachments"/></ProtectedRoute>}/>
+        <Route path="/task-comments" element={<ProtectedRoute><FeaturePage featureKey="task-comments"/></ProtectedRoute>}/>
+        <Route path="/task-completion-trends" element={<ProtectedRoute><FeaturePage featureKey="task-completion-trends"/></ProtectedRoute>}/>
+        <Route path="/task-detail" element={<ProtectedRoute><FeaturePage featureKey="task-detail"/></ProtectedRoute>}/>
+        <Route path="/task-recurrence" element={<ProtectedRoute><FeaturePage featureKey="task-recurrence"/></ProtectedRoute>}/>
+        <Route path="/task-reflection" element={<ProtectedRoute><FeaturePage featureKey="task-reflection"/></ProtectedRoute>}/>
+        <Route path="/task-to-goal-linking" element={<ProtectedRoute><FeaturePage featureKey="task-to-goal-linking"/></ProtectedRoute>}/>
+        <Route path="*" element={<div className="p-8">Page not found. <a href="/features">Open all features</a></div>}/>
       </Routes>
+      </Suspense>
     </div>
   );
 };

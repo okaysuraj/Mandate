@@ -1,3 +1,4 @@
+import { schemaPolicy, safeUrl } from './schemaPolicy.js';
 import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema(
@@ -31,11 +32,13 @@ const taskSchema = new mongoose.Schema(
     description: {
       type: String,
       trim: true,
+      maxlength: 10000,
       default: "",
     },
     intent: {
       type: String,
       trim: true,
+      maxlength: 10000,
       default: "",
     },
     status: {
@@ -90,6 +93,7 @@ const taskSchema = new mongoose.Schema(
           type: String,
           required: true,
           trim: true,
+      maxlength: 10000,
         },
         isCompleted: {
           type: Boolean,
@@ -103,9 +107,10 @@ const taskSchema = new mongoose.Schema(
     ],
     attachments: [
       {
+        assetId: {type:mongoose.Schema.Types.ObjectId,ref:"FileAsset"},
         name: String,
         url: String,
-        type: String,
+        type: {type: String},
         size: Number,
       },
     ],
@@ -118,6 +123,7 @@ const taskSchema = new mongoose.Schema(
       {
         type: String,
         trim: true,
+      maxlength: 10000,
       },
     ],
     timeSpent: {
@@ -129,7 +135,7 @@ const taskSchema = new mongoose.Schema(
       default: null,
     },
   },
-  { timestamps: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true }
 );
 
 taskSchema.index({ creatorId: 1, status: 1 });
@@ -138,5 +144,17 @@ taskSchema.index({ workspaceId: 1, status: 1 });
 taskSchema.index({ parentTaskId: 1 });
 taskSchema.index({ assigneeId: 1 });
 
-const Task = mongoose.model("Task", taskSchema);
+schemaPolicy(taskSchema);
+
+taskSchema.path('timeSpent').min(0).max(525600);
+  taskSchema.path('timeEstimate').max(525600);
+  taskSchema.path('orderIndex').min(0).validate(Number.isSafeInteger);
+  taskSchema.path('recurrenceRule').enum(...['', 'daily', 'weekly', 'monthly']);
+  taskSchema.path('attachments').schema.path('url').validate(safeUrl, 'Attachment URL must use HTTPS');
+  taskSchema.path('attachments').schema.path('size').min(0).max(10485760);
+  taskSchema.add({ recurrenceSourceId: {type: mongoose.Schema.Types.ObjectId, ref: 'Task'} });
+  taskSchema.index({ recurrenceSourceId: 1 }, {unique: true, sparse: true});
+  taskSchema.index({ workspaceId: 1, orderIndex: 1, createdAt: -1 });
+  taskSchema.index({ workspaceId: 1, orderIndex: 1, createdAt: -1, _id: -1 });
+  const Task = mongoose.model("Task", taskSchema);
 export default Task;

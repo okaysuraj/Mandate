@@ -1,0 +1,32 @@
+[
+  {
+    "title": "API Gateway Protocol Setup",
+    "description": "Configure OAuth2 token verification and rate limiting rules for public endpoints.",
+    "status": "pending",
+    "priority": "urgent"
+  },
+  {
+    "title": "Database Index Optimization",
+    "description": "Add compound indices on workspaceId and createdAt for high-throughput queries.",
+    "status": "in-progress",
+    "priority": "high"
+  },
+  {
+    "title": "Global Search Suggestions UI",
+    "description": "Implement fuzzy match search debounce and command palette shortcut bindings.",
+    "status": "validation",
+    "priority": "medium"
+  },
+  {
+    "title": "User Profile Avatar Sync",
+    "description": "Connect Cloudinary image processing pipeline for high-res profile badges.",
+    "status": "completed",
+    "priority": "high"
+  },
+  {
+    "title": "System Notification Bell Dropdown",
+    "description": "Real-time WebSocket event listeners for incoming mandate assignment alerts.",
+    "status": "completed",
+    "priority": "medium"
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-06T04:10:52.224Z",
+  "quarantineEntries": 8,
+  "groups": [
+    {
+      "collection": "tasks",
+      "reason": "Record owner no longer exists",
+      "count": 1
+    },
+    {
+      "collection": "workspaces",
+      "reason": "Workspace owner no longer exists",
+      "count": 2
+    },
+    {
+      "collection": "tasks",
+      "reason": "Unmodified task from retired demonstration seeder",
+      "count": 4
+    },
+    {
+      "collection": "activities",
+      "reason": "Record owner no longer exists",
+      "count": 1
+    }
+  ],
+  "validatorBackupEntries": 86,
+  "note": "Complete original documents remain in the connected database. No record contents or identifiers are included in this report."
+}

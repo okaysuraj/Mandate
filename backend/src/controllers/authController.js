@@ -1,48 +1,28 @@
-import User from "../models/User.js";
-import Workspace from "../models/Workspace.js";
-
-export const syncUser = async (req, res) => {
-  try {
-    const { uid, email, name: firebaseName } = req.firebaseUser;
-    const name = req.body.name || firebaseName || "New User";
-
-    let user = await User.findOne({ email });
-
-    if (user) {
-      if (!user.firebaseUid) {
-        user.firebaseUid = uid;
-        await user.save();
-      }
-      return res.json(user);
-    }
-
-    user = await User.create({
-      name,
-      email,
-      firebaseUid: uid,
-    });
-
-    const workspace = await Workspace.create({
-      name: "Personal Workspace",
-      owner: user._id,
-      members: [{ user: user._id, role: "Admin" }],
-    });
-
-    user.workspaces.push(workspace._id);
+import mongoose from 'mongoose';
+import User from '../models/User.js';
+import Workspace from '../models/Workspace.js';
+import { handler, HttpError } from '../utils/http.js';
+export const syncUser = handler(async (req, res) => {
+  const { uid, email, name: displayName } = req.firebaseUser;
+  const name = req.body.name || displayName || email.split('@')[0];
+  if (typeof name !== 'string' || !name.trim() || name.length > 200) throw new HttpError(400, 'A valid name is required');
+  let user = await User.findOne({ firebaseUid: uid });
+  if (user) return res.json(user);
+  const byEmail = await User.findOne({ email: email.toLowerCase() });
+  if (byEmail) {
+    if (byEmail.firebaseUid && byEmail.firebaseUid !== uid) throw new HttpError(409, 'Account identity conflict');
+    // Legacy profile binding is permitted only after Firebase proves email ownership.
+    byEmail.firebaseUid = uid;
+    await byEmail.save();
+    return res.json(byEmail);
+  }
+  await mongoose.connection.transaction(async session => {
+    [user] = await User.create([{ name: name.trim(), email, firebaseUid: uid }], { session });
+    const [workspace] = await Workspace.create([{ name: 'Personal Workspace', owner: user._id, members: [{ user: user._id, role: 'Admin' }] }], { session });
+    user.workspaces = [workspace._id];
     user.activeWorkspace = workspace._id;
-    await user.save();
-
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-export const getMe = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
+    await user.save({ session });
+  });
+  res.status(201).json(user);
+});
+export const getMe = handler(async (req, res) => res.json(req.user));

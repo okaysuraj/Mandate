@@ -1,65 +1,28 @@
-import "../config/firebase.js";
-import { getAuth } from "firebase-admin/auth";
-import User from "../models/User.js";
-
-export const verifyTokenOnly = async (req, res, next) => {
-  let token;
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-    try {
-      token = req.headers.authorization.split(" ")[1];
-      req.firebaseUser = await getAuth().verifyIdToken(token);
-      
-      if (!req.firebaseUser.email_verified) {
-        return res.status(403).json({ message: "Please verify your email address to access the API" });
-      }
-      
-      next();
-    } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: "Not authorized, token failed" });
-    }
-  } else {
-    res.status(401).json({ message: "Not authorized, no token" });
-  }
+import { checkSession } from '../utils/apiSession.js';
+import '../config/firebase.js';
+import { getAuth } from 'firebase-admin/auth';
+import User from '../models/User.js';
+export const authenticateToken = async token => {
+  if (typeof token !== 'string' || !token) throw new Error('Missing token');
+  const decoded = await getAuth().verifyIdToken(token, true);
+  if (!decoded.email_verified || !decoded.email) throw new Error('Verified email required');
+  return decoded;
 };
-
+const bearer = req => /^Bearer ([^\s]+)$/.exec(req.headers.authorization || '')?.[1];
+export const verifyTokenOnly = async (req, res, next) => {
+  try { req.firebaseUser = await authenticateToken(bearer(req)); }
+  catch { return res.status(401).json({ message: 'A valid token with a verified email is required' }); }
+  next();
+};
 export const protect = async (req, res, next) => {
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    try {
-      token = req.headers.authorization.split(" ")[1];
-
-      // Verify Firebase ID token
-      const decodedToken = await getAuth().verifyIdToken(token);
-
-      if (!decodedToken.email_verified) {
-        return res.status(403).json({ message: "Please verify your email address to access the API" });
-      }
-
-      // Find user in MongoDB using firebaseUid or email
-      req.user = await User.findOne({ 
-        $or: [
-          { firebaseUid: decodedToken.uid },
-          { email: decodedToken.email }
-        ]
-      });
-
-      if (!req.user) {
-        return res.status(401).json({ message: "User not found in database" });
-      }
-
-      next();
-    } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: "Not authorized, token failed" });
-    }
-  }
-
-  if (!token) {
-    res.status(401).json({ message: "Not authorized, no token" });
-  }
+  let decoded;
+  try { decoded = await authenticateToken(bearer(req)); }
+  catch { return res.status(401).json({ message: 'A valid token with a verified email is required' }); }
+  try {
+    req.user = await User.findOne({ firebaseUid: decoded.uid });
+    if (!req.user) return res.status(401).json({ message: 'User profile must be synchronized' });
+    req.apiSession = await checkSession(req.user, decoded, req.headers["user-agent"] || "");
+    req.firebaseUser = decoded;
+    next();
+  } catch (error) { next(error); }
 };

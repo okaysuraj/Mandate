@@ -1,3 +1,5 @@
+Current audit, database remediation, verification results, and release blockers are recorded in [docs/AUDIT.md](docs/AUDIT.md). Older descriptions below are historical and are superseded by that report.
+
 # 🏢 Mandate — Complete Project Deep Dive
 
 Mandate is a **full-stack, real-time task management and collaboration platform** with three deployment targets: a React **web app**, a React Native / Expo **mobile app**, and a Node.js/Express **backend API**.  The live web app is at [mandateapp.netlify.app](https://mandateapp.netlify.app).

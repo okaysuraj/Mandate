@@ -1,23 +1,11 @@
-import axios from "axios";
-import { auth } from "../config/firebase";
-
-// in production, there's no localhost so we have to make this dynamic
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ? import.meta.env.VITE_API_BASE_URL + "/api" : (import.meta.env.MODE === "development" ? "http://localhost:5001/api" : "https://mandate-ry4d.onrender.com/api");
-
-const api = axios.create({
-  baseURL: BASE_URL,
+import axios from 'axios';
+import { auth } from '../config/firebase';
+export const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:5001' : window.location.origin)).replace(/\/api\/?$/, '').replace(/\/$/, '');
+const api = axios.create({baseURL:API_ORIGIN+'/api',timeout:20000});
+api.interceptors.request.use(async config=>{
+ if(typeof config.url!=='string'||!config.url.startsWith('/')||config.url.startsWith('//')||config.url.includes('://'))throw new Error('API requests must use a relative path');
+ const user=auth.currentUser;
+ if(user)config.headers.Authorization='Bearer '+await user.getIdToken();
+ return config;
 });
-
-const attachAuthToken = async (config) => {
-  const user = auth.currentUser;
-  if (user) {
-    const token = await user.getIdToken();
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-};
-
-api.interceptors.request.use(attachAuthToken, (error) => Promise.reject(error));
-axios.interceptors.request.use(attachAuthToken, (error) => Promise.reject(error));
-
 export default api;

@@ -1,3 +1,4 @@
+import { schemaPolicy, safeUrl } from './schemaPolicy.js';
 import mongoose from "mongoose";
 
 const savedViewSchema = new mongoose.Schema(
@@ -16,6 +17,7 @@ const savedViewSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 10000,
     },
     filters: {
       type: mongoose.Schema.Types.Mixed, // e.g. { status: "pending", priority: "high" }
@@ -31,10 +33,12 @@ const savedViewSchema = new mongoose.Schema(
       default: "list",
     },
   },
-  { timestamps: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true }
 );
 
 savedViewSchema.index({ workspaceId: 1 });
+
+schemaPolicy(savedViewSchema);
 
 const SavedView = mongoose.model("SavedView", savedViewSchema);
 export default SavedView;

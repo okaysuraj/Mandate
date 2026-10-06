@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 
 const navItems = [
+  {path:"/features",icon:"apps",label:"All features"},
   { path: "/dashboard", icon: "dashboard", label: "Dashboard" },
   { path: "/today", icon: "event_upcoming", label: "Today" },
   { path: "/kanban", icon: "view_kanban", label: "Kanban" },
@@ -52,7 +53,7 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
         navRef.current.scrollTop = Number(savedPos);
       }
     }
-  }, [location.pathname]);
+  }, [location.pathname, onCloseMobile]);
 
   // Keep active navigation item visible smoothly
   useEffect(() => {
@@ -66,7 +67,7 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
     if (onCloseMobile) {
       onCloseMobile();
     }
-  }, [location.pathname]);
+  }, [location.pathname, onCloseMobile]);
 
   const handleScroll = (e) => {
     sessionStorage.setItem("sidebarScrollPos", String(e.target.scrollTop));
@@ -123,9 +124,9 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
           </button>
         )}
       </div>
-      
+
       {/* Scrollable Navigation Items */}
-      <nav 
+      <nav
         ref={navRef}
         onScroll={handleScroll}
         className={`flex-1 overflow-y-auto py-2 flex flex-col custom-scrollbar ${isCollapsed && !isMobileView ? "px-1 gap-1" : "px-2 gap-0.5"}`}
@@ -202,7 +203,7 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           {/* Backdrop */}
-          <div 
+          <div
             onClick={onCloseMobile}
             className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
           />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import Footer from "../../components/layout/Footer";
 import toast from "react-hot-toast";
@@ -11,7 +11,7 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const { register } = useAuth();
-  const navigate = useNavigate();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -183,7 +183,7 @@ const RegisterPage = () => {
                 <div className="mt-6 pt-5 border-t border-outline-variant/60 flex flex-col gap-3">
                   <div className="flex items-center gap-2.5 p-3 bg-surface-container/60 rounded-xl border border-outline-variant/60 text-xs font-mono text-on-surface-variant">
                     <span className="material-symbols-outlined text-primary text-base">verified_user</span>
-                    <span>Encrypted with AES-256 standard protocols</span>
+                    <span>Authentication provided by Firebase</span>
                   </div>
                   <div className="text-center text-xs text-on-surface-variant">
                     Already have an account?{" "}

@@ -1,3 +1,4 @@
+import { schemaPolicy, safeUrl } from './schemaPolicy.js';
 import mongoose from "mongoose";
 
 const commentSchema = new mongoose.Schema(
@@ -16,12 +17,15 @@ const commentSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 10000,
     },
   },
-  { timestamps: true }
+  { timestamps: true, strict: "throw" }
 );
 
 commentSchema.index({ taskId: 1, createdAt: -1 });
+
+schemaPolicy(commentSchema);
 
 const Comment = mongoose.model("Comment", commentSchema);
 

@@ -1,8 +1,9 @@
+import {localDateTime} from '../../../../shared/taskSchedule';
 import { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { Input } from "./Input";
-import { motion } from "framer-motion";
-import axios from "axios";
+import { motion as Motion } from "framer-motion";
+import api from '../../lib/axios';
 import toast from "react-hot-toast";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { X } from "lucide-react";
@@ -14,15 +15,15 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
   const [endTime, setEndTime] = useState("");
   const [meetingLink, setMeetingLink] = useState("");
   const [attendees, setAttendees] = useState([]);
-  
+
   const { activeWorkspace } = useWorkspace();
 
   useEffect(() => {
     if (initialData && initialData._id) {
       setTitle(initialData.title || "");
       setDescription(initialData.description || "");
-      setStartTime(new Date(initialData.startTime).toISOString().slice(0, 16));
-      setEndTime(new Date(initialData.endTime).toISOString().slice(0, 16));
+      setStartTime(localDateTime(initialData.startTime));
+      setEndTime(localDateTime(initialData.endTime));
       setMeetingLink(initialData.meetingLink || "");
       setAttendees(initialData.attendees || []);
     } else if (initialData && initialData.startTime) {
@@ -30,9 +31,9 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
       setDescription("");
       const st = new Date(initialData.startTime);
       st.setHours(9, 0, 0, 0);
-      setStartTime(st.toISOString().slice(0, 16));
+      setStartTime(localDateTime(st));
       const et = new Date(st.getTime() + 60 * 60000);
-      setEndTime(et.toISOString().slice(0, 16));
+      setEndTime(localDateTime(et));
       setMeetingLink("");
       setAttendees([]);
     } else {
@@ -40,9 +41,9 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
       setDescription("");
       const now = new Date();
       now.setMinutes(0, 0, 0);
-      setStartTime(now.toISOString().slice(0, 16));
+      setStartTime(localDateTime(now));
       const later = new Date(now.getTime() + 60 * 60000);
-      setEndTime(later.toISOString().slice(0, 16));
+      setEndTime(localDateTime(later));
       setMeetingLink("");
       setAttendees([]);
     }
@@ -53,17 +54,17 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const payload = { title, description, startTime, endTime, meetingLink, attendees };
+      const payload = { title, description, startTime: new Date(startTime).toISOString(), endTime: new Date(endTime).toISOString(), meetingLink, attendees: attendees.map(a=>a._id||a), workspaceId: activeWorkspace?._id };
       if (initialData && initialData._id) {
-        await axios.put(`/api/events/${initialData._id}`, payload);
+        await api.put(`/events/${initialData._id}`, payload);
         toast.success("Event updated");
       } else {
-        await axios.post("/api/events", payload);
+        await api.post("/events", payload);
         toast.success("Event scheduled");
       }
       onSave();
       onClose();
-    } catch (error) {
+    } catch {
       toast.error("Failed to save event");
     }
   };
@@ -71,23 +72,23 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
   const handleDelete = async () => {
     if (!window.confirm("Delete this event?")) return;
     try {
-      await axios.delete(`/api/events/${initialData._id}`);
+      await api.delete(`/events/${initialData._id}`);
       toast.success("Event deleted");
       onSave();
       onClose();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete event");
     }
   };
 
   return (
-    <motion.div 
+    <Motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm"
     >
-      <motion.div 
+      <Motion.div
         initial={{ scale: 0.98, opacity: 0, y: 15 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.98, opacity: 0, y: 15 }}
@@ -114,20 +115,20 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
             </button>
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 mt-2">
-          <Input 
-            label="Event Title" 
-            value={title} 
-            onChange={(e) => setTitle(e.target.value)} 
-            required 
+          <Input
+            label="Event Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
             placeholder="e.g. Tactical Sync, Sprint Retrospective"
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-widest">Start Time</label>
-              <input 
+              <input
                 type="datetime-local"
                 required
                 className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
@@ -137,7 +138,7 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-widest">End Time</label>
-              <input 
+              <input
                 type="datetime-local"
                 required
                 className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
@@ -149,7 +150,7 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-widest">Meeting Link (Virtual Room)</label>
-            <input 
+            <input
               type="url"
               placeholder="https://meet.google.com/..."
               className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
@@ -157,10 +158,10 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
               onChange={(e) => setMeetingLink(e.target.value)}
             />
           </div>
-          
+
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-widest">Operatives Involved</label>
-            <select 
+            <select
               multiple
               className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
               value={attendees}
@@ -191,8 +192,8 @@ const EventModal = ({ isOpen, onClose, initialData = null, onSave }) => {
             </Button>
           </div>
         </form>
-      </motion.div>
-    </motion.div>
+      </Motion.div>
+    </Motion.div>
   );
 };
 

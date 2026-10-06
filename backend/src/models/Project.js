@@ -1,3 +1,4 @@
+import { schemaPolicy, safeUrl } from './schemaPolicy.js';
 import mongoose from "mongoose";
 
 const projectSchema = new mongoose.Schema(
@@ -11,10 +12,12 @@ const projectSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 10000,
     },
     description: {
       type: String,
       trim: true,
+      maxlength: 10000,
     },
     status: {
       type: String,
@@ -22,8 +25,11 @@ const projectSchema = new mongoose.Schema(
       default: "active",
     },
   },
-  { timestamps: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true }
 );
+
+projectSchema.index({workspaceId:1,createdAt:-1});
+schemaPolicy(projectSchema);
 
 const Project = mongoose.model("Project", projectSchema);
 export default Project;

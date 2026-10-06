@@ -1,26 +1,14 @@
-import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
-import Activity from "../models/Activity.js";
-import Task from "../models/Task.js";
-
-const router = express.Router();
-
-router.get("/", protect, async (req, res) => {
-  try {
-    const { workspaceId, limit = 20 } = req.query;
-    
-    // Simple approach: get activities for tasks in this workspace
-    // Or just all activities for the user
-    const activities = await Activity.find({ userId: req.user.id })
-      .sort({ createdAt: -1 })
-      .limit(parseInt(limit));
-      
-    // Populate some basic info if needed, but we can just return them
-    res.status(200).json(activities);
-  } catch (error) {
-    console.error("Error fetching activities:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
+import express from 'express';
+import { protect } from '../middleware/authMiddleware.js';
+import Activity from '../models/Activity.js';
+import {workspaceAccess,assertId} from '../utils/access.js';
+import {handler,pagination,HttpError} from '../utils/http.js';
+const router=express.Router();
+router.get('/',protect,handler(async(req,res)=>{
+ const workspace=await workspaceAccess(req.user,req.query.workspaceId);
+ const filter={workspaceId:workspace._id};if(req.query.entityId)filter.entityId=assertId(req.query.entityId);
+ if(req.query.entityType){if(!['task','project','document','goal','automation','workspace'].includes(req.query.entityType))throw new HttpError(400,'Invalid activity type');filter.entityType=req.query.entityType;}
+ const {limit,skip}=pagination(req.query);
+ res.json(await Activity.find(filter).populate('userId','name avatar').sort({createdAt:-1,_id:-1}).skip(skip).limit(limit).lean());
+}));
 export default router;

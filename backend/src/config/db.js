@@ -1,13 +1,8 @@
-import dns from "node:dns";
-dns.setDefaultResultOrder("ipv4first");
-import mongoose from "mongoose";
-
-export const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("MONGODB CONNECTED SUCCESSFULLY!");
-  } catch (error) {
-    console.error("Error connecting to MONGODB", error);
-    process.exit(1); // exit with failure
-  }
+import mongoose from 'mongoose';
+mongoose.set('strictQuery', 'throw');
+mongoose.set('runValidators', true);
+export const connectDB = async (options = {}) => {
+  if(!process.env.MONGO_URI) throw new Error('MONGO_URI is required');
+  await mongoose.connect(process.env.MONGO_URI, { autoIndex: options.autoIndex ?? process.env.NODE_ENV !== 'production', serverSelectionTimeoutMS: 10000 });
+  console.log('MongoDB connected');
 };

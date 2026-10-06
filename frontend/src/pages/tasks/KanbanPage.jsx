@@ -1,3 +1,4 @@
+import useVisibleTasks from '../../hooks/useVisibleTasks';
 import React, { useState, useEffect } from "react";
 import AppLayout from "../../components/layout/AppLayout";
 import KanbanBoard from "../../components/core/KanbanBoard";
@@ -9,7 +10,12 @@ import { useDataStore } from "../../store/useDataStore";
 import { deleteTask as apiDeleteTask } from "../../services/taskService";
 
 const KanbanPage = () => {
-  const { tasks, loading, loadTasks, moveTask, reorderTasks } = useDataStore();
+  const storeWorkspaceId = useDataStore(state => state.workspaceId);
+  const tasks = useVisibleTasks();
+  const loading = useDataStore(state => state.loading);
+  const loadTasks = useDataStore(state => state.loadTasks);
+  const moveTask = useDataStore(state => state.moveTask);
+  const reorderTasks = useDataStore(state => state.reorderTasks);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isComposerOpen, setIsComposerOpen] = useState(false);
@@ -17,39 +23,18 @@ const KanbanPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    if (user) {
+    if (user && storeWorkspaceId) {
       loadTasks();
     }
-  }, [user, loadTasks]);
+  }, [user, loadTasks, storeWorkspaceId]);
 
-  const handleEdit = (task) => {
-    const id = task._id || task.id;
-    if (id && !String(id).startsWith("650a1111")) {
-      navigate(`/tasks/${id}`);
-    } else {
-      toast("Sample preview mandate - create a new mandate to edit full details", { icon: "ℹ️" });
-    }
-  };
-
-  const handleDelete = async (taskId) => {
-    try {
-      if (String(taskId).startsWith("650a1111") || String(taskId).startsWith("demo-")) {
-        reorderTasks(tasks.filter(t => (t._id || t.id) !== taskId));
-        toast.success("Mandate removed");
-        return;
-      }
-      await apiDeleteTask(taskId);
-      loadTasks();
-      toast.success("Mandate deleted");
-    } catch (error) {
-      toast.error("Failed to delete mandate");
-    }
-  };
+  const handleEdit=task=>navigate('/tasks/'+task._id);
+  const handleDelete=async taskId=>{try{await apiDeleteTask(taskId);await loadTasks({force:true});toast.success('Task deleted');}catch{toast.error('Failed to delete task');}};
 
   const handleStatusChange = async (taskId, newStatus) => {
     try {
       await moveTask(taskId, newStatus);
-    } catch (error) {
+    } catch {
       toast.error("Failed to update status");
     }
   };
@@ -59,8 +44,8 @@ const KanbanPage = () => {
     setIsComposerOpen(true);
   };
 
-  const filteredTasks = searchQuery.trim() 
-    ? tasks.filter(t => 
+  const filteredTasks = searchQuery.trim()
+    ? tasks.filter(t =>
         (t.title && t.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (t.description && t.description.toLowerCase().includes(searchQuery.toLowerCase()))
       )
@@ -85,7 +70,7 @@ const KanbanPage = () => {
               Strategic directive workflow across development and deployment states.
             </p>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Quick search input */}
             <div className="relative">
@@ -100,7 +85,7 @@ const KanbanPage = () => {
                 className="pl-8 pr-7 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface text-xs placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary transition-colors w-44 sm:w-56"
               />
               {searchQuery && (
-                <button 
+                <button
                   onClick={() => setSearchQuery("")}
                   className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface text-[14px] cursor-pointer"
                 >
@@ -109,7 +94,7 @@ const KanbanPage = () => {
               )}
             </div>
 
-            <button 
+            <button
               onClick={() => openCreateModal("pending")}
               className="flex items-center gap-1.5 px-4 py-2 bg-primary text-on-primary rounded-lg font-mono text-xs font-bold uppercase tracking-wider hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm"
             >
@@ -127,26 +112,26 @@ const KanbanPage = () => {
           </div>
         ) : (
           <div className="w-full">
-            <KanbanBoard 
-              tasks={filteredTasks} 
-              setTasks={reorderTasks} 
-              onEdit={handleEdit} 
-              onDelete={handleDelete} 
-              onStatusChange={handleStatusChange} 
-              openCreateModal={openCreateModal} 
+            <KanbanBoard
+              tasks={filteredTasks}
+              setTasks={reorderTasks}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onStatusChange={handleStatusChange}
+              openCreateModal={openCreateModal}
             />
           </div>
         )}
       </div>
 
       {/* Task Composer Modal */}
-      <TaskComposer 
-        isOpen={isComposerOpen} 
-        onClose={() => setIsComposerOpen(false)} 
+      <TaskComposer initialStatus={targetStatus}
+        isOpen={isComposerOpen}
+        onClose={() => setIsComposerOpen(false)}
         onTaskCreated={() => {
           setIsComposerOpen(false);
-          loadTasks();
-        }} 
+          loadTasks({force:true});
+        }}
       />
     </AppLayout>
   );

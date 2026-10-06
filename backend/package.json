@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "main": "src/server.js",
   "scripts": {
-    "dev": "nodemon src/server.js",
+    "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "server": "nodemon src/server.js",
-    "client": "npm start --prefix ../frontend",
-    "dev:all": "concurrently \"npm run server\" \"npm run client\"",
-    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand"
+    "server": "node --watch src/server.js",
+    "client": "npm run dev --prefix ../frontend",
+    "dev:all": "node src/scripts/devServers.js",
+    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "db:audit": "node src/scripts/databaseAudit.js",
+    "db:migrate": "node src/scripts/databaseAudit.js --apply",
+    "db:repair": "node src/scripts/repairDatabase.js",
+    "content:publish": "node src/scripts/publishPublicPages.js"
   },
   "type": "module",
   "keywords": [],
@@ -16,7 +20,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "cloudinary": "^1.41.3",
+    "cloudinary": "^2.11.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "expo-server-sdk": "^6.1.0",
@@ -26,7 +30,6 @@
     "mongodb": "^7.4.0",
     "mongoose": "^8.14.3",
     "multer": "^2.2.0",
-    "multer-storage-cloudinary": "^4.0.0",
     "node-cron": "^4.4.1",
     "socket.io": "^4.8.3",
     "stripe": "^22.3.0"
@@ -35,7 +38,10 @@
     "cross-env": "^10.1.0",
     "jest": "^30.4.2",
     "mongodb-memory-server": "^11.2.0",
-    "nodemon": "^3.1.10",
+    "socket.io-client": "^4.8.4",
     "supertest": "^7.2.2"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

@@ -1,3 +1,5 @@
+import useLoopAnimation from '../../hooks/useLoopAnimation';
+import PublicDocumentModal from "../../components/common/PublicDocumentModal";
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -7,37 +9,12 @@ import {
   ScrollView,
   Animated,
   Easing,
-  Modal,
-  Pressable,
   useWindowDimensions,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { MaterialIcons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
-
-const LEGAL_DOCS = {
-  privacy: {
-    title: "Privacy Policy",
-    content:
-      "At Mandate, we prioritize your data privacy and operational security. Your task data, team structures, and workspace preferences are strictly protected under modern encryption standards. We do not sell your personal data to third parties.",
-  },
-  terms: {
-    title: "Terms of Service",
-    content:
-      "By using Mandate, you agree to adhere to these terms. Mandate provides real-time workspace coordination, task tracking, and team collaboration tooling. You retain ownership over your content while Mandate provides uninterrupted uptime guarantees.",
-  },
-  legal: {
-    title: "Legal Information",
-    content:
-      "Mandate is a productivity and task orchestration platform designed for focused teams and disciplined execution. All registered trademarks, logos, and service marks belong to Mandate Inc.",
-  },
-  security: {
-    title: "Security Protocols",
-    content:
-      "Mandate enforces role-based access control, cryptographic session handling, and real-time socket verification. Routine penetration testing and automated security audits ensure maximum uptime and zero unauthorized data access.",
-  },
-};
 
 const LandingScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -69,15 +46,6 @@ const LandingScreen = ({ navigation }) => {
   const [activeDocKey, setActiveDocKey] = useState(null);
 
   useEffect(() => {
-    // 8s continuous spin loop
-    Animated.loop(
-      Animated.timing(spinValue, {
-        toValue: 1,
-        duration: 8000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    ).start();
 
     // Staggered entrance animation
     Animated.parallel([
@@ -118,6 +86,7 @@ const LandingScreen = ({ navigation }) => {
     animateCard(fadeCard4, slideCard4, 600);
   }, [spinValue, fadeHero, slideHero, fadeCard1, slideCard1, fadeCard2, slideCard2, fadeCard3, slideCard3, fadeCard4, slideCard4]);
 
+  useLoopAnimation(spinValue,8000);
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "360deg"],
@@ -492,6 +461,7 @@ const LandingScreen = ({ navigation }) => {
 
           <View style={styles.footerLinksGrid}>
             <TouchableOpacity
+              accessibilityRole="link"
               style={styles.footerLinkBtn}
               onPress={() => setActiveDocKey("privacy")}
               activeOpacity={0.7}
@@ -502,6 +472,7 @@ const LandingScreen = ({ navigation }) => {
             </TouchableOpacity>
 
             <TouchableOpacity
+              accessibilityRole="link"
               style={styles.footerLinkBtn}
               onPress={() => setActiveDocKey("terms")}
               activeOpacity={0.7}
@@ -512,6 +483,7 @@ const LandingScreen = ({ navigation }) => {
             </TouchableOpacity>
 
             <TouchableOpacity
+              accessibilityRole="link"
               style={styles.footerLinkBtn}
               onPress={() => setActiveDocKey("legal")}
               activeOpacity={0.7}
@@ -522,6 +494,7 @@ const LandingScreen = ({ navigation }) => {
             </TouchableOpacity>
 
             <TouchableOpacity
+              accessibilityRole="link"
               style={styles.footerLinkBtn}
               onPress={() => setActiveDocKey("security")}
               activeOpacity={0.7}
@@ -532,6 +505,7 @@ const LandingScreen = ({ navigation }) => {
             </TouchableOpacity>
 
             <TouchableOpacity
+              accessibilityRole="link"
               style={styles.footerLinkBtn}
               onPress={() => navigation.navigate("Pricing")}
               activeOpacity={0.7}
@@ -544,51 +518,7 @@ const LandingScreen = ({ navigation }) => {
         </View>
       </ScrollView>
 
-      {/* ── Legal / Policy Document Modal ── */}
-      <Modal
-        visible={!!activeDocKey}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setActiveDocKey(null)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setActiveDocKey(null)}>
-          <Pressable
-            style={[
-              styles.modalCard,
-              {
-                backgroundColor: colors.surfaceContainerLowest,
-                borderColor: colors.outlineVariant,
-              },
-            ]}
-          >
-            <View style={[styles.modalHeader, { borderBottomColor: colors.outlineVariant }]}>
-              <Text style={[styles.modalTitle, { color: colors.primary }]}>
-                {activeDocKey ? LEGAL_DOCS[activeDocKey]?.title : ""}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setActiveDocKey(null)}
-                style={styles.modalCloseBtn}
-              >
-                <MaterialIcons name="close" size={22} color={colors.onSurfaceVariant} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.modalBody}>
-              <Text style={[styles.modalContentText, { color: colors.onSurfaceVariant }]}>
-                {activeDocKey ? LEGAL_DOCS[activeDocKey]?.content : ""}
-              </Text>
-            </ScrollView>
-
-            <TouchableOpacity
-              style={[styles.modalActionBtn, { backgroundColor: colors.primary }]}
-              onPress={() => setActiveDocKey(null)}
-              activeOpacity={0.85}
-            >
-              <Text style={[styles.modalActionBtnText, { color: colors.onPrimary }]}>CLOSE</Text>
-            </TouchableOpacity>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      <PublicDocumentModal slug={activeDocKey} onClose={() => setActiveDocKey(null)} />
     </SafeAreaView>
   );
 };
@@ -902,6 +832,7 @@ const styles = StyleSheet.create({
     maxWidth: 340,
   },
   footerLinkBtn: {
+    minHeight: 44,
     paddingHorizontal: 8,
     paddingVertical: 6,
     marginHorizontal: 3,
@@ -914,55 +845,4 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
 
-  // ── Legal Document Modal ──
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  modalCard: {
-    width: "100%",
-    maxWidth: 380,
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 20,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontFamily: "HankenGrotesk-Bold",
-    fontSize: 18,
-    letterSpacing: -0.3,
-  },
-  modalCloseBtn: {
-    padding: 4,
-  },
-  modalBody: {
-    maxHeight: 220,
-    marginBottom: 20,
-  },
-  modalContentText: {
-    fontFamily: "HankenGrotesk-Regular",
-    fontSize: 14,
-    lineHeight: 22,
-  },
-  modalActionBtn: {
-    paddingVertical: 12,
-    borderRadius: 9999,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalActionBtnText: {
-    fontFamily: "JetBrainsMono-SemiBold",
-    fontSize: 11,
-    letterSpacing: 1.2,
-  },
 });

@@ -1,3 +1,4 @@
+import { schemaPolicy, safeUrl } from './schemaPolicy.js';
 import mongoose from "mongoose";
 
 const goalSchema = new mongoose.Schema(
@@ -11,10 +12,12 @@ const goalSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 10000,
     },
     description: {
       type: String,
       trim: true,
+      maxlength: 10000,
     },
     targetDate: {
       type: Date,
@@ -37,8 +40,11 @@ const goalSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true }
 );
+
+goalSchema.index({workspaceId:1,createdAt:-1});
+schemaPolicy(goalSchema);
 
 const Goal = mongoose.model("Goal", goalSchema);
 export default Goal;

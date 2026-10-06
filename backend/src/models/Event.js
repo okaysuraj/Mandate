@@ -1,3 +1,4 @@
+import { schemaPolicy, safeUrl } from './schemaPolicy.js';
 import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema(
@@ -6,10 +7,12 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 10000,
     },
     description: {
       type: String,
       trim: true,
+      maxlength: 10000,
     },
     startTime: {
       type: Date,
@@ -28,6 +31,7 @@ const eventSchema = new mongoose.Schema(
     meetingLink: {
       type: String,
       trim: true,
+      maxlength: 10000,
     },
     creator: {
       type: mongoose.Schema.Types.ObjectId,
@@ -40,11 +44,15 @@ const eventSchema = new mongoose.Schema(
       ref: "Workspace",
     },
   },
-  { timestamps: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true }
 );
 
 eventSchema.index({ workspaceId: 1, startTime: 1 });
 
-const Event = mongoose.model("Event", eventSchema);
+schemaPolicy(eventSchema);
+
+eventSchema.path('meetingLink').validate(safeUrl, 'Meeting link must use HTTPS');
+  eventSchema.pre('validate', function() { if (this.endTime <= this.startTime) this.invalidate('endTime', 'Event end must be after start'); });
+  const Event = mongoose.model("Event", eventSchema);
 
 export default Event;

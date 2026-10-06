@@ -1,126 +1,47 @@
-import Stripe from "stripe";
-import dotenv from "dotenv";
-import User from "../models/User.js";
-
-dotenv.config();
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_mock");
-
-export const createCheckoutSession = async (req, res) => {
-  try {
-    const { plan } = req.body; // e.g. 'pro', 'team'
-    
-    // Hardcoded price IDs for demo purposes. 
-    // In a real app, these should come from your environment or DB.
-    let priceId = "";
-    if (plan === "pro") priceId = process.env.STRIPE_PRO_PRICE_ID || "price_mock_pro";
-    else if (plan === "team") priceId = process.env.STRIPE_TEAM_PRICE_ID || "price_mock_team";
-    else return res.status(400).json({ message: "Invalid plan selected" });
-
-    // Try to find the user's stripe customer id if they have one
-    const user = await User.findById(req.user._id);
-    let customerId = user.stripeCustomerId;
-
-    if (!customerId && process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== "sk_test_mock") {
-      const customer = await stripe.customers.create({
-        email: user.email,
-        name: user.name,
-      });
-      customerId = customer.id;
-      user.stripeCustomerId = customerId;
-      await user.save();
-    }
-
-    const sessionData = {
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `${process.env.FRONTEND_URL || "http://localhost:5173"}/admin?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL || "http://localhost:5173"}/admin?canceled=true`,
-      client_reference_id: req.user._id.toString(),
-    };
-
-    if (customerId) {
-      sessionData.customer = customerId;
-    } else {
-      sessionData.customer_email = user.email;
-    }
-
-    if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== "sk_test_mock") {
-      const session = await stripe.checkout.sessions.create(sessionData);
-      res.status(200).json({ url: session.url });
-    } else {
-      // Mock flow if no keys
-      console.log("MOCK STRIPE: Creating checkout session for", plan);
-      // Automatically "upgrade" the user for demo purposes
-      user.subscriptionPlan = plan;
-      user.subscriptionStatus = "active";
-      await user.save();
-      res.status(200).json({ url: `${process.env.FRONTEND_URL || "http://localhost:5173"}/admin?success=true` });
-    }
-  } catch (error) {
-    console.error("Error creating checkout session:", error);
-    res.status(500).json({ message: "Internal server error" });
+import Stripe from 'stripe';
+import 'dotenv/config';
+import User from '../models/User.js';
+import { handler, HttpError } from '../utils/http.js';
+const stripe=process.env.STRIPE_SECRET_KEY?new Stripe(process.env.STRIPE_SECRET_KEY):null;
+const prices=()=>({pro:process.env.STRIPE_PRO_PRICE_ID,team:process.env.STRIPE_TEAM_PRICE_ID});
+export const createCheckoutSession=handler(async(req,res)=>{
+ const plan=req.body.plan;
+ if(!['pro','team'].includes(plan))throw new HttpError(400,'Invalid plan');
+ if(!stripe||!prices()[plan]||!process.env.FRONTEND_URL)throw new HttpError(503,'Billing has not been configured');
+ const session=await stripe.checkout.sessions.create({mode:'subscription',line_items:[{price:prices()[plan],quantity:1}],
+ customer_email:req.user.stripeCustomerId?undefined:req.user.email,customer:req.user.stripeCustomerId||undefined,
+ client_reference_id:String(req.user._id),metadata:{plan},subscription_data:{metadata:{plan,userId:String(req.user._id)}},
+ success_url:process.env.FRONTEND_URL+'/billing?success=true',cancel_url:process.env.FRONTEND_URL+'/billing?canceled=true'});
+ res.json({url:session.url});
+});
+export const webhook=handler(async(req,res)=>{
+ if(!stripe||!process.env.STRIPE_WEBHOOK_SECRET)throw new HttpError(503,'Billing webhook has not been configured');
+ let event;try{event=stripe.webhooks.constructEvent(req.body,req.headers['stripe-signature'],process.env.STRIPE_WEBHOOK_SECRET);}catch{throw new HttpError(400,'Invalid webhook signature');}
+ if(event.type==='checkout.session.completed'){
+  const checkout=event.data.object;
+  if(checkout.mode==='subscription' && checkout.subscription && checkout.client_reference_id){
+    const subscription=await stripe.subscriptions.retrieve(checkout.subscription);
+    const price=subscription.items.data[0]?.price?.id;
+    const plan=Object.entries(prices()).find(([,id])=>id===price)?.[0];
+    if(plan)await User.findByIdAndUpdate(checkout.client_reference_id,{$set:{stripeCustomerId:checkout.customer,subscriptionPlan:['active','trialing'].includes(subscription.status)?plan:'free',subscriptionStatus:subscription.status}},{runValidators:true});
   }
-};
+ }
+ if(['customer.subscription.updated','customer.subscription.deleted'].includes(event.type)){
+  const subscription=event.data.object;
+  // Retrieve the current state so delayed/out-of-order events cannot restore old entitlements.
+  const current=await stripe.subscriptions.retrieve(subscription.id);
+  const plan=Object.entries(prices()).find(([,id])=>id===current.items.data[0]?.price?.id)?.[0]||'free';
+  await User.findOneAndUpdate({stripeCustomerId:current.customer},{$set:{subscriptionStatus:current.status,subscriptionPlan:['active','trialing'].includes(current.status)?plan:'free'}},{runValidators:true});
+ }
+ res.json({received:true});
+});
 
-export const webhook = async (req, res) => {
-  const sig = req.headers["stripe-signature"];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  let event;
-
-  try {
-    if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== "sk_test_mock") {
-      event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-    } else {
-      return res.status(200).send("Mock webhook acknowledged");
-    }
-  } catch (err) {
-    console.error(`Webhook Error: ${err.message}`);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  // Handle the event
-  try {
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object;
-        const userId = session.client_reference_id;
-        
-        if (userId) {
-          await User.findByIdAndUpdate(userId, {
-            subscriptionStatus: "active",
-            stripeCustomerId: session.customer,
-            // You might want to map price ID to plan name here in a real app
-            subscriptionPlan: "pro" 
-          });
-        }
-        break;
-      }
-      case "customer.subscription.updated":
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object;
-        const customerId = subscription.customer;
-        
-        await User.findOneAndUpdate(
-          { stripeCustomerId: customerId },
-          { subscriptionStatus: subscription.status }
-        );
-        break;
-      }
-      default:
-        console.log(`Unhandled event type ${event.type}`);
-    }
-  } catch (error) {
-    console.error("Error processing webhook event:", error);
-    return res.status(500).send("Webhook handler failed");
-  }
-
-  res.status(200).send();
-};
+export const getPlans=handler(async(req,res)=>{
+ const plans=[];
+ for(const [plan,priceId]of Object.entries(prices())){
+  if(!stripe||!priceId){plans.push({plan,available:false});continue;}
+  const price=await stripe.prices.retrieve(priceId);
+  plans.push({plan,available:price.active,amount:price.unit_amount,currency:price.currency,interval:price.recurring?.interval});
+ }
+ res.json({plans});
+});

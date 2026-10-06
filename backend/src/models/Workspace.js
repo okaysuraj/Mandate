@@ -1,3 +1,4 @@
+import { schemaPolicy, safeUrl } from './schemaPolicy.js';
 import mongoose from "mongoose";
 
 const workspaceSchema = new mongoose.Schema(
@@ -6,6 +7,7 @@ const workspaceSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 10000,
     },
     type: {
       type: String,
@@ -36,9 +38,13 @@ const workspaceSchema = new mongoose.Schema(
       googleCalendar: { type: Boolean, default: false }
     }
   },
-  { timestamps: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true }
 );
 
-const Workspace = mongoose.model("Workspace", workspaceSchema);
+schemaPolicy(workspaceSchema);
+
+workspaceSchema.index({'members.user':1}); workspaceSchema.index({owner:1});
+  workspaceSchema.pre('validate',function(){const ids=this.members.map(m=>String(m.user)); if(new Set(ids).size!==ids.length)this.invalidate('members','Duplicate workspace members');});
+  const Workspace = mongoose.model("Workspace", workspaceSchema);
 
 export default Workspace;

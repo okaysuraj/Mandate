@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-10-06T10:29:07.112Z",
+  "sourceFiles": 441,
+  "sourceIssues": 0,
+  "backendTests": {
+    "passed": 38,
+    "total": 38,
+    "catalogEntriesLoaded": 153,
+    "providerBoundary": "Firebase verification mocked only in isolated integration tests"
+  },
+  "frontendLint": {
+    "passed": true,
+    "errors": 0,
+    "warnings": 0
+  },
+  "bundles": {
+    "web": "passed",
+    "android": "passed",
+    "ios": "passed"
+  },
+  "expoDependencyCompatibility": "passed",
+  "database": {
+    "collections": 19,
+    "issues": 0,
+    "missingIndexes": 0,
+    "quarantinedRecords": 8
+  },
+  "productionReadyCertified": false,
+  "fullFeatureComponentParityCertified": false,
+  "limitations": [
+    "Provider credentials pending: Cloudinary live check failed 401; Stripe and Gemini unavailable",
+    "Mobile dependency advisories: 16 high; backend test-tool advisories: 19 moderate",
+    "Advanced workflows and specialized views require implementation/acceptance tests",
+    "Authenticated browser/native device/provider end-to-end testing remains pending"
+  ],
+  "performance": {
+    "report": "PERFORMANCE.md",
+    "localBrowserMeasured": true,
+    "isolatedComponentTests": "passed",
+    "nativeDeviceProfiled": false,
+    "productionPerformanceCertified": false
+  }
+}

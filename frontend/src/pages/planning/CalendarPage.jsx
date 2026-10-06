@@ -1,12 +1,13 @@
+import useVisibleTasks from '../../hooks/useVisibleTasks';
 import React, { useState, useEffect, useMemo } from "react";
 import AppLayout from "../../components/layout/AppLayout";
 import TaskComposer from "../../components/core/TaskComposer";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router";
 import { useDataStore } from "../../store/useDataStore";
-import { 
-  format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, 
-  eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday 
+import {
+  format, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
+  eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday
 } from "date-fns";
 
 const CalendarPage = () => {
@@ -14,18 +15,21 @@ const CalendarPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [composerDueDate, setComposerDueDate] = useState("");
-  
+
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { tasks, loading, loadTasks } = useDataStore();
+  const storeWorkspaceId = useDataStore(state => state.workspaceId);
+  const tasks = useVisibleTasks();
+  const _Loading = useDataStore(state => state.loading);
+  const loadTasks = useDataStore(state => state.loadTasks);
 
   useEffect(() => {
-    if (user) {
+    if (user && storeWorkspaceId) {
       loadTasks();
     }
-  }, [user, loadTasks]);
+  }, [user, loadTasks, storeWorkspaceId]);
 
-  const safeTasks = Array.isArray(tasks) ? tasks : [];
+  const safeTasks = useMemo(() => Array.isArray(tasks) ? tasks : [], [tasks]);
 
   // Compute days for calendar grid (Monday start)
   const daysInGrid = useMemo(() => {
@@ -123,21 +127,21 @@ const CalendarPage = () => {
 
           {/* Action Bar */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <button 
+            <button
               onClick={handleToday}
               className="px-3.5 py-1.5 bg-surface-container-lowest border border-outline-variant hover:border-primary text-on-surface font-mono text-xs font-bold uppercase tracking-wider rounded-lg transition-colors cursor-pointer"
             >
               Today
             </button>
             <div className="flex items-center border border-outline-variant bg-surface-container-lowest rounded-lg overflow-hidden">
-              <button 
+              <button
                 onClick={handlePrevMonth}
                 title="Previous Month"
                 className="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors cursor-pointer border-r border-outline-variant"
               >
                 <span className="material-symbols-outlined text-[18px]">chevron_left</span>
               </button>
-              <button 
+              <button
                 onClick={handleNextMonth}
                 title="Next Month"
                 className="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors cursor-pointer"
@@ -145,7 +149,7 @@ const CalendarPage = () => {
                 <span className="material-symbols-outlined text-[18px]">chevron_right</span>
               </button>
             </div>
-            <button 
+            <button
               onClick={() => openComposerForDate(selectedDate)}
               className="flex items-center gap-1.5 px-4 py-2 bg-primary text-on-primary rounded-lg font-mono text-xs font-bold uppercase tracking-wider hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-sm"
             >
@@ -170,8 +174,8 @@ const CalendarPage = () => {
                 { full: "Sat", short: "S" },
                 { full: "Sun", short: "S" },
               ].map((day, idx) => (
-                <div 
-                  key={day.full} 
+                <div
+                  key={day.full}
                   className={`py-2.5 text-center font-mono text-[11px] font-bold uppercase tracking-wider ${
                     idx >= 5 ? 'text-on-surface-variant/70 bg-surface-container-high/30' : 'text-on-surface'
                   } border-r border-outline-variant last:border-r-0`}
@@ -181,7 +185,7 @@ const CalendarPage = () => {
                 </div>
               ))}
             </div>
-            
+
             {/* Calendar Days Grid */}
             <div className="grid grid-cols-7">
               {daysInGrid.map((day, cellIdx) => {
@@ -192,24 +196,24 @@ const CalendarPage = () => {
                 const isCurrentToday = isToday(day);
 
                 return (
-                  <div 
-                    key={dayKey} 
+                  <div
+                    key={dayKey}
                     onClick={() => setSelectedDate(day)}
                     className={`min-h-[72px] sm:min-h-[105px] md:min-h-[125px] p-1.5 md:p-2.5 relative group cursor-pointer transition-colors border-r border-b border-outline-variant select-none ${
                       cellIdx % 7 === 6 ? 'border-r-0' : ''
                     } ${
-                      !isCurrentMonth 
-                        ? 'bg-surface-container-low/40 text-on-surface-variant/40' 
-                        : isSelected 
-                        ? 'bg-surface-container-high/50 ring-1 ring-inset ring-primary' 
+                      !isCurrentMonth
+                        ? 'bg-surface-container-low/40 text-on-surface-variant/40'
+                        : isSelected
+                        ? 'bg-surface-container-high/50 ring-1 ring-inset ring-primary'
                         : 'bg-surface-container-lowest hover:bg-surface-container-low'
                     }`}
                   >
                     {/* Top Row: Date Number and Count */}
                     <div className="flex items-center justify-between mb-1">
                       <span className={`inline-flex items-center justify-center font-mono text-xs font-bold rounded-full ${
-                        isCurrentToday 
-                          ? 'w-6 h-6 bg-primary text-on-primary' 
+                        isCurrentToday
+                          ? 'w-6 h-6 bg-primary text-on-primary'
                           : isSelected
                           ? 'w-6 h-6 border border-primary text-primary font-bold'
                           : isCurrentMonth
@@ -232,12 +236,12 @@ const CalendarPage = () => {
                         const pri = getPriorityStyle(t.priority);
                         const isDone = t.status === "completed";
                         return (
-                          <div 
+                          <div
                             key={idx}
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedDate(day);
-                              if (t._id && !String(t._id).startsWith("650a1111")) {
+                              if (t._id) {
                                 navigate(`/tasks/${t._id}`);
                               }
                             }}
@@ -262,8 +266,8 @@ const CalendarPage = () => {
                       {dayTasks.slice(0, 3).map((t, idx) => {
                         const pri = getPriorityStyle(t.priority);
                         return (
-                          <span 
-                            key={idx} 
+                          <span
+                            key={idx}
                             className={`w-2 h-2 rounded-full inline-block ${pri.dot}`}
                             title={t.title}
                           />
@@ -277,7 +281,7 @@ const CalendarPage = () => {
                     </div>
 
                     {/* Quick Add Hover Button */}
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         openComposerForDate(day);
@@ -305,7 +309,7 @@ const CalendarPage = () => {
                     {format(selectedDate, "MMMM d, yyyy")}
                   </h3>
                 </div>
-                <button 
+                <button
                   onClick={() => openComposerForDate(selectedDate)}
                   className="w-8 h-8 rounded-lg border border-outline-variant hover:border-primary bg-surface-container-lowest text-on-surface flex items-center justify-center cursor-pointer transition-colors"
                   title="Add Mandate for this Day"
@@ -323,16 +327,16 @@ const CalendarPage = () => {
                     const refCode = idStr.length >= 4 ? idStr.slice(-4).toUpperCase() : idStr.toUpperCase();
 
                     return (
-                      <div 
+                      <div
                         key={idx}
                         onClick={() => {
-                          if (task._id && !String(task._id).startsWith("650a1111")) {
+                          if (task._id) {
                             navigate(`/tasks/${task._id}`);
                           }
                         }}
                         className={`p-3.5 rounded-lg border transition-all cursor-pointer ${
-                          isDone 
-                            ? 'bg-surface-container-low/40 border-outline-variant/40 opacity-70' 
+                          isDone
+                            ? 'bg-surface-container-low/40 border-outline-variant/40 opacity-70'
                             : 'bg-surface-container-low hover:bg-surface-container border-outline-variant hover:border-primary'
                         }`}
                       >
@@ -371,7 +375,7 @@ const CalendarPage = () => {
                   <p className="text-xs text-on-surface-variant mt-1 max-w-[200px]">
                     No directives scheduled for this cycle date.
                   </p>
-                  <button 
+                  <button
                     onClick={() => openComposerForDate(selectedDate)}
                     className="mt-4 px-3.5 py-1.5 bg-surface-container border border-outline-variant hover:border-primary text-primary rounded-lg font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
                   >
@@ -432,7 +436,7 @@ const CalendarPage = () => {
             </div>
             <div className="text-2xl md:text-3xl font-black text-on-surface font-mono">{completionRate}%</div>
             <div className="w-full bg-surface-container-high h-2.5 mt-3 rounded-full overflow-hidden">
-              <div 
+              <div
                 className="bg-primary h-full transition-all duration-500 rounded-full"
                 style={{ width: `${completionRate}%` }}
               ></div>
@@ -454,7 +458,7 @@ const CalendarPage = () => {
         </section>
 
         {/* Floating Action Button */}
-        <button 
+        <button
           onClick={() => openComposerForDate(new Date())}
           title="Schedule New Directive"
           aria-label="Schedule New Directive"
@@ -465,13 +469,13 @@ const CalendarPage = () => {
       </div>
 
       {/* Task Composer Modal */}
-      <TaskComposer 
-        isOpen={isComposerOpen} 
-        onClose={() => setIsComposerOpen(false)} 
+      <TaskComposer initialDueDate={composerDueDate}
+        isOpen={isComposerOpen}
+        onClose={() => setIsComposerOpen(false)}
         onTaskCreated={() => {
           setIsComposerOpen(false);
-          loadTasks();
-        }} 
+          loadTasks({force:true});
+        }}
       />
     </AppLayout>
   );

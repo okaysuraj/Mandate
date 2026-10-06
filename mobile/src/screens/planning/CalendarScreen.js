@@ -1,7 +1,9 @@
+import {useIsFocused} from '@react-navigation/native';
+import useVisibleTasks from '../../hooks/useVisibleTasks';
 import React, { useState, useEffect, useMemo } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialIcons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "../../context/AuthContext";
 import { useDataStore } from "../../store/useDataStore";
 import { useTheme } from "../../context/ThemeContext";
@@ -11,7 +13,10 @@ const { width } = Dimensions.get("window");
 
 const CalendarScreen = ({ navigation }) => {
   const { user } = useAuth();
-  const { tasks, loadTasks } = useDataStore((state) => state);
+  const tasks = useVisibleTasks();
+  const focused = useIsFocused();
+  const storeWorkspaceId = useDataStore(state => state.workspaceId);
+  const loadTasks = useDataStore(state => state.loadTasks);
   const { colors, typography } = useTheme();
 
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
@@ -19,8 +24,8 @@ const CalendarScreen = ({ navigation }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   useEffect(() => {
-    if (user) loadTasks();
-  }, [user, loadTasks]);
+    if (user && focused && storeWorkspaceId) loadTasks();
+  }, [user, loadTasks, focused, storeWorkspaceId]);
 
   const safeTasks = Array.isArray(tasks) ? tasks : (Array.isArray(tasks?.data) ? tasks.data : []);
 
@@ -58,9 +63,7 @@ const CalendarScreen = ({ navigation }) => {
 
   const extractDateKey = (dateVal) => {
     if (!dateVal) return "";
-    if (typeof dateVal === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateVal)) {
-      return dateVal.slice(0, 10);
-    }
+
     const d = new Date(dateVal);
     if (isNaN(d.getTime())) return "";
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -70,7 +73,7 @@ const CalendarScreen = ({ navigation }) => {
   const tasksByDate = useMemo(() => {
     const map = new Map();
     safeTasks.forEach((task) => {
-      const dStr = task.dueDate || task.createdAt;
+      const dStr = task.dueDate;
       const key = extractDateKey(dStr);
       if (!key) return;
       if (!map.has(key)) map.set(key, []);
@@ -213,7 +216,8 @@ const CalendarScreen = ({ navigation }) => {
     <SafeAreaView edges={["top"]} style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <AppHeader title="CALENDAR" navigation={navigation} />
 
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <FlatList contentContainerStyle={styles.container} showsVerticalScrollIndicator={false} data={selectedDayTasks} keyExtractor={task=>task._id} initialNumToRender={6} maxToRenderPerBatch={6} windowSize={5}
+ ListHeaderComponent={<View style={{gap:16}}>
         {/* Section Header matching web CalendarPage.jsx */}
         <View style={[styles.sectionHeader, { borderBottomColor: colors.outlineVariant }]}>
           <View>
@@ -267,7 +271,7 @@ const CalendarScreen = ({ navigation }) => {
             </View>
 
             <TouchableOpacity
-              onPress={() => navigation.navigate("CreateTask")}
+              onPress={() => navigation.navigate("CreateTask",{dueDate:extractDateKey(selectedDate)})}
               style={[styles.scheduleBtn, { backgroundColor: colors.primary }]}
               activeOpacity={0.85}
             >
@@ -430,15 +434,7 @@ const CalendarScreen = ({ navigation }) => {
         </View>
 
         {/* Selected Date Agenda Card */}
-        <View
-          style={[
-            styles.agendaCard,
-            {
-              backgroundColor: colors.surfaceContainerLowest,
-              borderColor: colors.outlineVariant,
-            },
-          ]}
-        >
+        
           <View style={[styles.agendaHeader, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant }]}>
             <View>
               <Text style={[styles.agendaWeekday, { color: colors.onSurfaceVariant }]}>
@@ -468,9 +464,31 @@ const CalendarScreen = ({ navigation }) => {
           </View>
 
           {/* Agenda Tasks List */}
-          <View style={styles.agendaTasksList}>
-            {selectedDayTasks.length > 0 ? (
-              selectedDayTasks.map((task, idx) => {
+          </View>}
+ ListEmptyComponent={<View style={styles.emptyAgendaBox}>
+                <MaterialIcons name="event-available" size={32} color={colors.outline} style={{ marginBottom: 6 }} />
+                <Text style={[styles.emptyAgendaTitle, { color: colors.onSurface }]}>
+                  NO TASKS SCHEDULED
+                </Text>
+                <Text style={[styles.emptyAgendaSub, { color: colors.onSurfaceVariant }]}>
+                  No tasks scheduled for this date.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("CreateTask")}
+                  style={[
+                    styles.assignDirectiveBtn,
+                    {
+                      backgroundColor: colors.surfaceContainer,
+                      borderColor: colors.outlineVariant,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.assignDirectiveText, { color: colors.primary }]}>
+                    + Create Task
+                  </Text>
+                </TouchableOpacity>
+              </View>}
+ renderItem={({item:task,index:idx})=>{
                 const idStr = String(task._id || task.id || "0000");
                 const refCode =
                   idStr.length >= 4 ? idStr.slice(-4).toUpperCase() : idStr.toUpperCase();
@@ -478,7 +496,7 @@ const CalendarScreen = ({ navigation }) => {
                 const priorityLabel = getPriorityLabel(task.priority);
 
                 return (
-                  <TouchableOpacity
+                  <View style={styles.agendaTasksList}><TouchableOpacity
                     key={idx}
                     onPress={() =>
                       navigation.navigate("TaskDetail", { task, taskId: task._id || task.id })
@@ -543,36 +561,10 @@ const CalendarScreen = ({ navigation }) => {
                       </Text>
                       <MaterialIcons name="arrow-forward" size={14} color={colors.onSurfaceVariant} />
                     </View>
-                  </TouchableOpacity>
+                  </TouchableOpacity></View>
                 );
-              })
-            ) : (
-              <View style={styles.emptyAgendaBox}>
-                <MaterialIcons name="event-available" size={32} color={colors.outline} style={{ marginBottom: 6 }} />
-                <Text style={[styles.emptyAgendaTitle, { color: colors.onSurface }]}>
-                  NO TASKS SCHEDULED
-                </Text>
-                <Text style={[styles.emptyAgendaSub, { color: colors.onSurfaceVariant }]}>
-                  No tasks scheduled for this date.
-                </Text>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("CreateTask")}
-                  style={[
-                    styles.assignDirectiveBtn,
-                    {
-                      backgroundColor: colors.surfaceContainer,
-                      borderColor: colors.outlineVariant,
-                    },
-                  ]}
-                >
-                  <Text style={[styles.assignDirectiveText, { color: colors.primary }]}>
-                    + Create Task
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        </View>
+              }}
+ ListFooterComponent={<View style={{gap:16}}>
 
         {/* Operational Severity Index Legend */}
         <View
@@ -688,7 +680,7 @@ const CalendarScreen = ({ navigation }) => {
         </View>
 
         <View style={{ height: 32 }} />
-      </ScrollView>
+      </View>}/>
     </SafeAreaView>
   );
 };

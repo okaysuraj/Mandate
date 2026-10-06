@@ -1,8 +1,11 @@
+import {useAuth} from '../../context/AuthContext';
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import api from "../../lib/axios";
 
 const GlobalSearchBar = () => {
+  const {user}=useAuth();const userId=user?._id;
+  const [error,setError]=useState('');
   const [query, setQuery] = useState("");
   const [results, setResults] = useState({ tasks: [], projects: [], goals: [], documents: [], pages: [] });
   const [loading, setLoading] = useState(false);
@@ -24,7 +27,8 @@ const GlobalSearchBar = () => {
 
   // Debounced real-time search request
   useEffect(() => {
-    if (!query.trim()) {
+    setError('');setResults({tasks:[],projects:[],goals:[],documents:[],pages:[]});
+    if (!query.trim()||!userId) {
       setResults({ tasks: [], projects: [], goals: [], documents: [], pages: [] });
       setLoading(false);
       setSelectedIndex(-1);
@@ -32,26 +36,28 @@ const GlobalSearchBar = () => {
     }
 
     setLoading(true);
+    const controller=new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const { data } = await api.get("/search", { params: { q: query } });
+        const { data } = await api.get("/search", { params: { q: query }, signal:controller.signal });
+        if(controller.signal.aborted)return;
         setResults(data);
         setSelectedIndex(-1);
       } catch (error) {
-        console.error("Search error:", error);
+        if(!controller.signal.aborted)setError(error.response?.data?.message||'Search failed');
       } finally {
-        setLoading(false);
+        if(!controller.signal.aborted)setLoading(false);
       }
     }, 200);
 
-    return () => clearTimeout(timer);
-  }, [query]);
+    return () => {clearTimeout(timer);controller.abort();};
+  }, [query,userId]);
 
   // Flatten results for keyboard arrow navigation
   const getFlatResults = () => {
     const flat = [];
     if (results.tasks?.length) {
-      results.tasks.forEach((t) => flat.push({ ...t, type: "task", url: `/focus/${t._id}`, label: t.title }));
+      results.tasks.forEach((t) => flat.push({ ...t, type: "task", url: `/tasks/${t._id}`, label: t.title }));
     }
     if (results.projects?.length) {
       results.projects.forEach((p) => flat.push({ ...p, type: "project", url: `/projects/${p._id}`, label: p.name }));
@@ -105,10 +111,10 @@ const GlobalSearchBar = () => {
 
   return (
     <div className="relative flex-1 max-w-xl mx-2 md:mx-4" ref={searchRef}>
-      {/* Search Input Container */}
+      {error&&<p role="alert">{error}</p>}{/* Search Input Container */}
       <div className="relative flex items-center bg-surface-container-lowest px-3.5 py-2 rounded-xl border border-outline-variant hover:border-primary/60 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-xs">
         <span className="material-symbols-outlined text-on-surface-variant text-[18px] flex-shrink-0">search</span>
-        
+
         <input
           value={query}
           onChange={(e) => {

@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-06T09:54:36.601Z",
+  "source": "Existing last verified Expo production export, before this performance pass",
+  "details": {
+    "ios": {
+      "bundleBytes": 3292300,
+      "assetCount": 70,
+      "assetBytes": 7347434
+    },
+    "android": {
+      "bundleBytes": 3297851,
+      "assetCount": 71,
+      "assetBytes": 7346429
+    }
+  }
+}

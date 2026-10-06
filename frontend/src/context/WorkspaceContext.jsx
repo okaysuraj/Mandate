@@ -1,73 +1,22 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { getWorkspaces, createWorkspace as apiCreateWorkspace, switchActiveWorkspace } from "../services/workspaceService";
-import { useAuth } from "./AuthContext";
-import toast from "react-hot-toast";
-
-const WorkspaceContext = createContext();
-
-export const useWorkspace = () => useContext(WorkspaceContext);
-
-export const WorkspaceProvider = ({ children }) => {
-  const { user, updateUser } = useAuth();
-  const [workspaces, setWorkspaces] = useState([]);
-  const [activeWorkspace, setActiveWorkspace] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (user) {
-      fetchWorkspaces();
-    } else {
-      setWorkspaces([]);
-      setActiveWorkspace(null);
-      setLoading(false);
-    }
-  }, [user]);
-
-  const fetchWorkspaces = async () => {
-    try {
-      const data = await getWorkspaces();
-      setWorkspaces(Array.isArray(data) ? data : []);
-      
-      if (user.activeWorkspace) {
-        const active = (Array.isArray(data) ? data : []).find(w => w._id === user.activeWorkspace);
-        setActiveWorkspace(active || data[0]);
-      } else if (data.length > 0) {
-        setActiveWorkspace(data[0]);
-      }
-    } catch (error) {
-      console.error("Failed to fetch workspaces", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createWorkspace = async (name) => {
-    try {
-      const data = await apiCreateWorkspace({ name });
-      setWorkspaces([...workspaces, data]);
-      toast.success("Workspace created");
-      return data;
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to create workspace");
-      throw error;
-    }
-  };
-
-  const switchWorkspace = async (id) => {
-    try {
-      const data = await switchActiveWorkspace(id);
-      const newActive = workspaces.find(w => w._id === data.activeWorkspace);
-      setActiveWorkspace(newActive);
-      updateUser({ activeWorkspace: data.activeWorkspace });
-      toast.success(`Switched to ${newActive?.name || 'workspace'}`);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to switch workspace");
-    }
-  };
-
-  return (
-    <WorkspaceContext.Provider value={{ workspaces, activeWorkspace, loading, createWorkspace, switchWorkspace, fetchWorkspaces }}>
-      {children}
-    </WorkspaceContext.Provider>
-  );
+import {createContext,useContext,useState,useEffect,useCallback,useRef} from 'react';
+import {useAuth} from './AuthContext';
+import api from '../lib/axios';
+const WorkspaceContext=createContext();
+export const useWorkspace=()=>useContext(WorkspaceContext);
+export const WorkspaceProvider=({children})=>{
+ const {user,updateUser}=useAuth();
+ const userId=user?._id, preferred=user?.activeWorkspace;
+ const [workspaces,setWorkspaces]=useState([]),[activeWorkspace,setActiveWorkspace]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
+ const generation=useRef(0);
+ const fetchWorkspaces=useCallback(async()=>{
+  const request=++generation.current;setLoading(true);setError('');
+  if(!userId){setWorkspaces([]);setActiveWorkspace(null);setLoading(false);return;}
+  try{const {data}=await api.get('/workspaces');if(request!==generation.current)return;const items=Array.isArray(data)?data:[];setWorkspaces(items);setActiveWorkspace(items.find(w=>w._id===preferred)||items[0]||null);}
+  catch(err){if(request===generation.current){setWorkspaces([]);setActiveWorkspace(null);setError(err.response?.data?.message||'Cannot load workspaces');}}
+  finally{if(request===generation.current)setLoading(false);}
+ },[userId,preferred]);
+ useEffect(()=>{setWorkspaces([]);setActiveWorkspace(null);fetchWorkspaces();const ticket=generation.current;return()=>{if(generation.current===ticket)generation.current=ticket+1;};},[fetchWorkspaces]);
+ const createWorkspace=async(name)=>{const {data}=await api.post('/workspaces',{name});await fetchWorkspaces();return data;};
+ const switchWorkspace=async(id)=>{const {data}=await api.put('/workspaces/'+id+'/active');setActiveWorkspace(workspaces.find(w=>w._id===data.activeWorkspace)||null);updateUser({activeWorkspace:data.activeWorkspace});};
+ return <WorkspaceContext.Provider value={{workspaces,activeWorkspace,loading,error,createWorkspace,switchWorkspace,fetchWorkspaces}}>{children}</WorkspaceContext.Provider>;
 };

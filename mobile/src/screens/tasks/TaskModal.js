@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   Modal, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Image
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useTheme } from "../../context/ThemeContext";
 
 const TaskModal = ({ visible, onClose, onSave, task = null }) => {
@@ -11,17 +11,19 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("pending");
   const [priority, setPriority] = useState("medium");
-  const [allocation, setAllocation] = useState(75);
+  const [timeEstimate, setTimeEstimate] = useState('');
   const [loading, setLoading] = useState(false);
   const { colors, typography, spacing, borderRadius } = useTheme();
 
   useEffect(() => {
     if (task) {
+      setTimeEstimate(String(task.timeEstimate || 0));
       setTitle(task.title || "");
       setDescription(task.description || "");
       setStatus(task.status || "pending");
       setPriority(task.priority || "medium");
     } else {
+      setTimeEstimate('');
       setTitle("");
       setDescription("");
       setStatus("pending");
@@ -39,6 +41,7 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
         description,
         status,
         priority,
+        timeEstimate: Number(timeEstimate||0),
       });
       onClose();
     } catch (error) {
@@ -54,7 +57,7 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
       <TouchableOpacity
         style={[
           styles.segmentBtn,
-          { 
+          {
             backgroundColor: isSelected ? colors.primary : colors.surfaceContainerLowest,
             borderLeftWidth: isFirst ? 0 : 1,
             borderLeftColor: colors.outlineVariant,
@@ -71,8 +74,8 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
 
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
-      <KeyboardAvoidingView 
-        style={styles.modalOverlay} 
+      <KeyboardAvoidingView
+        style={styles.modalOverlay}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
@@ -87,8 +90,8 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
               </Text>
             </View>
             <View style={[styles.avatarContainer, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerHigh }]}>
-              <Image 
-                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD3uS-AaCfL0hkObqtrHUJCH8xA3dLcvqrQSiZO7LTz68SbYJIOQKdHn5yp3AyG2RZCKQ9aeKJm-B2YSONGjI9dgzo0LA4cUiInusAZd8xttTPP3tMQOs5W4720Op8_w1TI6wf7Uh_t--ruFJTPfQtXQqPuVUByrMyNIE5K4byKQz9EFmo9OJvEj8rJJGbp0ChlkVs1MOyA6Id8fo90yuwkKKCGC_L1oYEnWpgKZ16rkUR7deqcKEl1MQ' }}
+              <Image
+                source={require('../../../assets/logo.png')}
                 style={styles.avatarImage}
               />
             </View>
@@ -149,35 +152,9 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
               </View>
             </View>
 
-            {/* Effort Estimate */}
-            <View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8 }}>
-                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>
-                  04 // ESTIMATED EFFORT
-                </Text>
-                <Text style={[typography.labelCaps, { color: colors.primary }]}>{allocation}%</Text>
-              </View>
-              <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, paddingVertical: 24 }]}>
-                {/* Visual Slider */}
-                <View style={{ height: 4, backgroundColor: colors.surfaceDim, width: '100%', position: 'relative', justifyContent: 'center' }}>
-                  <View style={{ position: 'absolute', left: `${allocation}%`, width: 24, height: 24, backgroundColor: colors.primary, marginLeft: -12, borderWidth: 2, borderColor: colors.primary }} />
-                </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 24 }}>
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>LOW</Text>
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>HIGH</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Workspace Sync Note */}
-            <View style={[styles.decorativeBox, { borderColor: colors.outlineVariant, height: 80 }]}>
-              <View style={[styles.statusToken, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelCaps, { color: colors.primary }]}>WORKSPACE SYNC ACTIVE</Text>
-              </View>
-            </View>
-
+            <View><Text style={{color:colors.onSurface}}>Estimate in minutes</Text><TextInput accessibilityLabel="Estimate in minutes" keyboardType="numeric" value={timeEstimate} onChangeText={setTimeEstimate} style={{padding:12,color:colors.onSurface,borderWidth:1,borderColor:colors.outlineVariant}}/></View>
             {/* Submit Button */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.submitBtn, { backgroundColor: colors.primary, borderRadius: borderRadius.full }]}
               onPress={handleSave}
               disabled={loading}
