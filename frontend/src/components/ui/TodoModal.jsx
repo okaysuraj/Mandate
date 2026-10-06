@@ -194,9 +194,9 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
         <div className="flex-1 flex flex-col gap-5">
           <div className="flex justify-between items-start pb-3 border-b border-outline-variant">
             <div>
-              <h2 className="text-[10px] font-mono font-bold text-outline tracking-widest uppercase">MANDATE PROTOCOL</h2>
+              <h2 className="text-[10px] font-mono font-bold text-outline tracking-widest uppercase">TASK DETAILS</h2>
               <h2 className="text-xl md:text-2xl font-mono font-black uppercase tracking-tight text-primary">
-                {initialData ? "Edit Directive" : "Initiate Directive"}
+                {initialData ? "Edit Task" : "New Task"}
               </h2>
             </div>
             <button
@@ -209,11 +209,11 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
           
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input 
-              label="Directive Title" 
+              label="Task Title" 
               value={title} 
               onChange={(e) => setTitle(e.target.value)} 
               required 
-              placeholder="Enter directive title..."
+              placeholder="Enter task title..."
             />
             
             <div className="flex flex-col gap-1.5">
@@ -332,7 +332,7 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                 Cancel
               </Button>
               <Button type="submit">
-                {initialData ? "Save Changes" : "Deploy Directive"}
+                {initialData ? "Save Changes" : "Create Task"}
               </Button>
             </div>
           </form>
@@ -344,7 +344,7 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
             {/* Subtasks */}
             <div>
               <h3 className="text-xs font-mono font-bold mb-3 flex items-center gap-1.5 uppercase tracking-wider text-primary">
-                <CheckSquare size={14} /> Sub-Directives
+                <CheckSquare size={14} /> Subtasks
               </h3>
               <div className="flex flex-col gap-1.5 mb-3 max-h-40 overflow-y-auto custom-scrollbar">
                 {subtasks.map((st, idx) => (
@@ -377,16 +377,16 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
             {/* Comments */}
             <div className="flex-1 flex flex-col min-h-[220px]">
               <h3 className="text-xs font-mono font-bold mb-3 flex items-center gap-1.5 uppercase tracking-wider text-primary">
-                <MessageSquare size={14} /> Mission Notes
+                <MessageSquare size={14} /> Comments & Notes
               </h3>
               <div className="flex-1 overflow-y-auto flex flex-col gap-2 mb-3 max-h-44 custom-scrollbar">
                 {comments.length === 0 ? (
-                  <p className="text-xs text-outline font-mono">No telemetry or notes yet.</p>
+                  <p className="text-xs text-outline font-mono">No comments yet.</p>
                 ) : (
                   comments.map(c => (
                     <div key={c._id} className="bg-surface-container p-2.5 rounded-md border border-outline-variant">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="text-[10px] font-mono font-bold text-primary uppercase">{c.user?.name || "Operative"}</span>
+                        <span className="text-[10px] font-mono font-bold text-primary uppercase">{c.user?.name || "Team Member"}</span>
                         <span className="text-[9px] font-mono text-outline">{new Date(c.createdAt).toLocaleDateString()}</span>
                       </div>
                       <p className="text-xs text-on-surface-variant font-body-md">{c.content}</p>
@@ -398,11 +398,11 @@ const TodoModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                 <textarea 
                   className="w-full bg-surface-container-low border border-outline-variant rounded-md p-2 text-xs font-body-md text-on-surface focus:outline-none focus:border-primary mb-1.5"
                   rows="2"
-                  placeholder="Record comment or log..."
+                  placeholder="Write a comment..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                 />
-                <Button type="submit" className="w-full text-xs py-2 rounded-md">Submit Note</Button>
+                <Button type="submit" className="w-full text-xs py-2 rounded-md">Post Comment</Button>
               </form>
             </div>
           </div>

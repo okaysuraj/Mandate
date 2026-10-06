@@ -1,25 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import AppHeader from '../../components/layout/AppHeader';
 
 const GlobalSearchScreen = ({ navigation }) => {
   const { colors, typography, spacing, borderRadius } = useTheme();
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.iconBtn}>
-            <MaterialIcons name="close" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: 'bold', letterSpacing: -1, marginLeft: 8 }]}>MANDATE</Text>
-        </View>
-        <TouchableOpacity style={styles.iconBtn}>
-          <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+      <AppHeader title="GLOBAL SEARCH" showBack={true} navigation={navigation} />
 
       <ScrollView contentContainerStyle={styles.container}>
         

@@ -118,6 +118,32 @@ app.get("/", (req, res) => {
   res.send("Mandate API is running...");
 });
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error("Global API Error:", err);
+
+  if (err.name === "ValidationError") {
+    const errors = Object.values(err.errors).map((e) => e.message);
+    return res.status(400).json({
+      success: false,
+      message: "Validation Error",
+      errors,
+    });
+  }
+
+  if (err.name === "CastError") {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid ID or format for ${err.path}: '${err.value}'`,
+    });
+  }
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal server error",
+  });
+});
+
 if (process.env.NODE_ENV !== "test") {
   connectDB().then(() => {
     server.listen(PORT, () => {

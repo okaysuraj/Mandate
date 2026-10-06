@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -60,7 +61,7 @@ const EditTaskScreen = ({ navigation, route }) => {
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
             <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: 'bold', textTransform: 'uppercase', marginLeft: 8 }]}>EDIT_TASK</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: 'bold', textTransform: 'uppercase', marginLeft: 8 }]}>EDIT TASK</Text>
         </View>
       </View>
 
@@ -71,7 +72,7 @@ const EditTaskScreen = ({ navigation, route }) => {
           <View style={{ marginBottom: spacing.lg }}>
             <View style={styles.badgeRow}>
               <View style={[styles.badgeOutline, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>TASK_ID: {task._id?.slice(-6).toUpperCase()}</Text>
+                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>TASK ID: {task._id?.slice(-6).toUpperCase()}</Text>
               </View>
               <View style={[styles.badgeSolid, { backgroundColor: status === 'completed' ? 'rgba(0, 152, 61, 0.1)' : 'rgba(0,0,0,0.05)' }]}>
                 <Text style={[typography.labelCaps, { color: status === 'completed' ? colors.onTertiaryContainer : colors.primary }]}>{status.toUpperCase()}</Text>
@@ -82,13 +83,13 @@ const EditTaskScreen = ({ navigation, route }) => {
           {/* Title Input */}
           <View style={{ marginBottom: spacing.lg }}>
             <View style={styles.sectionTitleRow}>
-              <MaterialIcons name="terminal" size={20} color={colors.primary} />
-              <Text style={[typography.labelCaps, { color: colors.primary, marginLeft: 8 }]}>MANDATE_NAME</Text>
+              <MaterialIcons name="edit" size={20} color={colors.primary} />
+              <Text style={[typography.labelCaps, { color: colors.primary, marginLeft: 8 }]}>TASK TITLE</Text>
             </View>
             <View style={[styles.inputBox, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <TextInput
                 style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase' }]}
-                placeholder="ENTER IDENTIFIER..."
+                placeholder="Enter task title..."
                 placeholderTextColor={colors.outlineVariant}
                 value={title}
                 onChangeText={setTitle}
@@ -100,7 +101,7 @@ const EditTaskScreen = ({ navigation, route }) => {
           <View style={{ marginBottom: spacing.lg }}>
             <View style={styles.sectionTitleRow}>
               <MaterialIcons name="flag" size={20} color={colors.primary} />
-              <Text style={[typography.labelCaps, { color: colors.primary, marginLeft: 8 }]}>PRIORITY_LEVEL</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary, marginLeft: 8 }]}>PRIORITY LEVEL</Text>
             </View>
             <View style={[styles.priorityGroup, { borderColor: colors.outlineVariant }]}>
               {priorityOptions.map((p) => {
@@ -148,7 +149,7 @@ const EditTaskScreen = ({ navigation, route }) => {
 
           {/* Due Date */}
           <View style={{ marginBottom: spacing.lg }}>
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.sm }]}>EXECUTION_WINDOW</Text>
+            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.sm }]}>SCHEDULE & DUE DATE</Text>
             <View style={[styles.inputBox, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <Text style={[typography.labelSm, { color: colors.outline, marginBottom: spacing.xs }]}>DUE DATE</Text>
               <TextInput
@@ -161,16 +162,16 @@ const EditTaskScreen = ({ navigation, route }) => {
             </View>
           </View>
 
-          {/* System Telemetry */}
-          <View style={[styles.telemetryCard, { backgroundColor: colors.primary }]}>
-            <Text style={[typography.labelCaps, { color: colors.onPrimary, marginBottom: 4 }]}>SYSTEM_TELEMETRY</Text>
-            <Text style={[typography.labelSm, { color: colors.primaryFixedDim, fontSize: 10, opacity: 0.7 }]}>EDIT_MODE_ACTIVE</Text>
+          {/* Status Note */}
+          <View style={[styles.telemetryCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, borderWidth: 1 }]}>
+            <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: 4 }]}>WORKSPACE SYNC</Text>
+            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, fontSize: 11 }]}>Changes update instantly across web and mobile.</Text>
           </View>
 
           {/* Summary Info */}
-          <View style={[styles.summaryBox, { backgroundColor: colors.surfaceContainer, borderLeftColor: colors.primary }]}>
+          <View style={[styles.summaryBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>
-              Committing these changes will update the task in the execution stack.
+              Save changes to update task details, priority, and timeline.
             </Text>
           </View>
 
@@ -188,12 +189,12 @@ const EditTaskScreen = ({ navigation, route }) => {
           disabled={loading}
         >
           <Text style={[typography.labelCaps, { color: colors.onPrimary, marginRight: 8 }]}>
-            {loading ? 'SYNCING...' : 'COMMIT_CHANGES'}
+            {loading ? 'SAVING...' : 'SAVE CHANGES'}
           </Text>
           {loading ? (
             <ActivityIndicator size="small" color={colors.onPrimary} />
           ) : (
-            <MaterialIcons name="bolt" size={18} color={colors.onPrimary} />
+            <MaterialIcons name="check" size={18} color={colors.onPrimary} />
           )}
         </TouchableOpacity>
       </View>
@@ -232,13 +233,13 @@ const styles = StyleSheet.create({
   badgeOutline: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: 8,
     borderWidth: 1,
   },
   badgeSolid: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   sectionTitleRow: {
     flexDirection: 'row',
@@ -247,13 +248,13 @@ const styles = StyleSheet.create({
   },
   inputBox: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
   },
   priorityGroup: {
     flexDirection: 'row',
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   priorityBtn: {
@@ -264,13 +265,15 @@ const styles = StyleSheet.create({
   },
   telemetryCard: {
     height: 128,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 32,
   },
   summaryBox: {
     padding: 24,
-    borderLeftWidth: 4,
+    borderRadius: 12,
+    borderWidth: 1,
   },
   bottomBar: {
     position: 'absolute',
@@ -285,7 +288,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     flex: 1,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -293,7 +296,7 @@ const styles = StyleSheet.create({
   commitBtn: {
     flex: 2,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

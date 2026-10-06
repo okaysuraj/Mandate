@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -26,16 +27,16 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
         </View>
 
         <View style={[styles.mainContent, { paddingHorizontal: spacing.md, paddingTop: spacing.md }]}>
-          {/* Mandate Header Info */}
+          {/* Task Header Info */}
           <View style={{ marginBottom: spacing.lg }}>
             <View style={styles.mandateInfoRow}>
               <View>
-                <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2 }]}>MANDATE_ID</Text>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>MD-0842 / Neural_Sync</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2 }]}>TASK ID</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>TSK-104 / Architecture Audit</Text>
               </View>
               <View style={[styles.stableTag, { backgroundColor: colors.tertiaryFixed }]}>
                 <MaterialIcons name="check-circle" size={14} color={colors.tertiaryContainer} />
-                <Text style={[typography.labelCaps, { color: colors.tertiaryContainer, fontSize: 10, marginLeft: 4 }]}>STABLE_NODE</Text>
+                <Text style={[typography.labelCaps, { color: colors.tertiaryContainer, fontSize: 10, marginLeft: 4 }]}>READY</Text>
               </View>
             </View>
             <View style={[styles.divider, { backgroundColor: colors.surfaceContainerLow, marginVertical: spacing.md }]} />
@@ -44,7 +45,7 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
             <View style={[styles.confidenceBento, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT, padding: spacing.lg, marginBottom: spacing.md }]}>
               <View style={styles.confidenceRow}>
                 <View>
-                  <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.xs }]}>AI_CONFIDENCE_SCORE</Text>
+                  <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.xs }]}>COMPLETION CONFIDENCE</Text>
                   <View style={styles.scoreRow}>
                     <Text style={[typography.displayLg, { fontSize: 48, color: colors.primary, lineHeight: 48 }]}>98.4</Text>
                     <Text style={[typography.bodyMd, { color: colors.secondary, fontSize: 24, marginLeft: 2, marginBottom: 8 }]}>%</Text>
@@ -60,17 +61,17 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
             {/* Resource Estimation Row */}
             <View style={styles.resourceRow}>
               <View style={[styles.resourceCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT, padding: spacing.md }]}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>COMPUTE_COST</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>ESTIMATED EFFORT</Text>
                 <View style={styles.resourceValueRow}>
-                  <MaterialIcons name="memory" size={20} color={colors.primary} />
-                  <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary, marginLeft: spacing.sm }]}>1.24 TFLOPS</Text>
+                  <MaterialIcons name="assessment" size={20} color={colors.primary} />
+                  <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary, marginLeft: spacing.sm }]}>Medium (3 pts)</Text>
                 </View>
               </View>
               <View style={[styles.resourceCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT, padding: spacing.md }]}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>EST_TIME</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>ESTIMATED TIME</Text>
                 <View style={styles.resourceValueRow}>
                   <MaterialIcons name="timer" size={20} color={colors.primary} />
-                  <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary, marginLeft: spacing.sm }]}>04:12 MS</Text>
+                  <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary, marginLeft: spacing.sm }]}>4h 30m</Text>
                 </View>
               </View>
             </View>
@@ -79,8 +80,8 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
           {/* Subtask Decompositions */}
           <View style={styles.subtasksSection}>
             <View style={[styles.subtasksHeader, { paddingHorizontal: spacing.xs, marginBottom: spacing.sm }]}>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>SUBTASK_DECOMPOSITION</Text>
-              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>4 TOTAL NODES</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>SUBTASK BREAKDOWN</Text>
+              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>4 SUBTASKS</Text>
             </View>
 
             {/* Subtask 1 */}
@@ -89,8 +90,8 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
                 <View style={styles.subtaskTitleRow}>
                   <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, marginRight: spacing.sm }]}>01</Text>
                   <View>
-                    <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Lexical Normalization</Text>
-                    <Text style={[typography.labelSm, { color: colors.secondary, marginTop: spacing.xs }]}>Sanitizing input vectors for sync</Text>
+                    <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Setup API Endpoints & Routes</Text>
+                    <Text style={[typography.labelSm, { color: colors.secondary, marginTop: spacing.xs }]}>Configure controller and route registration</Text>
                   </View>
                 </View>
                 <TouchableOpacity>
@@ -101,7 +102,7 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
                 <View style={styles.subtaskTags}>
                   <View style={styles.tagItem}>
                     <MaterialIcons name="bolt" size={14} color={colors.secondary} />
-                    <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginLeft: 4 }]}>LOW_EFFORT</Text>
+                    <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginLeft: 4 }]}>LOW EFFORT</Text>
                   </View>
                   <View style={[styles.tagItem, { marginLeft: spacing.md }]}>
                     <MaterialIcons name="verified" size={14} color={colors.tertiaryFixedDim} />
@@ -117,8 +118,8 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
                 <View style={styles.subtaskTitleRow}>
                   <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, marginRight: spacing.sm }]}>02</Text>
                   <View>
-                    <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Entropy Validation</Text>
-                    <Text style={[typography.labelSm, { color: colors.secondary, marginTop: spacing.xs }]}>Calculating data decay patterns</Text>
+                    <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Add Input Validation & Sanitization</Text>
+                    <Text style={[typography.labelSm, { color: colors.secondary, marginTop: spacing.xs }]}>Ensure incoming task requests are validated</Text>
                   </View>
                 </View>
                 <TouchableOpacity>
@@ -129,7 +130,7 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
                 <View style={styles.subtaskTags}>
                   <View style={styles.tagItem}>
                     <MaterialIcons name="bolt" size={14} color={colors.secondary} />
-                    <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginLeft: 4 }]}>MED_EFFORT</Text>
+                    <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginLeft: 4 }]}>MED EFFORT</Text>
                   </View>
                   <View style={[styles.tagItem, { marginLeft: spacing.md }]}>
                     <MaterialIcons name="verified" size={14} color={colors.tertiaryFixedDim} />
@@ -145,8 +146,8 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
                 <View style={styles.subtaskTitleRow}>
                   <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, marginRight: spacing.sm }]}>03</Text>
                   <View>
-                    <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Latency Mesh Routing</Text>
-                    <Text style={[typography.labelSm, { color: colors.secondary, marginTop: spacing.xs }]}>Optimizing topological paths</Text>
+                    <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Implement Error Handling & Logs</Text>
+                    <Text style={[typography.labelSm, { color: colors.secondary, marginTop: spacing.xs }]}>Catch and format database exceptions cleanly</Text>
                   </View>
                 </View>
                 <TouchableOpacity>
@@ -157,10 +158,10 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
                 <View style={styles.subtaskTags}>
                   <View style={styles.tagItem}>
                     <MaterialIcons name="bolt" size={14} color={colors.secondary} />
-                    <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginLeft: 4 }]}>HIGH_EFFORT</Text>
+                    <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginLeft: 4 }]}>HIGH EFFORT</Text>
                   </View>
                   <View style={[styles.tagItem, { marginLeft: spacing.md }]}>
-                    <MaterialIcons name="warning" size={14} color={colors.onErrorContainer} />
+                    <MaterialIcons name="verified" size={14} color={colors.tertiaryFixedDim} />
                     <Text style={[typography.labelCaps, { color: colors.primary, fontSize: 10, marginLeft: 4 }]}>92.1%</Text>
                   </View>
                 </View>
@@ -168,13 +169,13 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
             </View>
 
             {/* Subtask 4 */}
-            <View style={[styles.subtaskCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT, padding: spacing.md, marginBottom: spacing.sm, opacity: 0.6 }]}>
+            <View style={[styles.subtaskCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT, padding: spacing.md, marginBottom: spacing.sm, opacity: 0.8 }]}>
               <View style={styles.subtaskTop}>
                 <View style={styles.subtaskTitleRow}>
                   <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, marginRight: spacing.sm }]}>04</Text>
                   <View>
-                    <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Protocol Handshake</Text>
-                    <Text style={[typography.labelSm, { color: colors.secondary, marginTop: spacing.xs }]}>Finalizing node handoff</Text>
+                    <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Run Integration Tests</Text>
+                    <Text style={[typography.labelSm, { color: colors.secondary, marginTop: spacing.xs }]}>Verify endpoint responses and status codes</Text>
                   </View>
                 </View>
                 <TouchableOpacity>
@@ -185,7 +186,7 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
                 <View style={styles.subtaskTags}>
                   <View style={styles.tagItem}>
                     <MaterialIcons name="bolt" size={14} color={colors.secondary} />
-                    <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginLeft: 4 }]}>LOW_EFFORT</Text>
+                    <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginLeft: 4 }]}>LOW EFFORT</Text>
                   </View>
                   <View style={[styles.tagItem, { marginLeft: spacing.md }]}>
                     <MaterialIcons name="verified" size={14} color={colors.tertiaryFixedDim} />
@@ -203,11 +204,11 @@ const AiTaskBreakdownScreen = ({ navigation }) => {
       <View style={[styles.actionFooter, { backgroundColor: colors.surfaceContainerLowest, borderTopColor: colors.outlineVariant, padding: spacing.md, gap: spacing.md }]}>
         <TouchableOpacity style={[styles.footerBtnSecondary, { borderColor: colors.outline }]}>
           <MaterialIcons name="refresh" size={18} color={colors.primary} />
-          <Text style={[typography.labelCaps, { color: colors.primary, marginLeft: spacing.sm }]}>Refine Model</Text>
+          <Text style={[typography.labelCaps, { color: colors.primary, marginLeft: spacing.sm }]}>Regenerate Breakdown</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.footerBtnPrimary, { backgroundColor: colors.primary }]}>
-          <MaterialIcons name="backup" size={18} color={colors.onPrimary} />
-          <Text style={[typography.labelCaps, { color: colors.onPrimary, marginLeft: spacing.sm }]}>Commit to Backlog</Text>
+          <MaterialIcons name="playlist-add-check" size={18} color={colors.onPrimary} />
+          <Text style={[typography.labelCaps, { color: colors.onPrimary, marginLeft: spacing.sm }]}>Add to Backlog</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

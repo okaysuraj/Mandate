@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Animated
-} from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Animated } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 import api from "../../services/api";
@@ -90,11 +89,11 @@ const LockInScreen = ({ navigation }) => {
             />
           </View>
           <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '900', letterSpacing: 2, marginLeft: 12 }]}>
-            CORE_OS_v1.0
+            MANDATE
           </Text>
         </View>
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
-          <MaterialIcons name="settings" size={24} color={colors.onSurfaceVariant} />
+          <MaterialIcons name="close" size={24} color={colors.onSurfaceVariant} />
         </TouchableOpacity>
       </View>
 
@@ -102,10 +101,10 @@ const LockInScreen = ({ navigation }) => {
         
         {/* Daily Mandate Header */}
         <View style={styles.pageHeader}>
-          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, letterSpacing: 2, marginBottom: 8 }]}>PHASE 01: FINAL PROTOCOL</Text>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '800' }]}>DAILY MANDATE COMMIT</Text>
+          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, letterSpacing: 2, marginBottom: 8 }]}>DAILY FOCUS COMMIT</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '800' }]}>LOCK IN TODAY'S FOCUS</Text>
           <Text style={[typography.bodyMd, { color: colors.onSurfaceVariant, marginTop: 12, lineHeight: 24, maxWidth: '90%' }]}>
-            Confirm your operational stack for the next 24-hour cycle. Once locked, priorities are immutable until the next synchronization.
+            Commit your top focus tasks for today. Lock in your priorities to work with distraction-free momentum.
           </Text>
         </View>
 
@@ -114,11 +113,11 @@ const LockInScreen = ({ navigation }) => {
           <View style={{ padding: 24 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <View>
-                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 4 }]}>OPERATIONAL LOAD</Text>
+                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 4 }]}>ESTIMATED WORKLOAD</Text>
                 <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '700' }]}>88.4%</Text>
               </View>
               <View style={[styles.optimizedBadge, { backgroundColor: colors.tertiary }]}>
-                <Text style={[typography.labelCaps, { color: colors.onTertiary, fontSize: 10 }]}>OPTIMIZED</Text>
+                <Text style={[typography.labelCaps, { color: colors.onTertiary, fontSize: 10 }]}>BALANCED</Text>
               </View>
             </View>
           </View>
@@ -130,16 +129,16 @@ const LockInScreen = ({ navigation }) => {
         {/* Project Queue */}
         <View style={styles.queueSection}>
           <View style={styles.queueHeader}>
-            <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700' }]}>CURRENT QUEUE</Text>
-            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>04 UNITS</Text>
+            <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700' }]}>TODAY'S PRIORITIES</Text>
+            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>4 TASKS</Text>
           </View>
 
           {/* Item 1 */}
-          <View style={[styles.queueItem, { borderColor: colors.outlineVariant, borderLeftWidth: 4, borderLeftColor: colors.primary }]}>
+          <View style={[styles.queueItem, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.primary }]}>
             <View style={styles.queueItemHeader}>
               <View style={styles.queueItemTitle}>
                 <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '900', fontSize: 14 }]}>01</Text>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 16, marginLeft: 12 }]}>ALPHA ARCHITECTURE</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 16, marginLeft: 12 }]}>CORE ARCHITECTURE DESIGN</Text>
               </View>
               <MaterialIcons name="priority-high" size={20} color={colors.primary} />
             </View>
@@ -153,52 +152,52 @@ const LockInScreen = ({ navigation }) => {
           </View>
 
           {/* Item 2 */}
-          <View style={[styles.queueItem, { borderColor: colors.outlineVariant, borderLeftWidth: 4, borderLeftColor: colors.outlineVariant }]}>
+          <View style={[styles.queueItem, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.queueItemHeader}>
               <View style={styles.queueItemTitle}>
                 <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontWeight: '900', fontSize: 14 }]}>02</Text>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 16, marginLeft: 12 }]}>NEURAL PIPELINE</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 16, marginLeft: 12 }]}>API & DATA PIPELINE</Text>
               </View>
-              <MaterialIcons name="bolt" size={20} color={colors.onSurfaceVariant} />
+              <MaterialIcons name="code" size={20} color={colors.onSurfaceVariant} />
             </View>
             <View style={styles.queueItemFooter}>
               <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>EST. 2.2 HOURS</Text>
               <View style={[styles.tagBadge, { backgroundColor: colors.surfaceContainer }]}>
-                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontSize: 10 }]}>STABLE</Text>
+                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontSize: 10 }]}>ACTIVE</Text>
               </View>
             </View>
           </View>
 
           {/* Item 3 */}
-          <View style={[styles.queueItem, { borderColor: colors.outlineVariant, borderLeftWidth: 4, borderLeftColor: colors.outlineVariant }]}>
+          <View style={[styles.queueItem, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.queueItemHeader}>
               <View style={styles.queueItemTitle}>
                 <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontWeight: '900', fontSize: 14 }]}>03</Text>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 16, marginLeft: 12 }]}>CORE_OS DEBUGGING</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 16, marginLeft: 12 }]}>PERFORMANCE OPTIMIZATION</Text>
               </View>
-              <MaterialIcons name="bug-report" size={20} color={colors.onSurfaceVariant} />
+              <MaterialIcons name="tune" size={20} color={colors.onSurfaceVariant} />
             </View>
             <View style={styles.queueItemFooter}>
               <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>EST. 1.8 HOURS</Text>
               <View style={[styles.tagBadge, { backgroundColor: colors.surfaceContainer }]}>
-                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontSize: 10 }]}>DEFERRED</Text>
+                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontSize: 10 }]}>QUEUED</Text>
               </View>
             </View>
           </View>
 
           {/* Item 4 */}
-          <View style={[styles.queueItem, { borderColor: colors.outlineVariant, borderLeftWidth: 4, borderLeftColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLow, opacity: 0.6 }]}>
+          <View style={[styles.queueItem, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLow, opacity: 0.6 }]}>
             <View style={styles.queueItemHeader}>
               <View style={styles.queueItemTitle}>
                 <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontWeight: '900', fontSize: 14 }]}>04</Text>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 16, marginLeft: 12 }]}>SYSTEM BACKUP</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 16, marginLeft: 12 }]}>DOCS & CODE REVIEW</Text>
               </View>
-              <MaterialIcons name="cloud-sync" size={20} color={colors.onSurfaceVariant} />
+              <MaterialIcons name="rate-review" size={20} color={colors.onSurfaceVariant} />
             </View>
             <View style={styles.queueItemFooter}>
-              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>AUTOMATED PHASE</Text>
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>EST. 1.0 HOURS</Text>
               <View style={[styles.tagBadge, { backgroundColor: 'transparent', paddingHorizontal: 0 }]}>
-                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontSize: 10 }]}>QUEUED</Text>
+                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontSize: 10 }]}>SCHEDULED</Text>
               </View>
             </View>
           </View>
@@ -213,26 +212,26 @@ const LockInScreen = ({ navigation }) => {
           >
             {commitState === 'idle' && (
               <View style={styles.commitBtnInner}>
-                <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 14, letterSpacing: 3 }]}>SECURE COMMIT</Text>
+                <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 14, letterSpacing: 3 }]}>LOCK IN FOCUS</Text>
                 <Text style={[typography.labelSm, { color: colors.onPrimary, opacity: 0.6, letterSpacing: 2, marginTop: 4 }]}>EST. COMPLETION: {formatCountdown(totalSeconds)}</Text>
               </View>
             )}
             {commitState === 'locking' && (
               <View style={[styles.commitBtnInner, { flexDirection: 'row', alignItems: 'center' }]}>
                 <MaterialIcons name="refresh" size={20} color={colors.onPrimary} style={{ marginRight: 8 }} />
-                <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 14 }]}>LOCKING PROTOCOL...</Text>
+                <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 14 }]}>COMMITTING FOCUS...</Text>
               </View>
             )}
             {commitState === 'locked' && (
               <View style={[styles.commitBtnInner, { flexDirection: 'row', alignItems: 'center' }]}>
                 <MaterialIcons name="check-circle" size={20} color={colors.onPrimary} style={{ marginRight: 8 }} />
-                <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 14 }]}>MANDATE LOCKED</Text>
+                <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 14 }]}>FOCUS LOCKED IN</Text>
               </View>
             )}
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.secondaryBtn, { borderColor: colors.outline }]}>
-            <Text style={[typography.labelCaps, { color: colors.primary }]}>RECONFIGURE QUEUE</Text>
+            <Text style={[typography.labelCaps, { color: colors.primary }]}>EDIT TASK LIST</Text>
           </TouchableOpacity>
         </View>
 
@@ -274,12 +273,13 @@ const styles = StyleSheet.create({
   },
   bentoCard: {
     borderWidth: 1,
+    borderRadius: 12,
     marginBottom: 32,
   },
   optimizedBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 8,
   },
   progressBarBg: {
     height: 4,
@@ -300,10 +300,9 @@ const styles = StyleSheet.create({
   },
   queueItem: {
     borderWidth: 1,
-    borderLeftWidth: 4,
+    borderRadius: 12,
     padding: 16,
     marginBottom: 8,
-    backgroundColor: '#fff',
   },
   queueItemHeader: {
     flexDirection: 'row',
@@ -333,7 +332,7 @@ const styles = StyleSheet.create({
   tagBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   actionsSection: {
     gap: 16,
@@ -341,6 +340,7 @@ const styles = StyleSheet.create({
   commitBtn: {
     width: '100%',
     paddingVertical: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -351,6 +351,7 @@ const styles = StyleSheet.create({
   secondaryBtn: {
     width: '100%',
     paddingVertical: 16,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

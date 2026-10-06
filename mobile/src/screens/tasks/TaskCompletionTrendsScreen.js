@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import Svg, { Path } from 'react-native-svg';
@@ -35,7 +36,7 @@ const TaskCompletionTrendsScreen = () => {
         <View style={styles.metricsStack}>
           
           {/* Avg Lead Time */}
-          <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.cardHeader}>
               <Text style={[typography.labelCaps, { color: colors.secondary }]}>AVG LEAD TIME</Text>
               <MaterialIcons name="timer" size={24} color={colors.primary} />
@@ -44,14 +45,14 @@ const TaskCompletionTrendsScreen = () => {
               <Text style={[typography.displayLg, { color: colors.primary, fontSize: 64, letterSpacing: -2 }]}>4.2</Text>
               <Text style={[typography.bodyMd, { color: colors.secondary, marginLeft: 8 }]}>DAYS</Text>
             </View>
-            <View style={[styles.cardFooter, { borderTopColor: colors.surfaceContainer }]}>
+            <View style={[styles.cardFooter, { borderTopColor: colors.outlineVariant }]}>
               <MaterialIcons name="arrow-downward" size={14} color={colors.onTertiaryContainer} />
               <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginLeft: 4 }]}>12% vs last week</Text>
             </View>
           </View>
 
           {/* Daily Throughput */}
-          <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.cardHeader}>
               <Text style={[typography.labelCaps, { color: colors.secondary }]}>DAILY THROUGHPUT</Text>
               <MaterialIcons name="bolt" size={24} color={colors.primary} />
@@ -60,14 +61,14 @@ const TaskCompletionTrendsScreen = () => {
               <Text style={[typography.displayLg, { color: colors.primary, fontSize: 64, letterSpacing: -2 }]}>18</Text>
               <Text style={[typography.bodyMd, { color: colors.secondary, marginLeft: 8 }]}>TASKS</Text>
             </View>
-            <View style={[styles.cardFooter, { borderTopColor: colors.surfaceContainer }]}>
+            <View style={[styles.cardFooter, { borderTopColor: colors.outlineVariant }]}>
               <MaterialIcons name="trending-up" size={14} color={colors.onTertiaryContainer} />
               <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginLeft: 4 }]}>Optimized output</Text>
             </View>
           </View>
 
           {/* WIP Velocity */}
-          <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.cardHeader}>
               <Text style={[typography.labelCaps, { color: colors.secondary }]}>WIP VELOCITY</Text>
               <MaterialIcons name="dynamic-form" size={24} color={colors.primary} />
@@ -76,14 +77,14 @@ const TaskCompletionTrendsScreen = () => {
               <Text style={[typography.displayLg, { color: colors.primary, fontSize: 64, letterSpacing: -2 }]}>24</Text>
               <Text style={[typography.bodyMd, { color: colors.secondary, marginLeft: 8 }]}>ACTIVE</Text>
             </View>
-            <View style={[styles.cardFooter, { borderTopColor: colors.surfaceContainer }]}>
+            <View style={[styles.cardFooter, { borderTopColor: colors.outlineVariant }]}>
               <MaterialIcons name="priority-high" size={14} color={colors.error} />
               <Text style={[typography.labelSm, { color: colors.error, marginLeft: 4 }]}>Near Capacity</Text>
             </View>
           </View>
 
           {/* Efficiency Ratio */}
-          <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.cardHeader}>
               <Text style={[typography.labelCaps, { color: colors.secondary }]}>EFFICIENCY RATIO</Text>
               <MaterialIcons name="auto-graph" size={24} color={colors.primary} />
@@ -92,7 +93,7 @@ const TaskCompletionTrendsScreen = () => {
               <Text style={[typography.displayLg, { color: colors.primary, fontSize: 64, letterSpacing: -2 }]}>94</Text>
               <Text style={[typography.bodyMd, { color: colors.secondary, marginLeft: 8 }]}>%</Text>
             </View>
-            <View style={[styles.cardFooterBar, { borderTopColor: colors.surfaceContainer }]}>
+            <View style={[styles.cardFooterBar, { borderTopColor: colors.outlineVariant }]}>
               <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainer }]}>
                 <View style={[styles.progressBarFill, { backgroundColor: colors.primary, width: '94%' }]} />
               </View>
@@ -108,9 +109,9 @@ const TaskCompletionTrendsScreen = () => {
             <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>Creation vs. Completion</Text>
           </View>
           
-          <View style={[styles.chartBox, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+          <View style={[styles.chartBox, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Svg width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="none">
-              <Path d="M0,180 L50,160 L100,155 L150,130 L200,110 L250,90 L300,70 L350,65 L400,40" fill="none" stroke={colors.surfaceDim} strokeDasharray="4" strokeWidth="2" />
+              <Path d="M0,180 L50,160 L100,155 L150,130 L200,110 L250,90 L300,70 L350,65 L400,40" fill="none" stroke={colors.outlineVariant} strokeDasharray="4" strokeWidth="2" />
               <Path d="M0,185 L50,175 L100,165 L150,150 L200,125 L250,105 L300,85 L350,75 L400,50" fill="none" stroke={colors.primary} strokeWidth="3" />
             </Svg>
 
@@ -132,7 +133,7 @@ const TaskCompletionTrendsScreen = () => {
           <Text style={[typography.labelCaps, { color: colors.secondary }]}>VOLUME DISTRIBUTION</Text>
           <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 16 }]}>Throughput Histogram</Text>
 
-          <View style={[styles.histogramBox, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+          <View style={[styles.histogramBox, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.barsContainer}>
               <View style={styles.barWrapper}><View style={[styles.barFill, { height: '25%', backgroundColor: colors.surfaceContainer }]} /></View>
               <View style={styles.barWrapper}><View style={[styles.barFill, { height: '50%', backgroundColor: colors.surfaceContainer }]} /></View>
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
   bentoCard: {
     borderWidth: 1,
     padding: 32,
-    // rounded-none from html means 0 border radius
+    borderRadius: 12,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -276,6 +277,7 @@ const styles = StyleSheet.create({
     aspectRatio: 16/9,
     position: 'relative',
     padding: 16,
+    borderRadius: 12,
   },
   chartLegend: {
     position: 'absolute',
@@ -300,6 +302,7 @@ const styles = StyleSheet.create({
   histogramBox: {
     borderWidth: 1,
     padding: 32,
+    borderRadius: 12,
   },
   barsContainer: {
     flexDirection: 'row',

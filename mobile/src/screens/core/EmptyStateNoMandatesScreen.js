@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -28,7 +29,7 @@ const EmptyStateNoMandatesScreen = ({ navigation }) => {
             
             {/* Empty State Content */}
             <View style={styles.emptyStateCenter}>
-              <View style={[styles.iconCircle, { borderColor: colors.primary, backgroundColor: '#fff' }]}>
+              <View style={[styles.iconCircle, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
                 <MaterialIcons name="precision-manufacturing" size={48} color={colors.primary} />
               </View>
               <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: spacing.md, letterSpacing: -1 }]}>No Active Mandates</Text>
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 32,
+    borderRadius: 12,
   },
   secondaryBtn: {
     width: '100%',
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 32,
+    borderRadius: 12,
     borderWidth: 1,
     marginTop: 16,
   },
@@ -190,6 +191,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     borderWidth: 1,
+    borderRadius: 12,
   },
   metricRow: {
     flexDirection: 'row',

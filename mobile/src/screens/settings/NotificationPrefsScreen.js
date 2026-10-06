@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -20,7 +19,7 @@ const ToggleCard = ({ title, subtitle, badges, isEnabled, onToggle }) => {
           onPress={onToggle}
           activeOpacity={0.8}
         >
-          <View style={[styles.toggleThumb, { backgroundColor: isEnabled ? '#fff' : colors.outline, transform: [{ translateX: isEnabled ? 24 : 2 }] }]} />
+          <View style={[styles.toggleThumb, { backgroundColor: isEnabled ? colors.onPrimary : colors.outline, transform: [{ translateX: isEnabled ? 24 : 2 }] }]} />
         </TouchableOpacity>
       </View>
       {badges && badges.length > 0 && (
@@ -82,28 +81,28 @@ const NotificationPrefsScreen = ({ navigation }) => {
         
         {/* Header Section */}
         <View style={styles.pageHeader}>
-          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, letterSpacing: 2, textTransform: 'uppercase' }]}>System Configuration</Text>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 8 }]}>Global Preferences</Text>
-          <Text style={[typography.bodyMd, { color: colors.secondary, marginTop: 4 }]}>Calibrate notification density and delivery protocols across all operational channels.</Text>
+          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, letterSpacing: 2, textTransform: 'uppercase' }]}>Settings</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 8 }]}>Notification Preferences</Text>
+          <Text style={[typography.bodyMd, { color: colors.secondary, marginTop: 4 }]}>Customize notification alerts and delivery channels across your workspace.</Text>
         </View>
 
         {/* Mandate Transitions */}
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
-            <Text style={[typography.labelCaps, { color: colors.primary }]}>MANDATE TRANSITIONS</Text>
+            <Text style={[typography.labelCaps, { color: colors.primary }]}>TASK NOTIFICATIONS</Text>
             <View style={[styles.statusBadge, { backgroundColor: 'rgba(0, 152, 61, 0.1)' }]}>
-              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>AUTO_SYNC</Text>
+              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>SYNCED</Text>
             </View>
           </View>
           
           <View style={styles.togglesContainer}>
             <ToggleCard 
-              title="Critical Priority" subtitle="Direct bypass for all quiet hours" 
-              badges={['HAPTIC: HIGH', 'AUDIO: OVERRIDE']}
+              title="Urgent & Critical" subtitle="Direct delivery even during quiet hours" 
+              badges={['HAPTIC: HIGH', 'SOUND: ON']}
               isEnabled={critical} onToggle={() => setCritical(!critical)}
             />
             <ToggleCard 
-              title="Standard Sync" subtitle="Batch delivery every 15 minutes" 
+              title="Standard Updates" subtitle="Batch delivery every 15 minutes" 
               isEnabled={standard} onToggle={() => setStandard(!standard)}
             />
           </View>
@@ -133,7 +132,7 @@ const NotificationPrefsScreen = ({ navigation }) => {
           </View>
 
           <View style={[styles.quietFooterRow, { borderTopColor: colors.outlineVariant }]}>
-            <Text style={[typography.bodyMd, { color: colors.secondary, fontSize: 14 }]}>Weekend override enabled</Text>
+            <Text style={[typography.bodyMd, { color: colors.secondary, fontSize: 14 }]}>Weekend quiet hours active</Text>
             <TouchableOpacity>
               <Text style={[typography.labelSm, { color: colors.primary, textDecorationLine: 'underline' }]}>Edit Schedule</Text>
             </TouchableOpacity>
@@ -142,19 +141,19 @@ const NotificationPrefsScreen = ({ navigation }) => {
 
         {/* Channel Matrix */}
         <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: 12 }]}>CHANNEL MATRIX</Text>
+          <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: 12 }]}>NOTIFICATION CHANNELS</Text>
           <View style={[styles.matrixTable, { borderColor: colors.outlineVariant }]}>
             <View style={[styles.matrixHeaderRow, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant }]}>
               <Text style={[typography.labelCaps, styles.colSource, { color: colors.secondary, fontSize: 10 }]}>Source</Text>
               <Text style={[typography.labelCaps, styles.colCheck, { color: colors.secondary, fontSize: 10, textAlign: 'center' }]}>Push</Text>
-              <Text style={[typography.labelCaps, styles.colCheck, { color: colors.secondary, fontSize: 10, textAlign: 'center' }]}>SMS</Text>
-              <Text style={[typography.labelCaps, styles.colCheck, { color: colors.secondary, fontSize: 10, textAlign: 'center' }]}>Log</Text>
+              <Text style={[typography.labelCaps, styles.colCheck, { color: colors.secondary, fontSize: 10, textAlign: 'center' }]}>Email</Text>
+              <Text style={[typography.labelCaps, styles.colCheck, { color: colors.secondary, fontSize: 10, textAlign: 'center' }]}>In-App</Text>
             </View>
             <View>
-              <ChannelRow source="Network" push={true} sms={false} log={true} />
-              <ChannelRow source="Terminal" push={true} sms={true} log={true} />
-              <ChannelRow source="Security" push={true} sms={true} log={true} />
-              <ChannelRow source="Marketing" push={false} sms={false} log={true} isLast={true} />
+              <ChannelRow source="Tasks & Mentions" push={true} sms={false} log={true} />
+              <ChannelRow source="Team Activity" push={true} sms={true} log={true} />
+              <ChannelRow source="Security Alerts" push={true} sms={true} log={true} />
+              <ChannelRow source="Workspace Updates" push={false} sms={false} log={true} isLast={true} />
             </View>
           </View>
         </View>
@@ -163,8 +162,8 @@ const NotificationPrefsScreen = ({ navigation }) => {
         <View style={styles.dangerSection}>
           <TouchableOpacity style={styles.dangerBtn} activeOpacity={0.8}>
             <View style={styles.dangerBtnLeft}>
-              <MaterialIcons name="warning" size={20} color={colors.error} />
-              <Text style={[typography.labelCaps, { color: colors.error, marginLeft: 8 }]}>PURGE NOTIFICATION HISTORY</Text>
+              <MaterialIcons name="delete-outline" size={20} color={colors.error} />
+              <Text style={[typography.labelCaps, { color: colors.error, marginLeft: 8 }]}>CLEAR NOTIFICATION HISTORY</Text>
             </View>
             <MaterialIcons name="chevron-right" size={24} color={colors.error} />
           </TouchableOpacity>
@@ -219,14 +218,14 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   togglesContainer: {
     gap: 8,
   },
   bentoCard: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 24,
   },
   toggleHeaderRow: {
@@ -254,7 +253,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   quietHeaderRow: {
     flexDirection: 'row',
@@ -276,7 +275,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     padding: 4,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   chartBar: {
     flex: 1,
@@ -297,7 +296,7 @@ const styles = StyleSheet.create({
   },
   matrixTable: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   matrixHeaderRow: {
@@ -328,7 +327,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(186, 26, 26, 0.2)',
     backgroundColor: 'rgba(186, 26, 26, 0.05)',
-    borderRadius: 8,
+    borderRadius: 12,
   },
   dangerBtnLeft: {
     flexDirection: 'row',

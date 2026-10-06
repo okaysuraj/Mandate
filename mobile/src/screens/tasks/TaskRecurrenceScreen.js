@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image, Switch, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -35,7 +36,7 @@ const TaskRecurrenceScreen = () => {
         </View>
 
         {/* Frequency Segmented Control */}
-        <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant, marginBottom: 16 }]}>
+        <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, marginBottom: 16 }]}>
           <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 16 }]}>FREQUENCY ENGINE</Text>
           <View style={[styles.segmentedControl, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
             <TouchableOpacity 
@@ -62,7 +63,7 @@ const TaskRecurrenceScreen = () => {
         {/* Configuration Inputs */}
         <View style={styles.configInputsGroup}>
           {/* Start Date */}
-          <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>START DATE</Text>
             <View style={[styles.inputWrapper, { borderBottomColor: colors.outlineVariant }]}>
               <TextInput 
@@ -75,7 +76,7 @@ const TaskRecurrenceScreen = () => {
           </View>
 
           {/* Execution Time */}
-          <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>EXECUTION TIME (UTC)</Text>
             <View style={[styles.inputWrapper, { borderBottomColor: colors.outlineVariant }]}>
               <TextInput 
@@ -89,7 +90,7 @@ const TaskRecurrenceScreen = () => {
         </View>
 
         {/* Visual Recurrence Timeline */}
-        <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant, marginTop: 16 }]}>
+        <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, marginTop: 16 }]}>
           <View style={styles.timelineHeader}>
             <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>RECURRENCE PREVIEW</Text>
             <View style={[styles.tagBadge, { backgroundColor: 'rgba(60, 227, 106, 0.2)' }]}>
@@ -135,7 +136,7 @@ const TaskRecurrenceScreen = () => {
             </View>
           </View>
 
-          <View style={[styles.timelineAnnotation, { backgroundColor: colors.surfaceContainerLow, borderLeftColor: colors.primary }]}>
+          <View style={[styles.timelineAnnotation, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, borderWidth: 1, borderRadius: 8 }]}>
             <Text style={[typography.bodyMd, { color: colors.onSurface, fontSize: 13, lineHeight: 18 }]}>
               <Text style={{ fontWeight: 'bold' }}>Summary: </Text>
               Task will execute every 24 hours starting May 20th at 08:00 UTC. Next instance occurs in <Text style={{ color: colors.onTertiaryContainer, fontWeight: 'bold' }}>14h 22m</Text>.
@@ -144,7 +145,7 @@ const TaskRecurrenceScreen = () => {
         </View>
 
         {/* Advanced Toggle Card */}
-        <View style={[styles.bentoCard, styles.toggleCardRow, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant, marginTop: 16 }]}>
+        <View style={[styles.bentoCard, styles.toggleCardRow, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, marginTop: 16 }]}>
           <View>
             <Text style={[typography.labelCaps, { color: colors.primary }]}>FAILURE RETRY POLICY</Text>
             <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, marginTop: 2 }]}>3 Retries • 15m Intervals</Text>
@@ -153,7 +154,7 @@ const TaskRecurrenceScreen = () => {
             value={retryEnabled}
             onValueChange={setRetryEnabled}
             trackColor={{ false: colors.surfaceContainerHighest, true: colors.onTertiaryContainer }}
-            thumbColor={'#ffffff'}
+            thumbColor={colors.onPrimary}
           />
         </View>
 
@@ -239,10 +240,11 @@ const styles = StyleSheet.create({
   bentoCard: {
     borderWidth: 1,
     padding: 24,
+    borderRadius: 12,
   },
   segmentedControl: {
     flexDirection: 'row',
-    borderRadius: 32,
+    borderRadius: 10,
     borderWidth: 1,
     padding: 4,
   },
@@ -251,7 +253,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    borderRadius: 24,
+    borderRadius: 8,
   },
   configInputsGroup: {
     gap: 16,
@@ -275,7 +277,7 @@ const styles = StyleSheet.create({
   tagBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   timelineContainer: {
     position: 'relative',
@@ -321,7 +323,8 @@ const styles = StyleSheet.create({
   timelineAnnotation: {
     marginTop: 24,
     padding: 16,
-    borderLeftWidth: 2,
+    borderWidth: 1,
+    borderRadius: 8,
   },
   toggleCardRow: {
     flexDirection: 'row',
@@ -336,7 +339,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
   },
   bottomNav: {
     position: 'absolute',

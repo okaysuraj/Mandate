@@ -1,284 +1,828 @@
 import React, { useState, useEffect } from "react";
-import {
-  View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, Animated
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
+import AppHeader from "../../components/layout/AppHeader";
+import api from "../../services/api";
 
 const TaskDetailScreen = ({ route, navigation }) => {
-  const { task } = route.params;
-  const { colors, typography, spacing, borderRadius } = useTheme();
+  const { colors, typography } = useTheme();
+  const routeTask = route.params?.task;
+  const taskId = route.params?.taskId || routeTask?._id || routeTask?.id;
 
-  // Micro-interaction for temperature jitter
-  const [temp, setTemp] = useState(42.8);
+  const [task, setTask] = useState(routeTask || null);
+  const [loading, setLoading] = useState(!routeTask);
+  const [saving, setSaving] = useState(false);
+
+  // Editable fields matching web TaskDetailPage.jsx
+  const [title, setTitle] = useState(routeTask?.title || "");
+  const [description, setDescription] = useState(
+    routeTask?.description || routeTask?.content || ""
+  );
+  const [status, setStatus] = useState(routeTask?.status || "pending");
+  const [priority, setPriority] = useState(routeTask?.priority || "medium");
+  const [dueDate, setDueDate] = useState(
+    routeTask?.dueDate
+      ? new Date(routeTask.dueDate).toISOString().split("T")[0]
+      : ""
+  );
+
+  // Subtasks & Comments
+  const [subtasks, setSubtasks] = useState([]);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      const jitter = (Math.random() - 0.5) * 0.4;
-      setTemp(prev => prev + jitter);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    const fetchFullTask = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get(`/tasks/${taskId}`);
+        const t = res.data?.data || res.data;
+        if (t) {
+          setTask(t);
+          setTitle(t.title || "");
+          setDescription(t.description || t.content || "");
+          setStatus(t.status || "pending");
+          setPriority(t.priority || "medium");
+          setDueDate(
+            t.dueDate ? new Date(t.dueDate).toISOString().split("T")[0] : ""
+          );
+        }
 
-  const getProgress = () => {
-    if (task.status === 'completed') return 100;
-    if (task.status === 'in-progress') return 82.4;
-    return 0;
+        // Subtasks
+        try {
+          const subRes = await api.get("/tasks", {
+            params: { parentTaskId: taskId },
+          });
+          setSubtasks(subRes.data?.data || subRes.data || []);
+        } catch (e) {
+          // ignore
+        }
+
+        // Comments
+        try {
+          const commRes = await api.get(`/tasks/${taskId}/comments`);
+          setComments(commRes.data?.data || commRes.data || []);
+        } catch (e) {
+          // ignore
+        }
+      } catch (err) {
+        console.warn("Failed to load task details", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (taskId) {
+      fetchFullTask();
+    }
+  }, [taskId]);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const res = await api.put(`/tasks/${taskId}`, {
+        title,
+        description,
+        status,
+        priority,
+        dueDate: dueDate ? new Date(dueDate) : null,
+      });
+      setTask(res.data?.data || res.data || { ...task, title, description, status, priority });
+      Alert.alert("Success", "Mandate updated successfully");
+    } catch (err) {
+      Alert.alert("Error", "Failed to update mandate");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const progress = getProgress();
+  const handleDelete = () => {
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to terminate this mandate?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.delete(`/tasks/${taskId}`);
+              navigation.goBack();
+            } catch (err) {
+              Alert.alert("Error", "Failed to delete mandate");
+            }
+          },
+        },
+      ]
+    );
+  };
 
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant }]}>
-        <View style={styles.headerLeft}>
-          <View style={[styles.avatarContainer, { backgroundColor: colors.primaryFixed }]}>
-            {/* Using an icon instead of an image for simplicity, but simulating the profile picture */}
-            <MaterialIcons name="person" size={24} color={colors.onPrimaryFixed} />
-          </View>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase', marginLeft: spacing.sm }]}>
-            CORE_OS_v1.0
+  const handleAddSubtask = async () => {
+    if (!newSubtaskTitle.trim()) return;
+    try {
+      const res = await api.post("/tasks", {
+        title: newSubtaskTitle.trim(),
+        parentTaskId: taskId,
+        workspaceId: task?.workspaceId,
+        priority: "medium",
+        status: "pending",
+      });
+      const created = res.data?.data || res.data;
+      setSubtasks([...subtasks, created]);
+      setNewSubtaskTitle("");
+    } catch (err) {
+      Alert.alert("Error", "Failed to add subtask");
+    }
+  };
+
+  const handleToggleSubtask = async (subId, currentStatus) => {
+    const nextStatus = currentStatus === "completed" ? "pending" : "completed";
+    try {
+      await api.put(`/tasks/${subId}`, { status: nextStatus });
+      setSubtasks(
+        subtasks.map((s) =>
+          (s._id || s.id) === subId ? { ...s, status: nextStatus } : s
+        )
+      );
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+    try {
+      setPostingComment(true);
+      const res = await api.post(`/tasks/${taskId}/comments`, {
+        content: newComment.trim(),
+      });
+      const created = res.data?.data || res.data;
+      setComments([created, ...comments]);
+      setNewComment("");
+    } catch (err) {
+      Alert.alert("Error", "Failed to post comment");
+    } finally {
+      setPostingComment(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <AppHeader title="DETAILS" showBack navigation={navigation} />
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.onSurfaceVariant }]}>
+            LOADING TASK DETAILS...
           </Text>
         </View>
-        <TouchableOpacity style={[styles.iconButton, { backgroundColor: 'transparent' }]}>
-          <MaterialIcons name="settings" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+      </SafeAreaView>
+    );
+  }
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Navigation Breadcrumb / Context */}
-        <View style={styles.breadcrumbRow}>
-          <TouchableOpacity 
-            style={{ flexDirection: 'row', alignItems: 'center' }}
-            onPress={() => navigation.goBack()}
-          >
-            <MaterialIcons name="chevron-left" size={18} color={colors.onSurfaceVariant} />
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>BACK TO SYSTEM</Text>
-          </TouchableOpacity>
-          <View style={[styles.liveBadge, { backgroundColor: colors.tertiary }]}>
-            <Text style={[typography.labelCaps, { color: colors.onTertiary, fontSize: 10 }]}>LIVE CONNECTION</Text>
+  const completedSubtasksCount = subtasks.filter(
+    (s) => s.status === "completed"
+  ).length;
+  const progressPercent =
+    subtasks.length > 0
+      ? Math.round((completedSubtasksCount / subtasks.length) * 100)
+      : status === "completed"
+      ? 100
+      : status === "in-progress"
+      ? 50
+      : 0;
+
+  const displayCode = String(taskId || "0000").slice(-4).toUpperCase();
+
+  return (
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <AppHeader title="DETAILS" showBack navigation={navigation} />
+
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Top Header Bar matching web TaskDetailPage.jsx */}
+        <View style={[styles.topHeaderCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <View style={styles.topMetaRow}>
+            <View style={[styles.mndCodeBadge, { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}>
+              <Text style={[styles.mndCodeText, { color: colors.onSurface }]}>
+                #MND-{displayCode}
+              </Text>
+            </View>
+
+            <View
+              style={[
+                styles.statusPill,
+                {
+                  backgroundColor:
+                    status === "completed"
+                      ? colors.tertiaryContainer
+                      : status === "in-progress"
+                      ? colors.surfaceContainerHighest
+                      : colors.secondaryContainer,
+                  borderColor: colors.outlineVariant,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.statusPillText,
+                  {
+                    color:
+                      status === "completed"
+                        ? colors.onTertiaryContainer
+                        : status === "in-progress"
+                        ? colors.primary
+                        : colors.onSecondaryContainer,
+                  },
+                ]}
+              >
+                {status.toUpperCase()}
+              </Text>
+            </View>
+
+            <Text style={[styles.createdDateText, { color: colors.onSurfaceVariant }]}>
+              {new Date(task?.createdAt || Date.now()).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
+            </Text>
+          </View>
+
+          <Text style={[styles.taskHeadline, { color: colors.onSurface }]}>
+            {title || "Untitled Mandate"}
+          </Text>
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtonsRow}>
+            <TouchableOpacity
+              onPress={handleSave}
+              disabled={saving}
+              style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.saveBtnText, { color: colors.onPrimary }]}>
+                {saving ? "SAVING..." : "SAVE MANDATE"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleDelete}
+              style={[styles.deleteBtn, { backgroundColor: colors.errorContainer, borderColor: colors.error }]}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.deleteBtnText, { color: colors.error }]}>DELETE</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 8, marginTop: 16 }]}>
-          {task.title}
-        </Text>
-        <Text style={[typography.bodyMd, { color: colors.secondary, marginBottom: 24 }]}>
-          {task.description || "No parameters specified."}
-        </Text>
+        {/* Task Details Card */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <Text style={[styles.sectionCardLabel, { color: colors.onSurfaceVariant }]}>
+            TASK DETAILS
+          </Text>
 
-        {/* Progress Bento Module */}
-        <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: spacing.lg }]}>
-          <View style={styles.progressCenter}>
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>OPERATIONAL PROGRESS</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-              <Text style={[typography.displayLg, { color: colors.primary }]}>{progress.toFixed(1)}</Text>
-              <Text style={[typography.headlineLg, { color: colors.primary }]}>%</Text>
-            </View>
-            <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainer, marginTop: spacing.md }]}>
-              <View style={[styles.progressBarFill, { backgroundColor: colors.primary, width: `${progress}%` }]} />
-            </View>
+          {/* Task Title */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, { color: colors.onSurfaceVariant }]}>
+              TASK TITLE
+            </Text>
+            <TextInput
+              style={[styles.textInput, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, color: colors.onSurface }]}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Enter task title..."
+              placeholderTextColor={colors.onSurfaceVariant}
+            />
           </View>
-          <View style={[styles.progressFooter, { borderTopColor: colors.outlineVariant, marginTop: spacing.md, paddingTop: spacing.md }]}>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>ELAPSED</Text>
-              <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700' }]}>12:44:02</Text>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>ETA</Text>
-              <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700' }]}>02:15:40</Text>
-            </View>
-          </View>
-        </View>
 
-        {/* Telemetry Row */}
-        <View style={styles.telemetryRow}>
-          {/* Temp */}
-          <View style={[styles.bentoCard, styles.telemetryCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <View style={styles.telemetryHeader}>
-              <MaterialIcons name="thermostat" size={20} color={colors.onSurfaceVariant} />
-              <View style={[styles.statusMiniBadge, { backgroundColor: 'rgba(60, 227, 106, 0.2)' }]}>
-                <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, fontSize: 10 }]}>STABLE</Text>
+          {/* Instructions & Context */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, { color: colors.onSurfaceVariant }]}>
+              INSTRUCTIONS & CONTEXT
+            </Text>
+            <TextInput
+              style={[
+                styles.textArea,
+                { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, color: colors.onSurface },
+              ]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Specify operating procedures, criteria for completion..."
+              placeholderTextColor={colors.onSurfaceVariant}
+              multiline
+              numberOfLines={4}
+            />
+          </View>
+
+          {/* Status & Priority Selectors */}
+          <View style={styles.selectorRow}>
+            {/* Status */}
+            <View style={{ flex: 1, gap: 4 }}>
+              <Text style={[styles.fieldLabel, { color: colors.onSurfaceVariant }]}>STATUS</Text>
+              <View style={styles.chipPicker}>
+                {["pending", "in-progress", "completed"].map((s) => (
+                  <TouchableOpacity
+                    key={s}
+                    onPress={() => setStatus(s)}
+                    style={[
+                      styles.chipItem,
+                      {
+                        backgroundColor: status === s ? colors.primary : colors.surfaceContainerLow,
+                        borderColor: status === s ? colors.primary : colors.outlineVariant,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.chipItemText,
+                        { color: status === s ? colors.onPrimary : colors.onSurfaceVariant },
+                      ]}
+                    >
+                      {s.toUpperCase()}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>TEMPERATURE</Text>
-            <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{temp.toFixed(1)}°C</Text>
           </View>
 
-          {/* Pressure */}
-          <View style={[styles.bentoCard, styles.telemetryCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <View style={styles.telemetryHeader}>
-              <MaterialIcons name="compress" size={20} color={colors.onSurfaceVariant} />
-              <View style={[styles.statusMiniBadge, { backgroundColor: 'rgba(60, 227, 106, 0.2)' }]}>
-                <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, fontSize: 10 }]}>OPTIMAL</Text>
-              </View>
+          {/* Priority */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, { color: colors.onSurfaceVariant }]}>PRIORITY</Text>
+            <View style={styles.chipPicker}>
+              {["low", "medium", "high", "urgent"].map((p) => (
+                <TouchableOpacity
+                  key={p}
+                  onPress={() => setPriority(p)}
+                  style={[
+                    styles.chipItem,
+                    {
+                      backgroundColor: priority === p ? colors.primary : colors.surfaceContainerLow,
+                      borderColor: priority === p ? colors.primary : colors.outlineVariant,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.chipItemText,
+                      { color: priority === p ? colors.onPrimary : colors.onSurfaceVariant },
+                    ]}
+                  >
+                    {p.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>PRESSURE</Text>
-            <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>104.2 <Text style={{ fontSize: 14 }}>kPa</Text></Text>
           </View>
         </View>
 
-        {/* Phase Duration Chart */}
-        <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: spacing.lg }]}>
-          <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: spacing.lg }]}>PHASE DURATION (MINS)</Text>
-          <View style={styles.chartContainer}>
-            {[{ label: 'INIT', h: '40%', bg: colors.primaryFixed },
-              { label: 'PROC', h: '85%', bg: colors.primaryFixed },
-              { label: 'SYNC', h: '60%', bg: colors.primary },
-              { label: 'VALI', h: '30%', bg: colors.primaryFixed },
-              { label: 'EXIT', h: '10%', bg: colors.primaryFixed }].map((col, i) => (
-                <View key={i} style={styles.chartCol}>
-                  <View style={[styles.chartBar, { height: col.h, backgroundColor: col.bg }]} />
-                  <Text style={[typography.labelCaps, { fontSize: 9, marginTop: 8, color: colors.primary }]}>{col.label}</Text>
+        {/* Execution Velocity Progress Bar Card */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <View style={styles.velocityHeader}>
+            <Text style={[styles.sectionCardLabel, { color: colors.onSurfaceVariant }]}>
+              EXECUTION VELOCITY
+            </Text>
+            <Text style={[styles.velocityPercent, { color: colors.onSurface }]}>
+              {progressPercent}%
+            </Text>
+          </View>
+          <View style={[styles.velocityBarBg, { backgroundColor: colors.surfaceContainerHigh }]}>
+            <View style={[styles.velocityBarFill, { backgroundColor: colors.primary, width: `${progressPercent}%` }]} />
+          </View>
+          <Text style={[styles.velocitySubtext, { color: colors.onSurfaceVariant }]}>
+            {completedSubtasksCount} of {subtasks.length} subtasks completed.
+          </Text>
+        </View>
+
+        {/* Subtask Phases Card */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <View style={styles.velocityHeader}>
+            <Text style={[styles.sectionCardLabel, { color: colors.onSurfaceVariant }]}>
+              SUBTASK PHASES
+            </Text>
+            <Text style={[styles.velocityPercent, { color: colors.onSurface }]}>
+              {completedSubtasksCount}/{subtasks.length}
+            </Text>
+          </View>
+
+          {/* Add Subtask Row */}
+          <View style={styles.addSubtaskRow}>
+            <TextInput
+              style={[
+                styles.addSubtaskInput,
+                { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, color: colors.onSurface },
+              ]}
+              value={newSubtaskTitle}
+              onChangeText={setNewSubtaskTitle}
+              placeholder="Append operational subtask..."
+              placeholderTextColor={colors.onSurfaceVariant}
+            />
+            <TouchableOpacity
+              onPress={handleAddSubtask}
+              style={[styles.addSubtaskBtn, { backgroundColor: colors.primary }]}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.addSubtaskBtnText, { color: colors.onPrimary }]}>ADD</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Subtasks List */}
+          <View style={styles.subtasksList}>
+            {subtasks.length === 0 ? (
+              <Text style={[styles.emptySubtasksText, { color: colors.onSurfaceVariant }]}>
+                No subtask phases initialized.
+              </Text>
+            ) : (
+              subtasks.map((sub) => {
+                const isSubDone = sub.status === "completed";
+                const subId = sub._id || sub.id;
+
+                return (
+                  <TouchableOpacity
+                    key={subId}
+                    onPress={() => handleToggleSubtask(subId, sub.status)}
+                    style={[
+                      styles.subtaskItem,
+                      {
+                        backgroundColor: colors.surfaceContainerLow,
+                        borderColor: colors.outlineVariant,
+                        opacity: isSubDone ? 0.6 : 1,
+                      },
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialIcons
+                      name={isSubDone ? "check-box" : "check-box-outline-blank"}
+                      size={18}
+                      color={isSubDone ? colors.primary : colors.outline}
+                    />
+                    <Text
+                      style={[
+                        styles.subtaskItemText,
+                        {
+                          color: colors.onSurface,
+                          textDecorationLine: isSubDone ? "line-through" : "none",
+                        },
+                      ]}
+                    >
+                      {sub.title}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
+        </View>
+
+        {/* Mission Logs & Communications (Comments) */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <Text style={[styles.sectionCardLabel, { color: colors.onSurfaceVariant }]}>
+            MISSION LOGS & COMMUNICATIONS
+          </Text>
+
+          {/* Add Comment Input */}
+          <View style={styles.addCommentBox}>
+            <TextInput
+              style={[
+                styles.commentInput,
+                { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, color: colors.onSurface },
+              ]}
+              value={newComment}
+              onChangeText={setNewComment}
+              placeholder="Record an operational log or update..."
+              placeholderTextColor={colors.onSurfaceVariant}
+              multiline
+              numberOfLines={2}
+            />
+            <TouchableOpacity
+              onPress={handleAddComment}
+              disabled={postingComment || !newComment.trim()}
+              style={[
+                styles.postLogBtn,
+                {
+                  backgroundColor: colors.primary,
+                  opacity: postingComment || !newComment.trim() ? 0.5 : 1,
+                },
+              ]}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.postLogBtnText, { color: colors.onPrimary }]}>
+                {postingComment ? "TRANSMITTING..." : "POST LOG"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Comments List */}
+          <View style={styles.commentsList}>
+            {comments.length === 0 ? (
+              <Text style={[styles.emptySubtasksText, { color: colors.onSurfaceVariant }]}>
+                No log communications recorded yet.
+              </Text>
+            ) : (
+              comments.map((c, i) => (
+                <View
+                  key={c._id || i}
+                  style={[
+                    styles.commentItem,
+                    {
+                      backgroundColor: colors.surfaceContainerLow,
+                      borderColor: colors.outlineVariant,
+                    },
+                  ]}
+                >
+                  <View style={styles.commentMetaRow}>
+                    <Text style={[styles.commentAuthor, { color: colors.onSurface }]}>
+                      {c.user?.name || "Team Member"}
+                    </Text>
+                    <Text style={[styles.commentTime, { color: colors.onSurfaceVariant }]}>
+                      {new Date(c.createdAt || Date.now()).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Text>
+                  </View>
+                  <Text style={[styles.commentContent, { color: colors.onSurface }]}>
+                    {c.content}
+                  </Text>
                 </View>
-            ))}
+              ))
+            )}
           </View>
         </View>
 
-        {/* Operational Log */}
-        <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, padding: spacing.md }]}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
-            <Text style={[typography.labelCaps, { color: colors.primary }]}>OPERATIONAL_LOG.RAW</Text>
-            <MaterialIcons name="terminal" size={18} color={colors.primary} />
-          </View>
-          <View style={styles.logContainer}>
-            <View style={[styles.logEntry, { borderBottomColor: colors.outlineVariant }]}>
-              <Text style={[styles.logTime, { color: colors.primary }]}>14:22:01</Text>
-              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>System calibration initialized... [OK]</Text>
-            </View>
-            <View style={[styles.logEntry, { borderBottomColor: colors.outlineVariant }]}>
-              <Text style={[styles.logTime, { color: colors.primary }]}>14:25:34</Text>
-              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Loading operational parameters from core...</Text>
-            </View>
-            <View style={[styles.logEntry, { borderBottomColor: colors.outlineVariant }]}>
-              <Text style={[styles.logTime, { color: colors.primary }]}>14:30:12</Text>
-              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>Thermal expansion within acceptable limits.</Text>
-            </View>
-            <View style={[styles.logEntry, { borderBottomColor: colors.outlineVariant }]}>
-              <Text style={[styles.logTime, { color: colors.primary }]}>14:45:00</Text>
-              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Phase 3 (SYNC) handshake initiated.</Text>
-            </View>
-            <View style={[styles.logEntry, { borderBottomColor: 'transparent', paddingBottom: 0 }]}>
-              <Text style={[styles.logTime, { color: colors.primary }]}>14:45:05</Text>
-              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Network packets arriving at 1.2GB/s.</Text>
-            </View>
-          </View>
-        </View>
+        <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1 },
   container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    height: 64,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconButton: {
-    padding: 8,
-    borderRadius: 8,
-  },
-  content: {
-    padding: 24,
-    gap: 16,
-    paddingBottom: 40,
-  },
-  breadcrumbRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  liveBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  bentoCard: {
-    borderWidth: 1,
-  },
-  progressCenter: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 24,
-  },
-  progressBarBg: {
-    width: '100%',
-    height: 4,
-  },
-  progressBarFill: {
-    height: '100%',
-  },
-  progressFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-  },
-  telemetryRow: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  telemetryCard: {
-    flex: 1,
     padding: 16,
+    gap: 16,
   },
-  telemetryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  statusMiniBadge: {
-    paddingHorizontal: 4,
-  },
-  chartContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    height: 128,
+  centerContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
     gap: 12,
   },
-  chartCol: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    height: '100%',
+  loadingText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    letterSpacing: 1,
   },
-  chartBar: {
-    width: '100%',
+  // Top Header Card
+  topHeaderCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
   },
-  logContainer: {
+  topMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
-  logEntry: {
-    flexDirection: 'row',
-    gap: 16,
-    borderBottomWidth: 1,
-    paddingBottom: 8,
+  mndCodeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    borderWidth: 1,
   },
-  logTime: {
-    fontWeight: '700',
-    fontFamily: 'JetBrainsMono-Bold',
+  mndCodeText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+  },
+  statusPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 9999,
+    borderWidth: 1,
+  },
+  statusPillText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+  },
+  createdDateText: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 10,
+  },
+  taskHeadline: {
+    fontFamily: "HankenGrotesk-ExtraBold",
+    fontSize: 22,
+    lineHeight: 26,
+    textTransform: "uppercase",
+  },
+  actionButtonsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 4,
+  },
+  saveBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  saveBtnText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    letterSpacing: 0.6,
+  },
+  deleteBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  deleteBtnText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    letterSpacing: 0.6,
+  },
+  // Section Cards
+  sectionCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
+  },
+  sectionCardLabel: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  fieldGroup: {
+    gap: 4,
+  },
+  fieldLabel: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+    letterSpacing: 0.6,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 13,
+  },
+  textArea: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 13,
+    minHeight: 80,
+    textAlignVertical: "top",
+  },
+  selectorRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  chipPicker: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  chipItem: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  chipItemText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+  },
+  // Velocity
+  velocityHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  velocityPercent: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 13,
+  },
+  velocityBarBg: {
+    height: 8,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  velocityBarFill: {
+    height: "100%",
+  },
+  velocitySubtext: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 10,
+  },
+  // Subtasks
+  addSubtaskRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  addSubtaskInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontFamily: "HankenGrotesk-Regular",
     fontSize: 12,
-  }
+  },
+  addSubtaskBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addSubtaskBtnText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+  },
+  subtasksList: {
+    gap: 6,
+  },
+  emptySubtasksText: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 11,
+    fontStyle: "italic",
+  },
+  subtaskItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 8,
+  },
+  subtaskItemText: {
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 12,
+    flex: 1,
+  },
+  // Comments
+  addCommentBox: {
+    gap: 8,
+  },
+  commentInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 12,
+    minHeight: 50,
+  },
+  postLogBtn: {
+    alignSelf: "flex-end",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  postLogBtnText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+    letterSpacing: 0.6,
+  },
+  commentsList: {
+    gap: 8,
+  },
+  commentItem: {
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 4,
+  },
+  commentMetaRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  commentAuthor: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+  },
+  commentTime: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 9,
+  },
+  commentContent: {
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 12,
+    lineHeight: 16,
+  },
 });
 
 export default TaskDetailScreen;

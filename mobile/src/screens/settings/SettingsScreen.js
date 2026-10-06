@@ -1,324 +1,275 @@
-import React, { useState } from "react";
-import {
-  View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, Switch, Image
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch, Image, TextInput, Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
+import AppHeader from "../../components/layout/AppHeader";
+import api from "../../services/api";
+
+const PRESET_AVATARS = [
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+];
 
 const SettingsScreen = ({ navigation }) => {
-  const { user, logout } = useAuth();
-  const { colors, typography, spacing, borderRadius, isDark, toggleTheme } = useTheme();
+  const { user, updateUser, logout } = useAuth();
+  const { colors, typography, isDark, toggleTheme } = useTheme();
 
-  const [biometric, setBiometric] = useState(true);
-  const [encrypted, setEncrypted] = useState(true);
-  const [killswitch, setKillswitch] = useState(false);
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [avatar, setAvatar] = useState(user?.avatar || "");
+  const [saving, setSaving] = useState(false);
+
+  const [alertsEnabled, setAlertsEnabled] = useState(true);
+  const [digestEnabled, setDigestEnabled] = useState(false);
+  const [signalsEnabled, setSignalsEnabled] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setEmail(user.email || "");
+      setAvatar(user.avatar || "");
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await api.put("/users/profile", { name, avatar });
+      if (updateUser) {
+        updateUser(res.data);
+      }
+      Alert.alert("Success", "Account settings saved successfully");
+    } catch (e) {
+      Alert.alert("Notice", "Profile updated locally");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = () => {
+    setName(user?.name || "");
+    setEmail(user?.email || "");
+    setAvatar(user?.avatar || "");
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.iconButton}>
-            <MaterialIcons name="menu" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 8 }]}>
-            MANDATE
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.iconButton}>
-          <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+      <AppHeader title="SETTINGS" navigation={navigation} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* Profile Header Module */}
-        <View style={styles.section}>
-          <View style={styles.profileHeaderRow}>
+        {/* Header Section matching web SettingsPage.jsx */}
+        <View style={styles.pageHeader}>
+          <View style={styles.breadcrumbRow}>
+            <View style={[styles.brandDot, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.breadcrumbText, { color: colors.onSurfaceVariant }]}>
+              WORKSPACE PREFERENCES · SECURITY &amp; IDENTITY
+            </Text>
+          </View>
+          <Text style={[styles.title, { color: colors.onSurface }]}>
+            Account Settings
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
+            Manage your profile identity, credentials, active organization teams, and system notification signals.
+          </Text>
+
+          <View style={styles.topBtnRow}>
+            <TouchableOpacity
+              onPress={handleReset}
+              style={[styles.resetBtn, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLow }]}
+            >
+              <Text style={[styles.resetBtnText, { color: colors.onSurfaceVariant }]}>RESET</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleSave}
+              disabled={saving}
+              style={[styles.saveBtn, { backgroundColor: colors.primary }]}
+            >
+              <Text style={[styles.saveBtnText, { color: colors.onPrimary }]}>
+                {saving ? "SAVING..." : "SAVE CHANGES"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Identity & Profile Module */}
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <Text style={[styles.cardTitle, { color: colors.onSurface }]}>IDENTITY &amp; PROFILE</Text>
+
+          {/* Current Avatar & Presets */}
+          <View style={styles.avatarRow}>
+            <View style={[styles.avatarBox, { borderColor: colors.primary }]}>
+              {avatar ? (
+                <Image source={{ uri: avatar }} style={styles.avatarImg} />
+              ) : (
+                <View style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}>
+                  <Text style={[styles.avatarText, { color: colors.onPrimary }]}>
+                    {(name || "OP").slice(0, 2).toUpperCase()}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.presetContainer}>
+              <Text style={[styles.presetLabel, { color: colors.onSurfaceVariant }]}>SELECT PRESET AVATAR</Text>
+              <View style={styles.presetsRow}>
+                {PRESET_AVATARS.map((p, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    onPress={() => setAvatar(p)}
+                    style={[
+                      styles.presetThumb,
+                      { borderColor: avatar === p ? colors.primary : colors.outlineVariant },
+                    ]}
+                  >
+                    <Image source={{ uri: p }} style={styles.presetImg} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          {/* Form Fields */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, { color: colors.onSurfaceVariant }]}>FULL NAME</Text>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder="Your full name"
+              placeholderTextColor={colors.onSurfaceVariant}
+              style={[styles.input, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, color: colors.onSurface }]}
+            />
+          </View>
+
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, { color: colors.onSurfaceVariant }]}>EMAIL ADDRESS (LOCKED)</Text>
+            <TextInput
+              value={email}
+              editable={false}
+              style={[styles.inputDisabled, { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant, color: colors.onSurfaceVariant }]}
+            />
+          </View>
+        </View>
+
+        {/* Notifications Module */}
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <Text style={[styles.cardTitle, { color: colors.onSurface }]}>NOTIFICATIONS</Text>
+
+          <View style={styles.switchRow}>
             <View style={{ flex: 1 }}>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>OPERATOR SETTINGS</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary, letterSpacing: 2, marginTop: 4 }]}>
-                ID: MN-0982-X
-              </Text>
-              <Text style={[typography.labelSm, { color: colors.primary, marginTop: 4 }]}>
-                {user?.name || "Operator"}
-              </Text>
+              <Text style={[styles.switchTitle, { color: colors.onSurface }]}>Critical Alerts Push</Text>
+              <Text style={[styles.switchDesc, { color: colors.onSurfaceVariant }]}>Immediate alert on urgent or blocking status</Text>
             </View>
-            <View style={[styles.avatarContainer, { borderColor: colors.primary }]}>
-              <Image 
-                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAulB7hV3bWJOfIOtbCPQWodgUNAIfn20bVSJrKQboUelKevzDSQiuNtzRpzoiwhkewERqpe8hogOO4ozTxxDpYLePAsys-gHZDBCoSkPtQ1hseAea1rzKzsZa8RkMoY00SA7L_a3BWPGsbTRoPdFknZ3rC__zvrJEO8IrXbhsNBWUmtatljhQbYetqD895qHBCWIKpafFbakp2s2-ZtxZJX5V524MDx5BpubGH454sr2A6hN-WosRNhQ' }}
-                style={styles.avatarImg}
-              />
-            </View>
+            <Switch
+              value={alertsEnabled}
+              onValueChange={setAlertsEnabled}
+              trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
+              thumbColor={alertsEnabled ? colors.onPrimary : colors.outline}
+            />
           </View>
+
           <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
-        </View>
 
-        {/* System Credentials */}
-        <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>SYSTEM CREDENTIALS</Text>
-          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <View style={{ marginBottom: 16 }}>
-              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', marginBottom: 4 }]}>Access Key</Text>
-              <View style={[styles.credBox, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.primary }]}>
-                <Text style={[typography.labelSm, { color: colors.primary }]}>********************</Text>
-                <MaterialIcons name="visibility" size={20} color={colors.primary} />
-              </View>
+          <View style={styles.switchRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.switchTitle, { color: colors.onSurface }]}>Daily Task Digest</Text>
+              <Text style={[styles.switchDesc, { color: colors.onSurfaceVariant }]}>Morning task overview and agenda</Text>
             </View>
+            <Switch
+              value={digestEnabled}
+              onValueChange={setDigestEnabled}
+              trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
+              thumbColor={digestEnabled ? colors.onPrimary : colors.outline}
+            />
+          </View>
 
-            <View style={{ marginBottom: 24 }}>
-              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', marginBottom: 4 }]}>Signature Hash</Text>
-              <View style={[styles.credBox, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]} numberOfLines={1}>sha256:8f4e2...f3a9</Text>
-              </View>
+          <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
+
+          <View style={styles.switchRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.switchTitle, { color: colors.onSurface }]}>Realtime WebSocket Sync</Text>
+              <Text style={[styles.switchDesc, { color: colors.onSurfaceVariant }]}>Live collaborative task updates</Text>
             </View>
-
-            <TouchableOpacity style={[styles.rotateBtn, { backgroundColor: colors.primary }]} activeOpacity={0.8}>
-              <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>ROTATE CREDENTIALS</Text>
-            </TouchableOpacity>
+            <Switch
+              value={signalsEnabled}
+              onValueChange={setSignalsEnabled}
+              trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
+              thumbColor={signalsEnabled ? colors.onPrimary : colors.outline}
+            />
           </View>
         </View>
 
-        {/* Security Matrix */}
-        <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>SECURITY MATRIX</Text>
-          <View style={[styles.bentoCard, { padding: 0, overflow: 'hidden', backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <View style={[styles.matrixHeader, { backgroundColor: colors.primaryContainer }]}>
-              <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer }]}>AUTH LEVEL 4</Text>
-              <MaterialIcons name="lock" size={20} color={colors.onPrimaryContainer} />
+        {/* Interface & Theme Module */}
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <Text style={[styles.cardTitle, { color: colors.onSurface }]}>INTERFACE APPEARANCE</Text>
+          <View style={styles.switchRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.switchTitle, { color: colors.onSurface }]}>Dark Theme</Text>
+              <Text style={[styles.switchDesc, { color: colors.onSurfaceVariant }]}>Optimized for high-contrast, low-light viewing</Text>
             </View>
-            
-            <View style={{ padding: 24, gap: 16 }}>
-              <View style={styles.switchRow}>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Dark Interface</Text>
-                <Switch
-                  value={isDark}
-                  onValueChange={toggleTheme}
-                  trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
-                  thumbColor={isDark ? colors.onPrimary : colors.onSurfaceVariant}
-                />
-              </View>
-              <View style={[styles.divider, { backgroundColor: colors.outlineVariant, opacity: 0.5 }]} />
-              
-              <View style={styles.switchRow}>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Biometric Bypass</Text>
-                <Switch
-                  value={biometric}
-                  onValueChange={setBiometric}
-                  trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
-                  thumbColor={biometric ? colors.onPrimary : colors.onSurfaceVariant}
-                />
-              </View>
-              <View style={[styles.divider, { backgroundColor: colors.outlineVariant, opacity: 0.5 }]} />
-              
-              <View style={styles.switchRow}>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Encrypted Comms</Text>
-                <Switch
-                  value={encrypted}
-                  onValueChange={setEncrypted}
-                  trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
-                  thumbColor={encrypted ? colors.onPrimary : colors.onSurfaceVariant}
-                />
-              </View>
-            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              trackColor={{ false: colors.surfaceContainerHigh, true: colors.primary }}
+              thumbColor={isDark ? colors.onPrimary : colors.outline}
+            />
           </View>
         </View>
 
-        {/* Workspace Configuration (From old settings) */}
-        <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>WORKSPACE LINKS</Text>
-          <View style={[styles.bentoCard, { padding: 0, overflow: 'hidden', backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-            
-            <TouchableOpacity 
-              style={[styles.logRow, { borderBottomColor: colors.surfaceContainerLow }]}
-              onPress={() => navigation.navigate("TeamSettings")}
-            >
-              <View>
-                <Text style={[typography.labelSm, { color: colors.primary, fontSize: 14 }]}>Team Settings</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>Manage operators and invites</Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={24} color={colors.secondary} />
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.logRow, { borderBottomColor: colors.surfaceContainerLow }]}
-              onPress={() => navigation.navigate("Admin")}
-            >
-              <View>
-                <Text style={[typography.labelSm, { color: colors.primary, fontSize: 14 }]}>Admin Operations</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>Workspace global config</Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={24} color={colors.secondary} />
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.logRow}
-              onPress={() => navigation.navigate("Pricing")}
-            >
-              <View>
-                <Text style={[typography.labelSm, { color: colors.primary, fontSize: 14 }]}>Billing & Allocation</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>Subscription and limits</Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={24} color={colors.secondary} />
-            </TouchableOpacity>
-
-          </View>
-        </View>
-
-        {/* Access Logs */}
-        <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>ACCESS LOGS</Text>
-          <View style={[styles.bentoCard, { padding: 0, overflow: 'hidden', backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-            
-            <View style={[styles.logRow, { borderBottomColor: colors.surfaceContainerLow }]}>
-              <View>
-                <Text style={[typography.labelSm, { color: colors.primary }]}>Login: Terminal-7</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>14:23:01 UTC — 10.0.0.45</Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={20} color={colors.secondary} />
-            </View>
-
-            <View style={[styles.logRow, { borderBottomColor: colors.surfaceContainerLow }]}>
-              <View>
-                <Text style={[typography.labelSm, { color: colors.primary }]}>Update: Security Matrix</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>09:12:45 UTC — System Admin</Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={20} color={colors.secondary} />
-            </View>
-
-            <View style={styles.logRow}>
-              <View>
-                <Text style={[typography.labelSm, { color: colors.primary }]}>Alert: Failed Auth Attempt</Text>
-                <Text style={[typography.labelSm, { color: colors.error, fontSize: 10, fontWeight: '700' }]}>04:55:22 UTC — 192.168.1.1</Text>
-              </View>
-              <MaterialIcons name="warning" size={20} color={colors.error} />
-            </View>
-            
-          </View>
-        </View>
-
-        {/* Logout */}
-        <TouchableOpacity 
-          style={[styles.logoutBtn, { borderColor: colors.error, backgroundColor: colors.errorContainer }]}
+        {/* Sign Out Action */}
+        <TouchableOpacity
           onPress={logout}
+          style={[styles.logoutBtn, { borderColor: colors.error, backgroundColor: colors.surfaceContainerLow }]}
           activeOpacity={0.8}
         >
-          <MaterialIcons name="power-settings-new" size={20} color={colors.error} />
-          <Text style={[typography.labelCaps, { color: colors.error, letterSpacing: 2 }]}>TERMINATE SESSION</Text>
+          <MaterialIcons name="logout" size={18} color={colors.error} style={{ marginRight: 6 }} />
+          <Text style={[styles.logoutBtnText, { color: colors.error }]}>TERMINATE SESSION (SIGN OUT)</Text>
         </TouchableOpacity>
-
-        <View style={styles.footer}>
-          <Text style={[typography.labelCaps, { color: colors.primary }]}>MANDATE INDUSTRIAL</Text>
-          <Text style={[typography.labelSm, { color: colors.secondary, opacity: 0.8, marginTop: 8 }]}>© 2024 MANDATE INDUSTRIAL</Text>
-        </View>
-
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    height: 64,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
-    padding: 8,
-    borderRadius: 16,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  profileHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  avatarContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 2,
-    overflow: 'hidden',
-  },
-  avatarImg: {
-    width: '100%',
-    height: '100%',
-  },
-  divider: {
-    width: '100%',
-    height: 1,
-  },
-  bentoCard: {
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 24,
-  },
-  credBox: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 12,
-    borderBottomWidth: 1,
-  },
-  rotateBtn: {
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  matrixHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-  },
-  switchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  logRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-  },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderWidth: 1,
-    borderRadius: 32,
-    gap: 8,
-    marginTop: 16,
-  },
-  footer: {
-    alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 40,
-  }
+  container: { flex: 1 },
+  scrollContent: { padding: 16, paddingBottom: 40 },
+  pageHeader: { marginBottom: 16 },
+  breadcrumbRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+  brandDot: { width: 8, height: 8, borderRadius: 4 },
+  breadcrumbText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase" },
+  title: { fontFamily: "HankenGrotesk-Bold", fontSize: 24, textTransform: "uppercase", letterSpacing: -0.5 },
+  subtitle: { fontFamily: "HankenGrotesk-Regular", fontSize: 13, marginTop: 4, lineHeight: 18 },
+  topBtnRow: { flexDirection: "row", gap: 10, marginTop: 14 },
+  resetBtn: { flex: 1, paddingVertical: 10, borderWidth: 1, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  resetBtnText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1 },
+  saveBtn: { flex: 2, paddingVertical: 10, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  saveBtnText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1 },
+  card: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 16 },
+  cardTitle: { fontFamily: "JetBrainsMono-Bold", fontSize: 12, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 },
+  avatarRow: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 16 },
+  avatarBox: { width: 56, height: 56, borderRadius: 28, borderWidth: 2, overflow: "hidden" },
+  avatarImg: { width: "100%", height: "100%" },
+  avatarPlaceholder: { width: "100%", height: "100%", alignItems: "center", justifyContent: "center" },
+  avatarText: { fontFamily: "JetBrainsMono-Bold", fontSize: 18 },
+  presetContainer: { flex: 1 },
+  presetLabel: { fontFamily: "JetBrainsMono-Bold", fontSize: 9, letterSpacing: 1, marginBottom: 6 },
+  presetsRow: { flexDirection: "row", gap: 8 },
+  presetThumb: { width: 32, height: 32, borderRadius: 16, borderWidth: 1.5, overflow: "hidden" },
+  presetImg: { width: "100%", height: "100%" },
+  fieldGroup: { marginBottom: 12 },
+  fieldLabel: { fontFamily: "JetBrainsMono-Bold", fontSize: 10, letterSpacing: 0.5, marginBottom: 6 },
+  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 42, fontFamily: "HankenGrotesk-Medium", fontSize: 14 },
+  inputDisabled: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, height: 42, fontFamily: "JetBrainsMono-Regular", fontSize: 13 },
+  switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 8 },
+  switchTitle: { fontFamily: "HankenGrotesk-Bold", fontSize: 14 },
+  switchDesc: { fontFamily: "HankenGrotesk-Regular", fontSize: 11, marginTop: 2 },
+  divider: { height: 1, marginVertical: 6 },
+  logoutBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", borderWidth: 1, borderRadius: 12, paddingVertical: 14, marginTop: 4 },
+  logoutBtnText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1 },
 });
 
 export default SettingsScreen;

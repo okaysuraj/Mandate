@@ -1,34 +1,51 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { createTask } from '../../services/taskService';
+import AppHeader from '../../components/layout/AppHeader';
+
 const CreateTaskScreen = ({ navigation }) => {
-  const { colors, typography, spacing, borderRadius } = useTheme();
+  const { colors, typography, spacing } = useTheme();
   const { user } = useAuth();
   const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState('ALPHA');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState('MEDIUM');
   const [dueDate, setDueDate] = useState('');
-  const [allocation, setAllocation] = useState(75);
+  const [timeEstimate, setTimeEstimate] = useState(60);
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
-    if (!title) return;
+    if (!title.trim()) return;
     setLoading(true);
     try {
-      const taskData = {
-        title,
-        priority: priority === 'ALPHA' ? 'urgent' : priority === 'BETA' ? 'high' : 'normal',
-        dueDate,
-        status: 'todo',
-        workspaceId: user?.activeWorkspace
+      const priorityMap = {
+        URGENT: 'urgent',
+        HIGH: 'high',
+        MEDIUM: 'medium',
+        LOW: 'low',
       };
+
+      const taskData = {
+        title: title.trim(),
+        description: description.trim(),
+        priority: priorityMap[priority] || 'medium',
+        status: 'pending',
+        timeEstimate: Number(timeEstimate) || 0,
+        workspaceId: user?.activeWorkspace,
+      };
+
+      if (dueDate && dueDate.trim()) {
+        taskData.dueDate = dueDate.trim();
+      }
+
       await createTask(taskData);
       navigation.goBack();
     } catch (err) {
       console.error(err);
-      alert('Failed to create mandate');
+      alert('Failed to create task');
     } finally {
       setLoading(false);
     }
@@ -41,107 +58,126 @@ const CreateTaskScreen = ({ navigation }) => {
         key={label}
         style={[
           styles.priorityBtn,
-          { 
+          {
             backgroundColor: isActive ? colors.primary : colors.surfaceContainerLowest,
-            borderLeftWidth: label === 'BETA' ? 1 : 0,
-            borderRightWidth: label === 'BETA' ? 1 : 0,
-            borderColor: colors.outlineVariant
-          }
+            borderColor: colors.outlineVariant,
+          },
         ]}
         onPress={() => setPriority(label)}
       >
-        <Text style={[typography.labelCaps, { color: isActive ? colors.onPrimary : colors.onSurfaceVariant }]}>{label}</Text>
+        <Text style={[typography.labelCaps, { color: isActive ? colors.onPrimary : colors.onSurfaceVariant, fontSize: 11 }]}>
+          {label}
+        </Text>
       </TouchableOpacity>
     );
   };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: 'bold', marginLeft: spacing.sm }]}>CREATE TASK</Text>
-        </View>
-        <View style={[styles.avatarContainer, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerHigh }]}>
-          <Image 
-            source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD3uS-AaCfL0hkObqtrHUJCH8xA3dLcvqrQSiZO7LTz68SbYJIOQKdHn5yp3AyG2RZCKQ9aeKJm-B2YSONGjI9dgzo0LA4cUiInusAZd8xttTPP3tMQOs5W4720Op8_w1TI6wf7Uh_t--ruFJTPfQtXQqPuVUByrMyNIE5K4byKQz9EFmo9OJvEj8rJJGbp0ChlkVs1MOyA6Id8fo90yuwkKKCGC_L1oYEnWpgKZ16rkUR7deqcKEl1MQ' }} 
-            style={styles.avatarImage} 
-          />
-        </View>
-      </View>
+      <AppHeader title="NEW TASK" showBack={true} navigation={navigation} />
 
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={[styles.mainContent, { paddingHorizontal: spacing.gutter, paddingTop: 32 }]}>
-          
+        <View style={[styles.mainContent, { paddingHorizontal: spacing.gutter, paddingTop: 24 }]}>
           <View style={styles.formSpace}>
             
-            {/* 01 MANDATE_NAME */}
+            {/* 01 TASK TITLE */}
             <View>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.sm }]}>01 // MANDATE_NAME</Text>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.sm }]}>
+                01 // TASK TITLE
+              </Text>
               <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: spacing.md }]}>
                 <TextInput
-                  style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase' }]}
-                  placeholder="ENTER IDENTIFIER..."
+                  style={[typography.bodyMd, { color: colors.primary, fontSize: 16, fontWeight: '700' }]}
+                  placeholder="What needs to be done?"
                   placeholderTextColor={colors.outlineVariant}
                   value={title}
                   onChangeText={setTitle}
+                  autoFocus={true}
                 />
               </View>
             </View>
 
-            {/* 02 PRIORITY_LEVEL */}
+            {/* DESCRIPTION */}
             <View>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.sm }]}>02 // PRIORITY_LEVEL</Text>
-              <View style={[styles.priorityGroup, { borderColor: colors.outlineVariant }]}>
-                {['ALPHA', 'BETA', 'GAMMA'].map(renderPriorityBtn)}
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.sm }]}>
+                DESCRIPTION (OPTIONAL)
+              </Text>
+              <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: spacing.md }]}>
+                <TextInput
+                  style={[typography.bodyMd, { color: colors.onSurface, minHeight: 60 }]}
+                  placeholder="Add notes, links, or extra context..."
+                  placeholderTextColor={colors.outlineVariant}
+                  value={description}
+                  onChangeText={setDescription}
+                  multiline={true}
+                  textAlignVertical="top"
+                />
               </View>
             </View>
 
-            {/* 03 TEMPORAL_PARAMETERS */}
+            {/* 02 PRIORITY */}
             <View>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.sm }]}>03 // TEMPORAL_PARAMETERS</Text>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.sm }]}>
+                02 // PRIORITY LEVEL
+              </Text>
+              <View style={[styles.priorityGroup, { borderColor: colors.outlineVariant }]}>
+                {['URGENT', 'HIGH', 'MEDIUM', 'LOW'].map(renderPriorityBtn)}
+              </View>
+            </View>
+
+            {/* 03 DUE DATE */}
+            <View>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.sm }]}>
+                03 // SCHEDULE & DUE DATE
+              </Text>
               <View style={styles.row}>
-                <View style={[styles.bentoCard, { flex: 1, backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: spacing.md, marginRight: spacing.sm }]}>
-                  <Text style={[typography.labelSm, { color: colors.outline, marginBottom: spacing.xs }]}>DATE</Text>
+                <View style={[styles.bentoCard, { flex: 1, backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: spacing.md }]}>
+                  <Text style={[typography.labelSm, { color: colors.outline, marginBottom: spacing.xs }]}>
+                    DUE DATE (YYYY-MM-DD)
+                  </Text>
                   <TextInput
                     style={[typography.labelCaps, { color: colors.onSurface }]}
-                    placeholder="YYYY-MM-DD"
+                    placeholder="e.g. 2026-10-15"
                     placeholderTextColor={colors.outlineVariant}
                     value={dueDate}
                     onChangeText={setDueDate}
                   />
                 </View>
-                <View style={[styles.bentoCard, { flex: 1, backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: spacing.md }]}>
-                  <Text style={[typography.labelSm, { color: colors.outline, marginBottom: spacing.xs }]}>WINDOW</Text>
-                  <TextInput
-                    style={[typography.labelCaps, { color: colors.onSurface }]}
-                    placeholder="00:00"
-                    placeholderTextColor={colors.outlineVariant}
-                  />
-                </View>
               </View>
             </View>
 
-            {/* 04 RESOURCE_ALLOCATION */}
+            {/* 04 ESTIMATED TIME */}
             <View>
               <View style={styles.allocationHeader}>
-                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>04 // RESOURCE_ALLOCATION</Text>
-                <Text style={[typography.labelCaps, { color: colors.primary }]}>{allocation}%</Text>
+                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>
+                  04 // TIME ESTIMATE
+                </Text>
+                <Text style={[typography.labelCaps, { color: colors.primary }]}>{timeEstimate} MIN</Text>
               </View>
-              <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: spacing.lg }]}>
-                {/* Allocation Gauge */}
-                <View style={[styles.sliderTrack, { backgroundColor: colors.surfaceDim, marginBottom: spacing.sm }]}>
-                  <View style={[styles.sliderFill, { backgroundColor: colors.primary, width: `${allocation}%` }]} />
-                  <View style={[styles.sliderThumb, { backgroundColor: colors.primary, left: `${allocation}%`, marginLeft: -12 }]} />
-                </View>
-                <View style={styles.allocationLabels}>
-                  {[25, 50, 75, 100].map((val) => (
-                    <TouchableOpacity key={val} onPress={() => setAllocation(val)}>
-                      <Text style={[typography.labelSm, { color: allocation === val ? colors.primary : colors.onSurfaceVariant }]}>
-                        {val}%
+              <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: spacing.md }]}>
+                <View style={styles.timeButtonsRow}>
+                  {[15, 30, 45, 60, 90, 120].map((mins) => (
+                    <TouchableOpacity
+                      key={mins}
+                      onPress={() => setTimeEstimate(mins)}
+                      style={[
+                        styles.timePill,
+                        {
+                          backgroundColor: timeEstimate === mins ? colors.primary : colors.surfaceContainer,
+                          borderColor: colors.outlineVariant,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          typography.labelSm,
+                          {
+                            color: timeEstimate === mins ? colors.onPrimary : colors.onSurfaceVariant,
+                            fontWeight: '600',
+                          },
+                        ]}
+                      >
+                        {mins}m
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -149,24 +185,17 @@ const CreateTaskScreen = ({ navigation }) => {
               </View>
             </View>
 
-            {/* Decorative Visual Token */}
-            <View style={[styles.decorativeBox, { borderColor: colors.outlineVariant }]}>
-              <View style={[styles.systemStableBadge, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelCaps, { color: colors.primary }]}>SYSTEM_STABLE</Text>
-              </View>
-            </View>
-
             {/* Submit Button */}
             <View style={{ paddingTop: spacing.md }}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.submitBtn, { backgroundColor: colors.primary }, loading && { opacity: 0.7 }]}
                 onPress={handleCreate}
-                disabled={loading}
+                disabled={loading || !title.trim()}
               >
-                <Text style={[typography.labelCaps, { color: colors.onPrimary, marginRight: spacing.md }]}>
-                  {loading ? 'INITIALIZING...' : 'INITIALIZE_MANDATE'}
+                <Text style={[typography.labelCaps, { color: colors.onPrimary, marginRight: spacing.md, fontWeight: '700' }]}>
+                  {loading ? 'CREATING TASK...' : 'CREATE TASK'}
                 </Text>
-                <MaterialIcons name="bolt" size={24} color={colors.onPrimary} />
+                <MaterialIcons name="arrow-forward" size={20} color={colors.onPrimary} />
               </TouchableOpacity>
             </View>
 
@@ -179,36 +208,13 @@ const CreateTaskScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    height: 64,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-  },
   container: {
     flexGrow: 1,
     paddingBottom: 96,
   },
   mainContent: {},
   formSpace: {
-    gap: 32,
+    gap: 24,
   },
   bentoCard: {
     borderWidth: 1,
@@ -222,9 +228,10 @@ const styles = StyleSheet.create({
   },
   priorityBtn: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRightWidth: 0.5,
   },
   row: {
     flexDirection: 'row',
@@ -235,51 +242,25 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginBottom: 8,
   },
-  sliderTrack: {
-    width: '100%',
-    height: 4,
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  sliderFill: {
-    height: '100%',
-    position: 'absolute',
-    left: 0,
-  },
-  sliderThumb: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    position: 'absolute',
-  },
-  allocationLabels: {
+  timeButtonsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
     justifyContent: 'space-between',
-    marginTop: 16,
   },
-  decorativeBox: {
-    width: '100%',
-    height: 128,
-    borderWidth: 1,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  systemStableBadge: {
-    paddingHorizontal: 16,
+  timePill: {
+    paddingHorizontal: 12,
     paddingVertical: 8,
+    borderRadius: 6,
     borderWidth: 1,
-    borderRadius: 4,
   },
   submitBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-    borderRadius: 32,
-  }
+    paddingVertical: 16,
+    borderRadius: 12,
+  },
 });
 
 export default CreateTaskScreen;

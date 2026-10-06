@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
+import AppHeader from '../../components/layout/AppHeader';
 
 const KeyboardShortcutsScreen = ({ navigation }) => {
   const { colors, typography, spacing, borderRadius } = useTheme();
@@ -9,18 +11,7 @@ const KeyboardShortcutsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.iconBtn}>
-            <MaterialIcons name="menu" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: 'bold', letterSpacing: -1, marginLeft: 8 }]}>MANDATE</Text>
-        </View>
-        <TouchableOpacity style={styles.iconBtn}>
-          <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+      <AppHeader title="KEYBOARD SHORTCUTS" showBack={true} navigation={navigation} />
 
       <ScrollView contentContainerStyle={styles.container}>
         
@@ -91,12 +82,12 @@ const KeyboardShortcutsScreen = ({ navigation }) => {
           
           {/* Category: SYSTEM */}
           <View style={styles.categoryBlock}>
-            <View style={[styles.categoryTitle, { borderLeftColor: colors.primary }]}>
+            <View style={styles.categoryTitle}>
               <Text style={[typography.labelCaps, { color: colors.secondary }]}>SYSTEM MODULE</Text>
             </View>
-            <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               
-              <View style={[styles.shortcutRow, { borderBottomColor: colors.surfaceContainer }]}>
+              <View style={[styles.shortcutRow, { borderBottomColor: colors.outlineVariant }]}>
                 <View style={styles.shortcutInfo}>
                   <Text style={[typography.bodyMd, { color: colors.onBackground, fontWeight: 'bold' }]}>System Diagnostics</Text>
                   <Text style={[typography.labelSm, { color: colors.outline }]}>Runs hardware sanity check</Text>
@@ -135,12 +126,12 @@ const KeyboardShortcutsScreen = ({ navigation }) => {
 
           {/* Category: ASSETS */}
           <View style={styles.categoryBlock}>
-            <View style={[styles.categoryTitle, { borderLeftColor: colors.primary }]}>
+            <View style={styles.categoryTitle}>
               <Text style={[typography.labelCaps, { color: colors.secondary }]}>ASSET CONTROL</Text>
             </View>
-            <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               
-              <View style={[styles.shortcutRow, { borderBottomColor: colors.surfaceContainer }]}>
+              <View style={[styles.shortcutRow, { borderBottomColor: colors.outlineVariant }]}>
                 <View style={styles.shortcutInfo}>
                   <Text style={[typography.bodyMd, { color: colors.onBackground, fontWeight: 'bold' }]}>Emergency Stop</Text>
                   <Text style={[typography.labelSm, { color: colors.outline }]}>Interrupts all active processes</Text>
@@ -172,10 +163,10 @@ const KeyboardShortcutsScreen = ({ navigation }) => {
 
           {/* Category: ALERTS */}
           <View style={styles.categoryBlock}>
-            <View style={[styles.categoryTitle, { borderLeftColor: colors.primary }]}>
+            <View style={styles.categoryTitle}>
               <Text style={[typography.labelCaps, { color: colors.secondary }]}>ALERTS & LOGS</Text>
             </View>
-            <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               
               <View style={styles.shortcutRow}>
                 <View style={styles.shortcutInfo}>
@@ -296,7 +287,7 @@ const styles = StyleSheet.create({
   filterBtn: {
     paddingHorizontal: 16,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 8,
     borderWidth: 1,
     justifyContent: 'center',
   },
@@ -305,12 +296,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     padding: 16,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     gap: 16,
   },
   alertIconBg: {
     padding: 8,
-    borderRadius: 16,
+    borderRadius: 8,
   },
   alertContent: {
     flex: 1,
@@ -320,23 +311,21 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 8,
   },
   listContainer: {
-    gap: 32,
+    gap: 24,
   },
   categoryBlock: {
     gap: 8,
   },
   categoryTitle: {
-    borderLeftWidth: 2,
-    paddingLeft: 8,
-    marginLeft: 4,
+    paddingVertical: 4,
   },
   bentoCard: {
     borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   shortcutRow: {
     flexDirection: 'row',
@@ -356,7 +345,7 @@ const styles = StyleSheet.create({
   keyBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: 6,
   },
   footer: {
     marginHorizontal: -16,
@@ -364,8 +353,8 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     alignItems: 'center',
     gap: 16,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     marginTop: 16,
   },
   footerLinks: {

@@ -2,6 +2,13 @@ import { create } from 'zustand';
 import { getTasks, updateTask } from '../services/taskService';
 import api from '../services/api';
 
+const normalizeTaskList = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.tasks)) return data.tasks;
+  return [];
+};
+
 export const useDataStore = create((set, get) => ({
   tasks: [],
   notifications: [],
@@ -12,27 +19,33 @@ export const useDataStore = create((set, get) => ({
   loadTasks: async () => {
     set({ loading: true });
     try {
-      const data = await getTasks();
-      set({ tasks: data || [], loading: false });
+      const response = await getTasks({ limit: 200 });
+      const rawTasks = normalizeTaskList(response);
+      set({ tasks: rawTasks, loading: false });
     } catch (error) {
       console.error("Failed to load tasks", error);
-      set({ loading: false });
+      set({ tasks: [], loading: false });
     }
   },
 
   loadNotifications: async () => {
     try {
       const res = await api.get('/notifications');
-      set({ notifications: res.data || [] });
+      const list = normalizeTaskList(res?.data);
+      set({ notifications: list });
     } catch (error) {
       console.warn('Failed to load notifications', error);
+      set({ notifications: [] });
     }
   },
 
   markNotificationRead: async (id) => {
-    set((state) => ({
-      notifications: state.notifications.map((n) => (n._id === id || n.id === id) ? { ...n, isRead: true } : n)
-    }));
+    set((state) => {
+      const current = Array.isArray(state.notifications) ? state.notifications : [];
+      return {
+        notifications: current.map((n) => ((n._id === id || n.id === id) ? { ...n, isRead: true } : n))
+      };
+    });
     try {
       await api.patch(`/notifications/${id}/read`);
     } catch (e) {
@@ -41,16 +54,24 @@ export const useDataStore = create((set, get) => ({
   },
 
   subscribeToSocket: (socket) => {
-    if (!socket) return;
+    if (!socket || typeof socket.on !== "function") return;
     
-    const handleCreated = (t) => set((state) => ({ tasks: [t, ...state.tasks] }));
-    const handleUpdated = (t) => set((state) => ({ 
-      tasks: state.tasks.map((x) => (x._id === t._id ? t : x)) 
-    }));
-    const handleDeleted = (id) => set((state) => ({ 
-      tasks: state.tasks.filter((x) => x._id !== id) 
-    }));
-    const handleNotification = (n) => set((state) => ({ notifications: [n, ...state.notifications] }));
+    const handleCreated = (t) => set((state) => {
+      const current = normalizeTaskList(state.tasks);
+      return { tasks: [t, ...current] };
+    });
+    const handleUpdated = (t) => set((state) => {
+      const current = normalizeTaskList(state.tasks);
+      return { tasks: current.map((x) => ((x._id === t._id || x.id === t.id) ? t : x)) };
+    });
+    const handleDeleted = (id) => set((state) => {
+      const current = normalizeTaskList(state.tasks);
+      return { tasks: current.filter((x) => (x._id !== id && x.id !== id)) };
+    });
+    const handleNotification = (n) => set((state) => {
+      const current = Array.isArray(state.notifications) ? state.notifications : [];
+      return { notifications: [n, ...current] };
+    });
 
     socket.on("task:created", handleCreated);
     socket.on("task:updated", handleUpdated);
@@ -58,18 +79,20 @@ export const useDataStore = create((set, get) => ({
     socket.on("notification:created", handleNotification);
 
     return () => {
-      socket.off("task:created", handleCreated);
-      socket.off("task:updated", handleUpdated);
-      socket.off("task:deleted", handleDeleted);
-      socket.off("notification:created", handleNotification);
+      if (typeof socket.off === "function") {
+        socket.off("task:created", handleCreated);
+        socket.off("task:updated", handleUpdated);
+        socket.off("task:deleted", handleDeleted);
+        socket.off("notification:created", handleNotification);
+      }
     };
   },
 
   moveTask: async (taskId, newStatus) => {
-    const prevTasks = get().tasks;
+    const prevTasks = normalizeTaskList(get().tasks);
     // Optimistic UI update
     set({
-      tasks: prevTasks.map(t => (t._id === taskId || t.id === taskId) ? { ...t, status: newStatus } : t)
+      tasks: prevTasks.map(t => ((t._id === taskId || t.id === taskId) ? { ...t, status: newStatus } : t))
     });
     
     // Background sync with rollback on failure

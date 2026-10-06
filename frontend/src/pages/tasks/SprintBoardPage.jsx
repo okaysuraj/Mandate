@@ -16,17 +16,17 @@ const SprintBoardPage = () => {
             Sprint Board
           </h1>
           <p className="text-sm text-on-surface-variant max-w-xl mt-1">
-            Enterprise telemetric registry and operational oversight for Sprint Board.
+            Workspace overview, tracking, and details for Sprint Board.
           </p>
         </div>
 
         <div className="bg-surface-container-lowest border border-outline-variant/60 p-6 sm:p-8 rounded-2xl shadow-sm space-y-4">
           <div className="flex items-center justify-between pb-2">
             <h2 className="text-sm font-bold text-on-surface uppercase font-mono tracking-wider">
-              OPERATIONAL DIRECTIVES
+              ACTIVE WORKFLOWS
             </h2>
             <span className="font-mono text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
-              SYNCHRONIZED
+              ACTIVE
             </span>
           </div>
           <div className="space-y-3">

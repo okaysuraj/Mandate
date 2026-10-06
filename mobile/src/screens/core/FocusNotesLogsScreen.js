@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -66,7 +67,7 @@ const FocusNotesLogsScreen = ({ navigation }) => {
 
           <View style={styles.logList}>
             {/* Log Card 1 */}
-            <View style={[styles.bentoCard, { borderLeftColor: colors.primary, borderLeftWidth: 4 }]}>
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.logCardHeader}>
                 <Text style={[typography.labelSm, { color: colors.secondary }]}>14:22:05.892</Text>
                 <MaterialIcons name="more-horiz" size={18} color={colors.secondary} />
@@ -92,7 +93,7 @@ const FocusNotesLogsScreen = ({ navigation }) => {
             </View>
 
             {/* Log Card 2 - Success */}
-            <View style={styles.bentoCard}>
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.logCardHeader}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <View style={[styles.statusDot, { backgroundColor: colors.onTertiaryContainer, marginRight: 8 }]} />
@@ -108,13 +109,13 @@ const FocusNotesLogsScreen = ({ navigation }) => {
             </View>
 
             {/* Log Card 3 - Manual Entry */}
-            <View style={[styles.bentoCard, { borderLeftColor: colors.secondary, borderLeftWidth: 4 }]}>
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.logCardHeader}>
                 <Text style={[typography.labelSm, { color: colors.secondary }]}>14:30:00.000</Text>
                 <MaterialIcons name="edit-note" size={18} color={colors.secondary} />
               </View>
               <Text style={[typography.bodyMd, { color: colors.onBackground, fontStyle: 'italic', fontWeight: '500' }]}>
-                "Note: Check thermal throttling on Rack 04-B after next cycle. Sensors indicating 5% delta above baseline."
+                "Note: Review design system components and API endpoints before tomorrow's sprint review."
               </Text>
             </View>
           </View>
@@ -123,29 +124,29 @@ const FocusNotesLogsScreen = ({ navigation }) => {
         {/* Metrics Snapshot */}
         <View style={{ marginTop: spacing.lg, paddingBottom: spacing.xl }}>
           <View style={[styles.sectionHeader, { paddingHorizontal: spacing.md, marginBottom: spacing.sm }]}>
-            <Text style={[typography.labelCaps, { color: colors.primary }]}>LIVE TELEMETRY</Text>
-            <MaterialIcons name="sensors" size={20} color={colors.onTertiaryContainer} />
+            <Text style={[typography.labelCaps, { color: colors.primary }]}>SESSION METRICS</Text>
+            <MaterialIcons name="insights" size={20} color={colors.onTertiaryContainer} />
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.telemetryContainer, { paddingHorizontal: spacing.md }]}>
-            <View style={styles.telemetryCard}>
-              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginBottom: 4 }]}>CPU LOAD</Text>
+            <View style={[styles.telemetryCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginBottom: 4 }]}>FOCUS TIME</Text>
               <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>14.2</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>4.5</Text>
+                <Text style={{ fontSize: 12, color: colors.primary, marginLeft: 4 }}>hrs</Text>
+              </View>
+            </View>
+            <View style={[styles.telemetryCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginBottom: 4 }]}>TASKS DONE</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>8</Text>
+                <Text style={{ fontSize: 12, color: colors.primary, marginLeft: 4 }}>tasks</Text>
+              </View>
+            </View>
+            <View style={[styles.telemetryCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginBottom: 4 }]}>EFFICIENCY</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>96</Text>
                 <Text style={{ fontSize: 12, color: colors.primary, marginLeft: 4 }}>%</Text>
-              </View>
-            </View>
-            <View style={styles.telemetryCard}>
-              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, marginBottom: 4 }]}>TEMP</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>42.0</Text>
-                <Text style={{ fontSize: 12, color: colors.primary, marginLeft: 4 }}>°C</Text>
-              </View>
-            </View>
-            <View style={[styles.telemetryCard, { borderColor: colors.error + '33' }]}>
-              <Text style={[typography.labelCaps, { color: colors.error, fontSize: 10, marginBottom: 4 }]}>ERR_RATE</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-                <Text style={[typography.headlineLgMobile, { color: colors.error }]}>0.02</Text>
-                <Text style={{ fontSize: 12, color: colors.error, marginLeft: 4 }}>%</Text>
               </View>
             </View>
           </ScrollView>
@@ -252,10 +253,8 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   bentoCard: {
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#D9DADC',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
   },
   logCardHeader: {
@@ -295,10 +294,8 @@ const styles = StyleSheet.create({
   },
   telemetryCard: {
     minWidth: 140,
-    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#D9DADC',
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
   },
   fabContainer: {

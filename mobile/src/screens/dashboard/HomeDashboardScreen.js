@@ -1,32 +1,54 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, 
-  SafeAreaView, RefreshControl, ActivityIndicator 
-} from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../../context/ThemeContext';
-import { useAuth } from '../../context/AuthContext';
-import { useDataStore } from '../../store/useDataStore';
-import api from '../../services/api';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Animated, Easing, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useTheme } from "../../context/ThemeContext";
+import { useAuth } from "../../context/AuthContext";
+import { useDataStore } from "../../store/useDataStore";
+import { useSocket } from "../../context/SocketContext";
+import AppHeader from "../../components/layout/AppHeader";
+import api from "../../services/api";
 
 const HomeDashboardScreen = ({ navigation }) => {
-  const { colors, typography, spacing } = useTheme();
+  const { colors, typography, isDark } = useTheme();
   const { user } = useAuth();
   const { tasks, loadTasks } = useDataStore((state) => state);
-  
+  const { socket } = useSocket();
+
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Radar spinner animation matching web animate-[spin_10s_linear_infinite]
+  const spinValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 10000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, [spinValue]);
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
   const fetchDashboardData = useCallback(async () => {
     try {
-      await loadTasks();
-      const analyticsRes = await api.get('/tasks/analytics').catch(() => null);
+      if (typeof loadTasks === "function") {
+        await loadTasks();
+      }
+      const analyticsRes = await api.get("/tasks/analytics").catch(() => null);
       if (analyticsRes?.data) {
         setAnalytics(analyticsRes.data);
       }
     } catch (err) {
-      console.warn('Dashboard data fetch error:', err.message);
+      console.warn("Dashboard data fetch error:", err?.message || err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -34,270 +56,592 @@ const HomeDashboardScreen = ({ navigation }) => {
   }, [loadTasks]);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+    if (user) fetchDashboardData();
+  }, [user, fetchDashboardData]);
+
+  useEffect(() => {
+    if (!socket || typeof socket.on !== "function") return;
+    socket.on("task:created", fetchDashboardData);
+    socket.on("task:updated", fetchDashboardData);
+    socket.on("task:deleted", fetchDashboardData);
+    return () => {
+      if (typeof socket.off === "function") {
+        socket.off("task:created", fetchDashboardData);
+        socket.off("task:updated", fetchDashboardData);
+        socket.off("task:deleted", fetchDashboardData);
+      }
+    };
+  }, [socket, fetchDashboardData]);
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchDashboardData();
   };
 
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((t) => t.status === 'done').length;
-  const inProgressTasks = tasks.filter((t) => t.status === 'in_progress').length;
-  const pendingTasks = tasks.filter((t) => t.status === 'todo').length;
-  const urgentTasks = tasks.filter((t) => t.priority === 'urgent').length;
-  const highTasks = tasks.filter((t) => t.priority === 'high').length;
+  // Safely normalize tasks to guaranteed array
+  const taskList = useMemo(() => {
+    if (Array.isArray(tasks)) return tasks;
+    if (Array.isArray(tasks?.data)) return tasks.data;
+    if (Array.isArray(tasks?.tasks)) return tasks.tasks;
+    return [];
+  }, [tasks]);
 
-  const efficiencyRate = totalTasks > 0 
-    ? Math.round((completedTasks / totalTasks) * 100) 
-    : 0;
+  // Metrics matching web HomePage.jsx
+  const totalTasks = taskList.length;
+  const completedTasks = taskList.filter(
+    (t) => t && (t.status === "completed" || t.status === "done")
+  ).length;
+  const efficiency =
+    totalTasks > 0
+      ? Math.round((completedTasks / totalTasks) * 100 * 10) / 10
+      : 0;
+  const activeTasks = taskList.filter(
+    (t) => t && t.status !== "completed" && t.status !== "done"
+  );
+  const urgentCount = activeTasks.filter((t) => t?.priority === "urgent").length;
+  const highCount = activeTasks.filter((t) => t?.priority === "high").length;
+  const mediumCount = activeTasks.filter((t) => t?.priority === "medium").length;
+  const lowCount = activeTasks.filter(
+    (t) => !t?.priority || t?.priority === "low"
+  ).length;
 
-  // 7-day relative completion distribution
-  const graphBars = [0.2, 0.4, 0.35, 0.6, 0.5, 0.8, 1.0].map((baseline, i) => {
-    const fraction = totalTasks > 0 ? (completedTasks + i) / (totalTasks + 7) : baseline;
-    return Math.min(Math.max(fraction, 0.15), 1.0);
-  });
+  const deepWorkRatio = analytics?.deepWorkRatio ?? 0;
+  const avgLatency = analytics?.averageResolutionLatency ?? "0h 0m";
 
-  const pinnedTasks = tasks.slice(0, 5);
+  // Recent activity sorted by updatedAt / createdAt
+  const recentActivity = [...taskList]
+    .sort((a, b) => {
+      const timeB = new Date(b?.updatedAt || b?.createdAt || 0).getTime() || 0;
+      const timeA = new Date(a?.updatedAt || a?.createdAt || 0).getTime() || 0;
+      return timeB - timeA;
+    })
+    .slice(0, 5);
+
+  const formatTime = (dateVal) => {
+    if (!dateVal) return "";
+    try {
+      const d = dateVal instanceof Date ? dateVal : new Date(dateVal);
+      if (isNaN(d.getTime())) return "";
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      const seconds = String(d.getSeconds()).padStart(2, "0");
+      return `${hours}:${minutes}:${seconds}`;
+    } catch (e) {
+      return "";
+    }
+  };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity 
-            style={styles.iconBtn}
-            onPress={() => navigation.navigate('ProjectsMain')}
-          >
-            <MaterialIcons name="dashboard" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: 'bold', letterSpacing: -1, marginLeft: 8 }]}>
-            MANDATE OS
-          </Text>
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity 
-            style={styles.iconBtn}
-            onPress={() => navigation.navigate('GlobalSearch')}
-          >
-            <MaterialIcons name="search" size={24} color={colors.secondary} />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.iconBtn}
-            onPress={() => navigation.navigate('ProfileSettings')}
-          >
-            <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </View>
+    <SafeAreaView edges={["top"]} style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <AppHeader title="DASHBOARD" navigation={navigation} />
 
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
         }
+        showsVerticalScrollIndicator={false}
       >
-        {/* Hero Metrics Canvas */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[typography.labelCaps, { color: colors.secondary, textTransform: 'uppercase' }]}>
-              Operational Matrix
+        {/* Section Header */}
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={[styles.commandTitle, { color: colors.primary }]}>
+              DASHBOARD
             </Text>
-            <View style={styles.liveBadge}>
-              <View style={[styles.liveDot, { backgroundColor: colors.onTertiaryContainer }]} />
-              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>LIVE</Text>
-            </View>
+            <Text style={[styles.commandSubtitle, { color: colors.onSurfaceVariant }]}>
+              Workspace: {user?.activeWorkspace ? "Active Workspace" : "Personal"} • Live Updates
+            </Text>
           </View>
-
-          <View style={styles.metricsGrid}>
-            <View style={[styles.metricCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <MaterialIcons name="bolt" size={24} color={colors.primary} />
-              <View>
-                <Text style={[typography.labelCaps, { color: colors.secondary }]}>EFFICIENCY</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-                  <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{efficiencyRate}</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}>%</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={[styles.metricCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <MaterialIcons name="done-all" size={24} color={colors.primary} />
-              <View>
-                <Text style={[typography.labelCaps, { color: colors.secondary }]}>RESOLVED</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-                  <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{completedTasks}</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}> / {totalTasks}</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={[styles.metricCardWide, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <View>
-                  <Text style={[typography.labelCaps, { color: colors.secondary }]}>ACTIVE MANDATES</Text>
-                  <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>
-                    {inProgressTasks + pendingTasks} Active
-                  </Text>
-                </View>
-                <View style={[styles.priorityTag, { backgroundColor: urgentTasks > 0 ? colors.errorContainer : colors.surfaceContainer }]}>
-                  <Text style={[typography.labelCaps, { color: urgentTasks > 0 ? colors.onErrorContainer : colors.secondary, fontSize: 10 }]}>
-                    {urgentTasks} CRITICAL
-                  </Text>
-                </View>
-              </View>
-              
-              <View style={styles.miniGraph}>
-                {graphBars.map((h, i) => (
-                  <View 
-                    key={i} 
-                    style={[
-                      styles.miniGraphBar, 
-                      { 
-                        backgroundColor: colors.primary, 
-                        height: `${h * 100}%`, 
-                        opacity: 0.3 + (i * 0.1) 
-                      }
-                    ]} 
-                  />
-                ))}
-              </View>
-            </View>
+          <View style={[styles.liveBadge, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+            <View style={[styles.liveDot, { backgroundColor: colors.onTertiaryContainer }]} />
+            <Text style={[styles.liveText, { color: colors.onTertiaryContainer }]}>
+              ONLINE
+            </Text>
           </View>
         </View>
 
-        {/* Workstream Health Stats */}
-        <View style={styles.section}>
-          <View style={[styles.healthMapCard, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
-            <View style={[styles.healthMapHeader, { backgroundColor: colors.surfaceContainerLow }]}>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>WORKSTREAM HEALTH</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>
-                {user?.activeWorkspace ? 'WORKSPACE CONTEXT' : 'ACTIVE PIPELINE'}
+        {/* Bento Grid: Metrics Row */}
+        <View style={styles.metricsRow}>
+          {/* Card 1: Efficiency */}
+          <View
+            style={[
+              styles.bentoCard,
+              {
+                backgroundColor: colors.surfaceContainerLowest,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          >
+            <View style={styles.cardTopRow}>
+              <Text style={[styles.metricLabel, { color: colors.onSurfaceVariant }]}>
+                EFFICIENCY
+              </Text>
+              <MaterialIcons name="query-stats" size={18} color={colors.outline} />
+            </View>
+            <View style={styles.valueRow}>
+              <Text style={[styles.metricValue, { color: colors.primary }]}>
+                {loading ? "—" : efficiency}
+              </Text>
+              <Text style={[styles.metricUnit, { color: colors.onSurfaceVariant }]}>%</Text>
+            </View>
+            <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainer }]}>
+              <View
+                style={[
+                  styles.progressBarFill,
+                  { backgroundColor: colors.primary, width: `${loading ? 0 : efficiency}%` },
+                ]}
+              />
+            </View>
+            <Text style={[styles.metricSubtext, { color: colors.onSurfaceVariant }]}>
+              {completedTasks} of {totalTasks} tasks completed
+            </Text>
+          </View>
+
+          {/* Card 2: Active Mandates */}
+          <View
+            style={[
+              styles.bentoCard,
+              {
+                backgroundColor: colors.surfaceContainerLowest,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          >
+            <View style={styles.cardTopRow}>
+              <Text style={[styles.metricLabel, { color: colors.onSurfaceVariant }]}>
+                ACTIVE TASKS
+              </Text>
+              <MaterialIcons name="hub" size={18} color={colors.outline} />
+            </View>
+            <View style={styles.valueRow}>
+              <Text style={[styles.metricValue, { color: colors.primary }]}>
+                {loading ? "—" : activeTasks.length}
               </Text>
             </View>
-            
-            <View style={[styles.healthMapStats, { borderTopColor: colors.outlineVariant }]}>
-              <View style={styles.healthStat}>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>IN PROGRESS</Text>
-                <Text style={[typography.labelCaps, { color: colors.primary }]}>{inProgressTasks}</Text>
-              </View>
-              <View style={[styles.healthStat, { borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>HIGH PRIORITY</Text>
-                <Text style={[typography.labelCaps, { color: highTasks > 0 ? colors.primary : colors.secondary }]}>
-                  {highTasks}
-                </Text>
-              </View>
-              <View style={styles.healthStat}>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>DEEP WORK</Text>
-                <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer }]}>
-                  {analytics?.deepWorkRatio ? `${analytics.deepWorkRatio}%` : `${efficiencyRate}%`}
-                </Text>
-              </View>
+            <View style={styles.statusBlocksRow}>
+              <View
+                style={[
+                  styles.statusBlock,
+                  { backgroundColor: colors.primary, opacity: activeTasks.length > 0 ? 1 : 0.2 },
+                ]}
+              />
+              <View
+                style={[
+                  styles.statusBlock,
+                  { backgroundColor: colors.primary, opacity: activeTasks.length > 3 ? 1 : 0.2 },
+                ]}
+              />
+              <View
+                style={[
+                  styles.statusBlock,
+                  { backgroundColor: colors.primary, opacity: activeTasks.length > 6 ? 1 : 0.2 },
+                ]}
+              />
+              <View
+                style={[styles.statusBlock, { backgroundColor: colors.surfaceContainer }]}
+              />
             </View>
+            <Text style={[styles.metricSubtext, { color: colors.onSurfaceVariant }]}>
+              {urgentCount} critical, {highCount} high priority
+            </Text>
+          </View>
+
+          {/* Card 3: Deep Work Ratio */}
+          <View
+            style={[
+              styles.bentoCard,
+              {
+                backgroundColor: colors.surfaceContainerLowest,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          >
+            <View style={styles.cardTopRow}>
+              <Text style={[styles.metricLabel, { color: colors.onSurfaceVariant }]}>
+                DEEP WORK RATIO
+              </Text>
+              <MaterialIcons name="speed" size={18} color={colors.outline} />
+            </View>
+            <View style={styles.valueRow}>
+              <Text style={[styles.metricValue, { color: colors.primary }]}>
+                {loading ? "—" : deepWorkRatio}
+              </Text>
+              <Text style={[styles.metricUnit, { color: colors.onSurfaceVariant }]}>%</Text>
+            </View>
+            <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainer }]}>
+              <View
+                style={[
+                  styles.progressBarFill,
+                  { backgroundColor: colors.primary, width: `${loading ? 0 : deepWorkRatio}%` },
+                ]}
+              />
+            </View>
+            <Text style={[styles.metricSubtext, { color: colors.onSurfaceVariant }]}>
+              Avg latency: {avgLatency}
+            </Text>
           </View>
         </View>
 
-        {/* Pinned Mandates */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[typography.labelCaps, { color: colors.secondary }]}>PINNED MANDATES</Text>
-            <TouchableOpacity 
-              style={{ flexDirection: 'row', alignItems: 'center' }}
-              onPress={() => navigation.navigate('ProjectsMain')}
-            >
-              <Text style={[typography.labelSm, { color: colors.primary, marginRight: 4 }]}>VIEW ALL</Text>
-              <MaterialIcons name="arrow-forward" size={14} color={colors.primary} />
+        {/* System Pulse Visualization & Realtime Telemetry */}
+        <View
+          style={[
+            styles.pulseCard,
+            {
+              backgroundColor: colors.surfaceContainerLowest,
+              borderColor: colors.outlineVariant,
+            },
+          ]}
+        >
+          <View style={styles.pulseHeader}>
+            <Text style={[styles.pulseTitle, { color: colors.primary }]}>
+              Activity & Realtime Updates
+            </Text>
+            <View style={[styles.pulseBadge, { backgroundColor: colors.tertiaryContainer, borderColor: colors.outlineVariant }]}>
+              <Text style={[styles.pulseBadgeText, { color: colors.onTertiaryContainer }]}>
+                LIVE ACTIVITY
+              </Text>
+            </View>
+          </View>
+
+          {/* Visualizer Radar Box */}
+          <View style={[styles.visualizerBox, { backgroundColor: colors.surfaceContainerLow }]}>
+            <View style={styles.radarWrapper}>
+              <Animated.View
+                style={[
+                  styles.outerRadarRing,
+                  {
+                    borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)",
+                    transform: [{ rotate: spin }],
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.innerRadarRing,
+                    {
+                      borderColor: colors.primary,
+                      borderTopColor: "transparent",
+                    },
+                  ]}
+                />
+              </Animated.View>
+            </View>
+          </View>
+
+          {/* Live Telemetry Stream Logs */}
+          <View style={styles.liveLogsList}>
+            {recentActivity.map((task) => (
+              <View
+                key={task._id}
+                style={[
+                  styles.logItemCard,
+                  {
+                    backgroundColor: colors.surfaceContainerLow,
+                    borderColor: colors.outlineVariant,
+                  },
+                ]}
+              >
+                <View style={styles.logMetaRow}>
+                  <View
+                    style={[
+                      styles.logDot,
+                      {
+                        backgroundColor:
+                          task.priority === "urgent"
+                            ? colors.error
+                            : task.status === "completed" || task.status === "done"
+                            ? colors.tertiary
+                            : colors.primary,
+                      },
+                    ]}
+                  />
+                  <Text style={[styles.logTime, { color: colors.onSurface }]}>
+                    [{formatTime(task.updatedAt || task.createdAt)}] TASK_
+                    {task.status === "completed" || task.status === "done" ? "DONE" : "UP"}
+                  </Text>
+                </View>
+                <Text style={[styles.logTaskTitle, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
+                  {task.title}
+                </Text>
+              </View>
+            ))}
+
+            {recentActivity.length === 0 && !loading && (
+              <View
+                style={[
+                  styles.logItemCard,
+                  {
+                    backgroundColor: colors.surfaceContainerLow,
+                    borderColor: colors.outlineVariant,
+                  },
+                ]}
+              >
+                <Text style={[styles.logTime, { color: colors.onSurface }]}>
+                  [{formatTime(new Date())}] IDLE
+                </Text>
+                <Text style={[styles.logTaskTitle, { color: colors.onSurfaceVariant }]}>
+                  No recent activity recorded
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Pinned Tasks */}
+        <View
+          style={[
+            styles.pinnedCard,
+            {
+              backgroundColor: colors.surfaceContainerLowest,
+              borderColor: colors.outlineVariant,
+            },
+          ]}
+        >
+          <View style={styles.pinnedHeader}>
+            <Text style={[styles.pinnedTitle, { color: colors.primary }]}>
+              Pinned Tasks
+            </Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Today")}>
+              <Text style={[styles.viewAllText, { color: colors.outline }]}>VIEW ALL</Text>
             </TouchableOpacity>
           </View>
-          
-          {loading ? (
-            <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 24 }} />
-          ) : pinnedTasks.length === 0 ? (
-            <View style={[styles.emptyCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <MaterialIcons name="assignment-late" size={32} color={colors.secondary} />
-              <Text style={[typography.bodyMd, { color: colors.secondary, marginTop: 8, textAlign: 'center' }]}>
-                No mandates found. Create your first task to initiate tracking.
-              </Text>
-              <TouchableOpacity 
-                style={[styles.createBtn, { backgroundColor: colors.primary }]}
-                onPress={() => navigation.navigate('CreateTask')}
-              >
-                <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>CREATE MANDATE</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={{ gap: 8 }}>
-              {pinnedTasks.map((item) => {
-                const isUrgent = item.priority === 'urgent';
-                const isHigh = item.priority === 'high';
-                return (
-                  <TouchableOpacity 
-                    key={item._id}
-                    style={[styles.mandateCard, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}
-                    onPress={() => navigation.navigate('TaskDetail', { taskId: item._id })}
-                    activeOpacity={0.8}
-                  >
-                    <View style={styles.mandateLeft}>
-                      <View style={[styles.mandateIconBg, { backgroundColor: colors.surfaceContainer }]}>
-                        <MaterialIcons 
-                          name={item.status === 'done' ? 'check-circle' : 'assignment'} 
-                          size={20} 
-                          color={item.status === 'done' ? colors.onTertiaryContainer : colors.secondary} 
-                        />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={[typography.labelCaps, { color: colors.primary }]} numberOfLines={1}>
-                          {item.title}
-                        </Text>
-                        <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>
-                          STATUS: {item.status?.toUpperCase()} • PRIORITY: {item.priority?.toUpperCase()}
-                        </Text>
-                      </View>
-                    </View>
-                    <View 
-                      style={[
-                        styles.priorityIndicator, 
-                        { 
-                          backgroundColor: isUrgent ? colors.error : isHigh ? colors.primary : colors.outlineVariant,
-                          opacity: 0.8 
-                        }
-                      ]} 
-                    />
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          )}
-        </View>
 
-        {/* Live System Log */}
-        <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 16 }]}>
-            PIPELINE ACTIVITY
-          </Text>
-          <View style={[styles.logContainer, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderWidth: 1 }]}>
-            <View style={styles.logList}>
-              {pinnedTasks.length > 0 ? (
-                pinnedTasks.map((t, idx) => (
-                  <View key={idx} style={[styles.logItem, { borderLeftColor: colors.primary }]}>
-                    <Text style={[typography.labelSm, { color: colors.secondary, width: 80, fontSize: 10 }]}>
-                      {new Date(t.updatedAt || t.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                    </Text>
-                    <Text style={[typography.labelSm, { color: colors.primary, flex: 1 }]} numberOfLines={1}>
-                      [{t.status?.toUpperCase()}] {t.title}
+          <View style={styles.pinnedList}>
+            {activeTasks.slice(0, 3).map((task) => {
+              const priorityGrade =
+                task.priority === "urgent"
+                  ? "S"
+                  : task.priority === "high"
+                  ? "A"
+                  : task.priority === "medium"
+                  ? "B"
+                  : "C";
+
+              return (
+                <TouchableOpacity
+                  key={task._id}
+                  onPress={() => navigation.navigate("TaskDetail", { task, taskId: task._id })}
+                  style={[
+                    styles.mandateItem,
+                    {
+                      backgroundColor: colors.surfaceContainerLow,
+                      borderColor: colors.outlineVariant,
+                    },
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.mandateTop}>
+                    <View
+                      style={[
+                        styles.priorityBadge,
+                        {
+                          backgroundColor:
+                            task.priority === "urgent" || task.priority === "high"
+                              ? colors.primary
+                              : colors.surfaceContainer,
+                          borderColor: colors.outlineVariant,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.priorityBadgeText,
+                          {
+                            color:
+                              task.priority === "urgent" || task.priority === "high"
+                                ? colors.onPrimary
+                                : colors.onSurfaceVariant,
+                          },
+                        ]}
+                      >
+                        PRIORITY {priorityGrade}
+                      </Text>
+                    </View>
+                    <MaterialIcons name="push-pin" size={16} color={colors.outline} />
+                  </View>
+
+                  <Text style={[styles.mandateItemTitle, { color: colors.onSurface }]} numberOfLines={1}>
+                    {task.title}
+                  </Text>
+                  <Text style={[styles.mandateItemDesc, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
+                    {task.description || "No description provided."}
+                  </Text>
+
+                  <View style={styles.mandateBottom}>
+                    <Text style={[styles.dueDateText, { color: colors.outline }]}>
+                      {task.dueDate
+                        ? (() => {
+                            try {
+                              const d = new Date(task.dueDate);
+                              return isNaN(d.getTime())
+                                ? "No due date"
+                                : `Due: ${d.toLocaleDateString([], {
+                                    month: "short",
+                                    day: "numeric",
+                                  })}`;
+                            } catch (e) {
+                              return "No due date";
+                            }
+                          })()
+                        : "No due date"}
                     </Text>
                   </View>
-                ))
-              ) : (
-                <View style={[styles.logItem, { borderLeftColor: colors.secondary }]}>
-                  <Text style={[typography.labelSm, { color: colors.secondary, width: 80, fontSize: 10 }]}>[STATUS]</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, flex: 1 }]}>Telemetry monitoring online. No recent events.</Text>
-                </View>
-              )}
+                </TouchableOpacity>
+              );
+            })}
+
+            {activeTasks.length === 0 && !loading && (
+              <View style={[styles.emptyMandatesBox, { borderColor: colors.outlineVariant }]}>
+                <Text style={[styles.emptyMandatesText, { color: colors.onSurfaceVariant }]}>
+                  NO ACTIVE TASKS
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate("CreateTask")}
+            style={[styles.addMandateBtn, { borderTopColor: colors.outlineVariant }]}
+          >
+            <Text style={[styles.addMandateBtnText, { color: colors.onSurfaceVariant }]}>
+              + ADD NEW TASK
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Task Priority Distribution & Health */}
+        <View
+          style={[
+            styles.healthCard,
+            {
+              backgroundColor: colors.surfaceContainerLowest,
+              borderColor: colors.outlineVariant,
+            },
+          ]}
+        >
+          <View style={styles.healthHeader}>
+            <View>
+              <Text style={[styles.healthTitle, { color: colors.primary }]}>
+                Execution Health & Workstreams
+              </Text>
+              <Text style={[styles.healthSubtitle, { color: colors.onSurfaceVariant }]}>
+                Active tasks categorized by execution priority
+              </Text>
+            </View>
+
+            <View style={styles.healthCounters}>
+              <View style={styles.counterCol}>
+                <Text style={[styles.counterLabel, { color: colors.onSurfaceVariant }]}>TOTAL</Text>
+                <Text style={[styles.counterVal, { color: colors.primary }]}>{totalTasks}</Text>
+              </View>
+              <View style={styles.counterCol}>
+                <Text style={[styles.counterLabel, { color: colors.onSurfaceVariant }]}>RESOLVED</Text>
+                <Text style={[styles.counterVal, { color: colors.onTertiaryContainer }]}>{completedTasks}</Text>
+              </View>
+              <View style={styles.counterCol}>
+                <Text style={[styles.counterLabel, { color: colors.onSurfaceVariant }]}>QUEUE</Text>
+                <Text style={[styles.counterVal, { color: colors.primary }]}>{activeTasks.length}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* 4 Priority Meter Columns */}
+          <View style={styles.priorityGrid}>
+            {/* Urgent */}
+            <View style={[styles.priorityColCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+              <View style={styles.priorityColHeader}>
+                <Text style={[styles.priorityColName, { color: colors.error }]}>URGENT</Text>
+                <Text style={[styles.priorityColCount, { color: colors.error }]}>{urgentCount} ACTIVE</Text>
+              </View>
+              <View style={[styles.meterBg, { backgroundColor: colors.surfaceContainer }]}>
+                <View
+                  style={[
+                    styles.meterFill,
+                    {
+                      backgroundColor: colors.error,
+                      height: `${activeTasks.length > 0 ? Math.round((urgentCount / activeTasks.length) * 100) : 0}%`,
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.meterSubtext, { color: colors.onSurfaceVariant }]}>
+                Immediate action required
+              </Text>
+            </View>
+
+            {/* High */}
+            <View style={[styles.priorityColCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+              <View style={styles.priorityColHeader}>
+                <Text style={[styles.priorityColName, { color: colors.primary }]}>HIGH</Text>
+                <Text style={[styles.priorityColCount, { color: colors.primary }]}>{highCount} ACTIVE</Text>
+              </View>
+              <View style={[styles.meterBg, { backgroundColor: colors.surfaceContainer }]}>
+                <View
+                  style={[
+                    styles.meterFill,
+                    {
+                      backgroundColor: colors.primary,
+                      height: `${activeTasks.length > 0 ? Math.round((highCount / activeTasks.length) * 100) : 0}%`,
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.meterSubtext, { color: colors.onSurfaceVariant }]}>
+                Key milestone deliverables
+              </Text>
+            </View>
+
+            {/* Medium */}
+            <View style={[styles.priorityColCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+              <View style={styles.priorityColHeader}>
+                <Text style={[styles.priorityColName, { color: colors.onSurface }]}>MEDIUM</Text>
+                <Text style={[styles.priorityColCount, { color: colors.onSurfaceVariant }]}>{mediumCount} ACTIVE</Text>
+              </View>
+              <View style={[styles.meterBg, { backgroundColor: colors.surfaceContainer }]}>
+                <View
+                  style={[
+                    styles.meterFill,
+                    {
+                      backgroundColor: colors.primaryContainer,
+                      height: `${activeTasks.length > 0 ? Math.round((mediumCount / activeTasks.length) * 100) : 0}%`,
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.meterSubtext, { color: colors.onSurfaceVariant }]}>
+                Standard workflow progress
+              </Text>
+            </View>
+
+            {/* Low */}
+            <View style={[styles.priorityColCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+              <View style={styles.priorityColHeader}>
+                <Text style={[styles.priorityColName, { color: colors.outline }]}>LOW</Text>
+                <Text style={[styles.priorityColCount, { color: colors.outline }]}>{lowCount} ACTIVE</Text>
+              </View>
+              <View style={[styles.meterBg, { backgroundColor: colors.surfaceContainer }]}>
+                <View
+                  style={[
+                    styles.meterFill,
+                    {
+                      backgroundColor: colors.surfaceVariant,
+                      height: `${activeTasks.length > 0 ? Math.round((lowCount / activeTasks.length) * 100) : 0}%`,
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.meterSubtext, { color: colors.onSurfaceVariant }]}>
+                Backlog & deferred tasks
+              </Text>
             </View>
           </View>
         </View>
+
+        <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -305,163 +649,353 @@ const HomeDashboardScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    height: 64,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  iconBtn: {
-    padding: 4,
-  },
   container: {
-    flexGrow: 1,
-    padding: 24,
-    paddingTop: 16,
-    paddingBottom: 48,
-    gap: 24,
-  },
-  section: {
-    width: '100%',
+    padding: 16,
+    gap: 16,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 4,
+  },
+  commandTitle: {
+    fontFamily: "HankenGrotesk-Bold",
+    fontSize: 22,
+    letterSpacing: -0.5,
+  },
+  commandSubtitle: {
+    fontFamily: "JetBrainsMono-Medium",
+    fontSize: 10,
+    letterSpacing: 0.8,
+    marginTop: 2,
+    textTransform: "uppercase",
   },
   liveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 9999,
+    borderWidth: 1,
+    gap: 6,
   },
   liveDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  metricCard: {
-    flex: 1,
-    minWidth: '48%',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 16,
-    justifyContent: 'space-between',
-    minHeight: 110,
-  },
-  metricCardWide: {
-    width: '100%',
-    height: 128,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 16,
-    justifyContent: 'space-between',
-  },
-  priorityTag: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  miniGraph: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    height: 32,
-    gap: 4,
-  },
-  miniGraphBar: {
-    flex: 1,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-  },
-  healthMapCard: {
-    borderWidth: 1,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  healthMapHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-  },
-  healthMapStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    borderTopWidth: 1,
-    padding: 16,
-  },
-  healthStat: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  mandateCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  mandateLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    flex: 1,
-  },
-  mandateIconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  priorityIndicator: {
     width: 6,
-    height: 36,
+    height: 6,
     borderRadius: 3,
-    marginLeft: 12,
   },
-  emptyCard: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+  liveText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
   },
-  createBtn: {
-    marginTop: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 6,
-  },
-  logContainer: {
-    borderRadius: 8,
-    padding: 16,
-  },
-  logList: {
+  metricsRow: {
     gap: 12,
   },
-  logItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderLeftWidth: 2,
-    paddingLeft: 10,
+  bentoCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  metricLabel: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+  valueRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 4,
+  },
+  metricValue: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 32,
+    lineHeight: 36,
+  },
+  metricUnit: {
+    fontFamily: "JetBrainsMono-Medium",
+    fontSize: 16,
+  },
+  progressBarBg: {
+    height: 6,
+    borderRadius: 3,
+    overflow: "hidden",
+    marginVertical: 10,
+    width: "100%",
+  },
+  progressBarFill: {
+    height: "100%",
+    borderRadius: 3,
+  },
+  metricSubtext: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 11,
+  },
+  statusBlocksRow: {
+    flexDirection: "row",
+    gap: 6,
+    marginVertical: 10,
+  },
+  statusBlock: {
+    flex: 1,
+    height: 6,
+    borderRadius: 2,
+  },
+  // Pulse Card
+  pulseCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    gap: 14,
+  },
+  pulseHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  pulseTitle: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  pulseBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 9999,
+    borderWidth: 1,
+  },
+  pulseBadgeText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+  },
+  visualizerBox: {
+    height: 120,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  radarWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  outerRadarRing: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  innerRadarRing: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 2,
+  },
+  liveLogsList: {
+    gap: 8,
+  },
+  logItemCard: {
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 4,
+  },
+  logMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  logDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  logTime: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+  },
+  logTaskTitle: {
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 12,
+    paddingLeft: 12,
+  },
+  // Pinned Mandates Card
+  pinnedCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    gap: 12,
+  },
+  pinnedHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  pinnedTitle: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  viewAllText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+    letterSpacing: 0.5,
+  },
+  pinnedList: {
+    gap: 10,
+  },
+  mandateItem: {
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 6,
+  },
+  mandateTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  priorityBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  priorityBadgeText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+  },
+  mandateItemTitle: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 12,
+  },
+  mandateItemDesc: {
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 11,
+  },
+  mandateBottom: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 2,
+  },
+  dueDateText: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 10,
+  },
+  emptyMandatesBox: {
+    padding: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyMandatesText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+  },
+  addMandateBtn: {
+    borderTopWidth: 1,
+    paddingTop: 12,
+    alignItems: "center",
+  },
+  addMandateBtnText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    letterSpacing: 0.8,
+  },
+  // Health & Workstreams Card
+  healthCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    gap: 16,
+  },
+  healthHeader: {
+    gap: 12,
+  },
+  healthTitle: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  healthSubtitle: {
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 11,
+    marginTop: 2,
+  },
+  healthCounters: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
+  },
+  counterCol: {
+    alignItems: "center",
+  },
+  counterLabel: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+    letterSpacing: 0.6,
+  },
+  counterVal: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 18,
+    marginTop: 2,
+  },
+  priorityGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  priorityColCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 6,
+  },
+  priorityColHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  priorityColName: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+  },
+  priorityColCount: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+  },
+  meterBg: {
+    height: 48,
+    borderRadius: 4,
+    overflow: "hidden",
+    justifyContent: "flex-end",
+  },
+  meterFill: {
+    width: "100%",
+  },
+  meterSubtext: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 9,
   },
 });
 

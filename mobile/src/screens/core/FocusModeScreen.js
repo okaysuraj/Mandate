@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, 
-  Animated, Easing, Vibration, Image
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Easing, Vibration, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
+import AppHeader from "../../components/layout/AppHeader";
 
 const FocusModeScreen = ({ navigation }) => {
-  const { colors, typography, spacing } = useTheme();
+  const { colors, typography } = useTheme();
   
+  const [totalSeconds, setTotalSeconds] = useState(25 * 60);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
+  const [selectedDuration, setSelectedDuration] = useState(25);
   
   // Animation values for pulsing rings
   const pulse1 = useRef(new Animated.Value(0)).current;
@@ -49,8 +50,15 @@ const FocusModeScreen = ({ navigation }) => {
   }, [isRunning, timeLeft]);
 
   const toggleTimer = () => {
-    Vibration.vibrate(10); // Haptic feedback
+    Vibration.vibrate(10);
     setIsRunning(!isRunning);
+  };
+
+  const resetTimer = (minutes) => {
+    setIsRunning(false);
+    setSelectedDuration(minutes);
+    setTotalSeconds(minutes * 60);
+    setTimeLeft(minutes * 60);
   };
 
   const formatTime = (seconds) => {
@@ -74,213 +82,117 @@ const FocusModeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Top Navigation Shell */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 4 }}>
-            <MaterialIcons name="grid-view" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 8 }]}>
-            PROMETHEUS
-          </Text>
-        </View>
-        <View style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outlineVariant }]}>
-          <Image 
-            source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB5xHGCG_F78BzdT9_bbWRnaV0gSn6XAbjsZucAI_hbsKBW6ZSk5wKnW8hs9XqEXOzj8n7mxfykEQzR1em69wTewPPZpoDHsQaRUMjoN7ORTsnMrc637QC3swBPAIaVU_DM97uunZcQC9Xub-NUbw8Xga4aORE2gXMy9y-MTJjQhtUhfHPh5pyug7lie5H4V3DZf04OCztLddBy8Xw6I-Ydmys9y2E2ne7Zbs_4jYwTfqU1OtASbEmchA' }}
-            style={{ width: '100%', height: '100%' }}
-          />
-        </View>
-      </View>
+      <AppHeader title="FOCUS MODE" showBack={true} navigation={navigation} />
 
-      <View style={styles.mainCanvas}>
-        {/* Atmospheric Background Element */}
-        <View style={styles.bgContainer} pointerEvents="none">
-          <Animated.View style={[styles.pulseRing, { borderColor: colors.outlineVariant, width: 288, height: 288 }, ringStyle(pulse1)]} />
-          <Animated.View style={[styles.pulseRing, { borderColor: colors.outlineVariant, width: 384, height: 384, position: 'absolute' }, ringStyle(pulse2)]} />
-        </View>
-
-        {/* Session Context */}
-        <View style={styles.contextHeader}>
-          <View style={[styles.badge, { backgroundColor: colors.surfaceContainer }]}>
-            <Text style={[typography.labelCaps, { color: colors.onSecondaryContainer }]}>CURRENT MODULE</Text>
-          </View>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 8 }]}>Deep Focus Session</Text>
-        </View>
-
-        {/* High-Impact Timer */}
-        <View style={styles.timerSection}>
-          <Text style={[{ fontFamily: 'HankenGrotesk-ExtraBold', fontSize: 96, letterSpacing: -4, color: colors.primary }]}>
-            {formatTime(timeLeft)}
-          </Text>
-          <View style={styles.optimizedBadge}>
-            <MaterialIcons name="bolt" size={14} color={colors.onTertiaryContainer} />
-            <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginLeft: 4 }]}>OPTIMIZED</Text>
-          </View>
-        </View>
-
-        {/* Base Telemetry (Bento Style) */}
-        <View style={styles.telemetryGrid}>
-          
-          <View style={[styles.bentoCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-            <View style={styles.bentoHeader}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>CPU LOAD</Text>
-              <MaterialIcons name="memory" size={14} color={colors.secondary} />
-            </View>
-            <View style={styles.bentoContent}>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>14%</Text>
-              <View style={styles.bars}>
-                <View style={[styles.bar, { height: 4, backgroundColor: colors.primary }]} />
-                <View style={[styles.bar, { height: 8, backgroundColor: colors.primary }]} />
-                <View style={[styles.bar, { height: 12, backgroundColor: colors.outlineVariant }]} />
-                <View style={[styles.bar, { height: 8, backgroundColor: colors.outlineVariant }]} />
-              </View>
-            </View>
-          </View>
-
-          <View style={[styles.bentoCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-            <View style={styles.bentoHeader}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>STREAK</Text>
-              <MaterialIcons name="local-fire-department" size={14} color={colors.secondary} />
-            </View>
-            <View style={styles.bentoContent}>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>08</Text>
-              <Text style={[typography.labelSm, { color: colors.onSecondaryContainer, marginBottom: 4 }]}>DAYS</Text>
-            </View>
-          </View>
-
-        </View>
-
-        {/* Primary Commit Action */}
-        <View style={styles.actionSection}>
-          <TouchableOpacity 
-            style={[styles.commitBtn, { backgroundColor: isRunning ? colors.error : colors.primary }]}
-            onPress={toggleTimer}
-            activeOpacity={0.9}
-          >
-            <Text style={[typography.headlineLgMobile, { color: isRunning ? colors.onError : colors.onPrimary, fontSize: 20 }]}>
-              {isRunning ? 'Suspend Session' : 'Initiate Focus'}
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Header Section matching web FocusModePage.jsx */}
+        <View style={styles.pageHeader}>
+          <View style={styles.breadcrumbRow}>
+            <View style={[styles.brandDot, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.breadcrumbText, { color: colors.onSurfaceVariant }]}>
+              ATTENTION PROTOCOL
             </Text>
-            <MaterialIcons name="arrow-forward" size={24} color={isRunning ? colors.onError : colors.onPrimary} style={{ marginLeft: 8 }} />
-          </TouchableOpacity>
-          <Text style={[typography.labelSm, { color: colors.secondary, opacity: 0.6, marginTop: 16, textAlign: 'center' }]}>
-            Session duration locked to 25 minutes
+          </View>
+          <Text style={[styles.title, { color: colors.onSurface }]}>
+            Focus Mode
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
+            A distraction-light workspace designed for deep work with time-boxed intervals and priority cues.
           </Text>
         </View>
 
-      </View>
+        {/* Distraction-Free Card */}
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <Text style={[styles.cardTitle, { color: colors.onSurface }]}>DISTRACTION-FREE WORKSPACE</Text>
+          <Text style={[styles.cardSubtitle, { color: colors.onSurfaceVariant }]}>
+            Mutes notifications, minimizes secondary navigation, and highlights your current task.
+          </Text>
+        </View>
+
+        {/* Interactive Deep Work Timer Canvas */}
+        <View style={[styles.timerCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          {/* Animated Atmospheric Rings */}
+          <View style={styles.ringsContainer} pointerEvents="none">
+            <Animated.View style={[styles.pulseRing, { borderColor: colors.outlineVariant, width: 220, height: 220 }, ringStyle(pulse1)]} />
+            <Animated.View style={[styles.pulseRing, { borderColor: colors.outlineVariant, width: 280, height: 280, position: 'absolute' }, ringStyle(pulse2)]} />
+          </View>
+
+          {/* Time Display */}
+          <View style={styles.timeCenter}>
+            <Text style={[styles.timeText, { color: colors.primary }]}>{formatTime(timeLeft)}</Text>
+            <Text style={[styles.statusLabel, { color: colors.onSurfaceVariant }]}>
+              {isRunning ? "DEEP FOCUS ACTIVE" : "SESSION PAUSED"}
+            </Text>
+          </View>
+
+          {/* Duration Selector Buttons */}
+          <View style={styles.durationSelector}>
+            {[25, 50, 5].map((mins) => (
+              <TouchableOpacity
+                key={mins}
+                onPress={() => resetTimer(mins)}
+                style={[
+                  styles.durationChip,
+                  {
+                    backgroundColor: selectedDuration === mins ? colors.primary : colors.surfaceContainerLow,
+                    borderColor: selectedDuration === mins ? colors.primary : colors.outlineVariant,
+                  },
+                ]}
+              >
+                <Text style={[
+                  styles.durationChipText,
+                  { color: selectedDuration === mins ? colors.onPrimary : colors.onSurfaceVariant }
+                ]}>
+                  {mins === 5 ? "5m Break" : `${mins}m Work`}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Action Button: Play / Pause */}
+          <TouchableOpacity
+            onPress={toggleTimer}
+            style={[styles.playBtn, { backgroundColor: colors.primary }]}
+            activeOpacity={0.85}
+          >
+            <MaterialIcons 
+              name={isRunning ? "pause" : "play-arrow"} 
+              size={28} 
+              color={colors.onPrimary} 
+            />
+            <Text style={[styles.playBtnText, { color: colors.onPrimary }]}>
+              {isRunning ? "PAUSE INTERVAL" : "ENGAGE FOCUS"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    height: 64,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  mainCanvas: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 32,
-    paddingHorizontal: 16,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  bgContainer: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: -1,
-  },
-  pulseRing: {
-    borderRadius: 9999,
-    borderWidth: 1,
-  },
-  contextHeader: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
-  },
-  timerSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 32,
-  },
-  optimizedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  telemetryGrid: {
-    flexDirection: 'row',
-    width: '100%',
-    maxWidth: 360,
-    gap: 16,
-    marginBottom: 32,
-  },
-  bentoCard: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 16,
-  },
-  bentoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  bentoContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-  },
-  bars: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 2,
-    height: 16,
-    paddingBottom: 4,
-  },
-  bar: {
-    width: 3,
-  },
-  actionSection: {
-    width: '100%',
-    maxWidth: 360,
-  },
-  commitBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 32,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  }
+  scrollContent: { padding: 16, paddingBottom: 40 },
+  pageHeader: { marginBottom: 16 },
+  breadcrumbRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+  brandDot: { width: 8, height: 8, borderRadius: 4 },
+  breadcrumbText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase" },
+  title: { fontFamily: "HankenGrotesk-Bold", fontSize: 24, textTransform: "uppercase", letterSpacing: -0.5 },
+  subtitle: { fontFamily: "HankenGrotesk-Regular", fontSize: 13, marginTop: 4, lineHeight: 18 },
+  card: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 16 },
+  cardTitle: { fontFamily: "JetBrainsMono-Bold", fontSize: 12, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 },
+  cardSubtitle: { fontFamily: "HankenGrotesk-Regular", fontSize: 12, lineHeight: 17 },
+  timerCard: { borderWidth: 1, borderRadius: 14, padding: 24, alignItems: "center", position: "relative", minHeight: 340, justifyContent: "center" },
+  ringsContainer: { position: "absolute", inset: 0, alignItems: "center", justifyContent: "center" },
+  pulseRing: { borderRadius: 999, borderWidth: 1 },
+  timeCenter: { alignItems: "center", marginVertical: 24 },
+  timeText: { fontFamily: "JetBrainsMono-Bold", fontSize: 52, letterSpacing: -2 },
+  statusLabel: { fontFamily: "JetBrainsMono-Bold", fontSize: 10, letterSpacing: 1.5, marginTop: 4 },
+  durationSelector: { flexDirection: "row", gap: 10, marginBottom: 20 },
+  durationChip: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 },
+  durationChipText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11 },
+  playBtn: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 12, paddingHorizontal: 28, borderRadius: 12, shadowOpacity: 0.15, shadowRadius: 6, elevation: 4 },
+  playBtnText: { fontFamily: "JetBrainsMono-Bold", fontSize: 12, letterSpacing: 1 },
 });
 
 export default FocusModeScreen;

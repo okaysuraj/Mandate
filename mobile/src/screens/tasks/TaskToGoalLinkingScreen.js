@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -32,7 +33,7 @@ const TaskToGoalLinkingScreen = () => {
       {/* Top App Bar */}
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
         <View style={styles.headerLeft}>
-          <MaterialIcons name="terminal" size={24} color={colors.primary} />
+          <MaterialIcons name="track-changes" size={24} color={colors.primary} />
           <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2, marginLeft: 8 }]}>MANDATE</Text>
         </View>
         <View style={styles.headerRight}>
@@ -47,12 +48,12 @@ const TaskToGoalLinkingScreen = () => {
 
       <ScrollView contentContainerStyle={styles.container}>
         
-        {/* OS Status Header */}
+        {/* Status Header */}
         <View style={styles.statusSection}>
           <View style={styles.statusFlex}>
             <View>
               <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>Strategic Alignment</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: -0.5, marginTop: 4 }]}>System Protocol: Active-Sync</Text>
+              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: -0.5, marginTop: 4 }]}>Workspace Alignment: Active</Text>
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={[typography.displayLg, { color: colors.primary, fontSize: 40, lineHeight: 40, fontWeight: 'bold' }]}>65%</Text>
@@ -67,11 +68,11 @@ const TaskToGoalLinkingScreen = () => {
 
         <View style={styles.bentoLayout}>
           
-          {/* SECTION 1: MANDATE_BACKLOG */}
+          {/* SECTION 1: TASK_BACKLOG */}
           <View style={styles.sectionBlock}>
-            <View style={[styles.sectionHeader, { borderLeftColor: colors.primary }]}>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>MANDATE_BACKLOG</Text>
-              <Text style={[typography.labelSm, { color: colors.outline, marginLeft: 8 }]}>[4 UNITS]</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>TASK BACKLOG</Text>
+              <Text style={[typography.labelSm, { color: colors.outline, marginLeft: 8 }]}>[4 TASKS]</Text>
             </View>
 
             <View style={styles.taskList}>
@@ -79,7 +80,7 @@ const TaskToGoalLinkingScreen = () => {
               <TouchableOpacity style={[styles.taskCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
                 <View>
                   <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: 4 }]}>REF: MD-882</Text>
-                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>Optimize Telemetry Processing</Text>
+                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>Optimize Database Indexing</Text>
                 </View>
                 <MaterialIcons name="radio-button-unchecked" size={24} color={colors.outlineVariant} />
               </TouchableOpacity>
@@ -104,7 +105,7 @@ const TaskToGoalLinkingScreen = () => {
             </View>
           </View>
 
-          {/* CENTRAL SHUFFLE/LINK PROTOCOL */}
+          {/* Central Linking Button */}
           <View style={styles.syncSection}>
             <View style={[styles.syncLine, { backgroundColor: colors.outlineVariant }]} />
             <TouchableOpacity 
@@ -118,22 +119,22 @@ const TaskToGoalLinkingScreen = () => {
             </TouchableOpacity>
           </View>
 
-          {/* SECTION 2: STRATEGIC_目標 */}
+          {/* SECTION 2: STRATEGIC GOALS */}
           <View style={styles.sectionBlock}>
-            <View style={[styles.sectionHeader, { borderLeftColor: colors.onTertiaryContainer }]}>
-              <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer }]}>STRATEGIC_目標</Text>
-              <Text style={[typography.labelSm, { color: colors.outline, marginLeft: 8 }]}>[CORE_INITIATIVE]</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer }]}>STRATEGIC GOALS</Text>
+              <Text style={[typography.labelSm, { color: colors.outline, marginLeft: 8 }]}>[ACTIVE INITIATIVES]</Text>
             </View>
 
             <View style={styles.goalList}>
               {/* Goal Card 1 */}
               <View style={[styles.goalCardActive, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.primary }]}>
                 <View style={[styles.activeTargetBadge, { backgroundColor: colors.primary }]}>
-                  <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 10 }]}>ACTIVE_TARGET</Text>
+                  <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 10 }]}>ACTIVE GOAL</Text>
                 </View>
                 
-                <Text style={[typography.labelSm, { color: colors.outline, letterSpacing: 2, marginBottom: 8 }]}>OBJ_ALPHA_01</Text>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 16 }]}>GLOBAL LATENCY NEUTRALITY</Text>
+                <Text style={[typography.labelSm, { color: colors.outline, letterSpacing: 2, marginBottom: 8 }]}>GOAL-01</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 16 }]}>PERFORMANCE & RESPONSE TIME</Text>
                 
                 <View style={styles.goalMetaRow}>
                   <View style={styles.avatarGroup}>
@@ -150,8 +151,8 @@ const TaskToGoalLinkingScreen = () => {
 
               {/* Goal Card 2 */}
               <View style={[styles.goalCardSecondary, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelSm, { color: colors.outline, marginBottom: 4 }]}>OBJ_BETA_04</Text>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>QUANTUM COMPUTE READINESS</Text>
+                <Text style={[typography.labelSm, { color: colors.outline, marginBottom: 4 }]}>GOAL-02</Text>
+                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>INFRASTRUCTURE RESILIENCE</Text>
               </View>
             </View>
           </View>
@@ -241,8 +242,6 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderLeftWidth: 4,
-    paddingLeft: 8,
     marginBottom: 16,
   },
   taskList: {
@@ -254,13 +253,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderWidth: 1,
+    borderRadius: 12,
   },
   taskCardShadow: {
     shadowColor: '#000',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4, 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2, 
   },
   syncSection: {
     alignItems: 'center',
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   syncBtn: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,
@@ -294,6 +294,7 @@ const styles = StyleSheet.create({
   goalCardActive: {
     padding: 32,
     borderWidth: 2,
+    borderRadius: 12,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -302,6 +303,7 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     padding: 4,
+    borderBottomLeftRadius: 8,
   },
   goalMetaRow: {
     flexDirection: 'row',
@@ -322,6 +324,7 @@ const styles = StyleSheet.create({
   goalCardSecondary: {
     padding: 16,
     borderWidth: 1,
+    borderRadius: 12,
     opacity: 0.6,
   },
   bottomNav: {

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -30,7 +31,7 @@ const ReflectionHistoryScreen = ({ navigation }) => {
         </View>
 
         {/* Aggregate Metric Card */}
-        <View style={[styles.aggregateCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+        <View style={[styles.aggregateCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           <MaterialIcons name="analytics" size={80} color={colors.primary} style={[styles.bgIcon, { opacity: 0.1 }]} />
           <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>AGGREGATE QUALITY</Text>
           <Text style={[typography.displayLg, { color: colors.primary, lineHeight: 64 }]}>82.3</Text>
@@ -49,7 +50,7 @@ const ReflectionHistoryScreen = ({ navigation }) => {
 
           <View style={styles.ledgerList}>
             {/* Item 1 */}
-            <TouchableOpacity style={[styles.ledgerItem, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+            <TouchableOpacity style={[styles.ledgerItem, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.ledgerHeader}>
                 <View>
                   <Text style={[typography.labelSm, { color: colors.secondary }]}>MANDATE ID</Text>
@@ -81,7 +82,7 @@ const ReflectionHistoryScreen = ({ navigation }) => {
             </TouchableOpacity>
 
             {/* Item 2 */}
-            <TouchableOpacity style={[styles.ledgerItem, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+            <TouchableOpacity style={[styles.ledgerItem, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.ledgerHeader}>
                 <View>
                   <Text style={[typography.labelSm, { color: colors.secondary }]}>MANDATE ID</Text>
@@ -113,7 +114,7 @@ const ReflectionHistoryScreen = ({ navigation }) => {
             </TouchableOpacity>
 
             {/* Item 3 */}
-            <TouchableOpacity style={[styles.ledgerItem, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+            <TouchableOpacity style={[styles.ledgerItem, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.ledgerHeader}>
                 <View>
                   <Text style={[typography.labelSm, { color: colors.secondary }]}>MANDATE ID</Text>
@@ -153,7 +154,7 @@ const ReflectionHistoryScreen = ({ navigation }) => {
         {/* Technical Notes Summary */}
         <View style={styles.section}>
           <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: 16 }]}>TECHNICAL NOTES SUMMARY</Text>
-          <View style={[styles.notesCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <View style={[styles.notesCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <MaterialIcons name="terminal" size={24} color={colors.primary} style={styles.terminalIcon} />
             <View style={styles.notesContent}>
               <Text style={[typography.bodyMd, { color: colors.onSurface, marginBottom: 12 }]}>
@@ -311,7 +312,7 @@ const styles = StyleSheet.create({
   loadBtn: {
     height: 48,
     borderWidth: 1,
-    borderRadius: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

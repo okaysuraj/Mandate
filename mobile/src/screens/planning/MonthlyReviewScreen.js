@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -37,7 +38,7 @@ const MonthlyReviewScreen = ({ navigation }) => {
 
         {/* Long-Term Operational Trend */}
         <View style={styles.trendSection}>
-          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.bentoHeader}>
               <Text style={[typography.labelCaps, { color: colors.onPrimaryFixedVariant }]}>LONG-TERM OPERATIONAL TREND</Text>
               <MaterialIcons name="info" size={16} color={colors.secondary} />
@@ -60,7 +61,7 @@ const MonthlyReviewScreen = ({ navigation }) => {
           {/* Double Column */}
           <View style={styles.doubleCol}>
             {/* Allocation */}
-            <View style={[styles.bentoCard, styles.halfCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoCard, styles.halfCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <Text style={[typography.labelCaps, { color: colors.secondary, textAlign: 'center', marginBottom: 16 }]}>ALLOCATION</Text>
               
               <View style={styles.donutPlaceholder}>
@@ -76,7 +77,7 @@ const MonthlyReviewScreen = ({ navigation }) => {
             </View>
 
             {/* Growth Metric */}
-            <View style={[styles.bentoCard, styles.halfCard, { borderColor: colors.outlineVariant, justifyContent: 'space-between' }]}>
+            <View style={[styles.bentoCard, styles.halfCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, justifyContent: 'space-between' }]}>
               <Text style={[typography.labelCaps, { color: colors.secondary }]}>MONTHLY GROWTH</Text>
               <View>
                 <Text style={[typography.headlineLgMobile, { fontWeight: 'bold' }]}>12.4%</Text>
@@ -92,7 +93,7 @@ const MonthlyReviewScreen = ({ navigation }) => {
         {/* Task Heatmap Placeholder */}
         <View style={styles.section}>
           <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 16 }]}>TASK INTENSITY HEATMAP</Text>
-          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant, padding: 16 }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: 16 }]}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.heatmapRow}>
                 {Array.from({ length: 24 }).map((_, i) => (
@@ -123,7 +124,7 @@ const MonthlyReviewScreen = ({ navigation }) => {
 
           <View style={styles.nodeList}>
             {/* Row 1 */}
-            <View style={[styles.nodeCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.nodeCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.nodeLeft}>
                 <View style={[styles.nodeIconBg, { backgroundColor: colors.surfaceContainer }]}>
                   <MaterialIcons name="memory" size={20} color={colors.primary} />
@@ -140,7 +141,7 @@ const MonthlyReviewScreen = ({ navigation }) => {
             </View>
 
             {/* Row 2 */}
-            <View style={[styles.nodeCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.nodeCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.nodeLeft}>
                 <View style={[styles.nodeIconBg, { backgroundColor: colors.surfaceContainer }]}>
                   <MaterialIcons name="router" size={20} color={colors.primary} />
@@ -157,7 +158,7 @@ const MonthlyReviewScreen = ({ navigation }) => {
             </View>
 
             {/* Row 3 */}
-            <View style={[styles.nodeCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.nodeCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.nodeLeft}>
                 <View style={[styles.nodeIconBg, { backgroundColor: colors.surfaceContainer }]}>
                   <MaterialIcons name="storage" size={20} color={colors.primary} />
@@ -184,7 +185,7 @@ const MonthlyReviewScreen = ({ navigation }) => {
           <Text style={[typography.bodyMd, { color: colors.onPrimaryContainer, textAlign: 'center', marginBottom: 24 }]}>
             Automated diagnostics have identified 3 preventative maintenance opportunities for the next cycle.
           </Text>
-          <TouchableOpacity style={styles.ctaBtn}>
+          <TouchableOpacity style={[styles.ctaBtn, { backgroundColor: colors.surface }]}>
             <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: 'bold' }]}>RUN PREDICTIVE ANALYSIS</Text>
           </TouchableOpacity>
         </View>
@@ -268,7 +269,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 16,
     padding: 24, // p-lg
-    backgroundColor: '#ffffff',
   },
   bentoHeader: {
     flexDirection: 'row',
@@ -364,7 +364,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
   },
   nodeLeft: {
     flexDirection: 'row',
@@ -374,7 +373,7 @@ const styles = StyleSheet.create({
   nodeIconBg: {
     width: 40,
     height: 40,
-    borderRadius: 4,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -388,9 +387,8 @@ const styles = StyleSheet.create({
   },
   ctaBtn: {
     width: '100%',
-    backgroundColor: '#ffffff',
     paddingVertical: 16,
-    borderRadius: 24,
+    borderRadius: 12,
     alignItems: 'center',
   },
   footer: {

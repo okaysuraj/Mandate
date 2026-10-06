@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -30,7 +31,7 @@ const FilterBuilderScreen = ({ navigation }) => {
         <View style={[styles.builderContainer, { paddingHorizontal: spacing.md }]}>
           
           {/* Step 1: Logic Configuration */}
-          <View style={[styles.bentoCard, { borderColor: colors.primary, borderWidth: 2 }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.primary }]}>
             <View style={styles.cardHeader}>
               <Text style={[typography.labelCaps, { color: colors.onPrimaryFixedVariant }]}>STEP 01 // LOGIC</Text>
               <View style={[styles.pillTab, { backgroundColor: colors.primary }]}>
@@ -48,7 +49,7 @@ const FilterBuilderScreen = ({ navigation }) => {
 
             <View style={styles.conditionsContainer}>
               {/* Condition Block 1 */}
-              <View style={[styles.conditionBlock, { backgroundColor: colors.surfaceContainerLowest, borderLeftColor: colors.primary }]}>
+              <View style={[styles.conditionBlock, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
                 <View style={styles.conditionHeader}>
                   <Text style={[typography.labelCaps, { color: colors.primary, fontSize: 10 }]}>CONDITION_0A</Text>
                   <MaterialIcons name="delete" size={16} color={colors.error} />
@@ -69,7 +70,7 @@ const FilterBuilderScreen = ({ navigation }) => {
               </View>
 
               {/* Condition Block 2 */}
-              <View style={[styles.conditionBlock, { backgroundColor: colors.surfaceContainerLowest, borderLeftColor: colors.outlineVariant, opacity: 0.8 }]}>
+              <View style={[styles.conditionBlock, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, opacity: 0.8 }]}>
                 <View style={styles.conditionHeader}>
                   <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>CONDITION_0B</Text>
                   <MaterialIcons name="delete" size={16} color={colors.error} />
@@ -97,7 +98,7 @@ const FilterBuilderScreen = ({ navigation }) => {
           </View>
 
           {/* Step 2: Real-time Analytics Preview */}
-          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.cardHeader}>
               <Text style={[typography.labelCaps, { color: colors.onPrimaryFixedVariant }]}>STEP 02 // ANALYTICS</Text>
               <View style={[styles.pillTabOutline, { borderColor: colors.outline }]}>
@@ -197,8 +198,8 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   bentoCard: {
-    backgroundColor: '#fff',
     borderWidth: 1,
+    borderRadius: 12,
     padding: 24,
     gap: 24, // spacing between main sections in card
   },
@@ -227,6 +228,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 8,
     borderWidth: 1,
+    borderRadius: 8,
   },
   conditionsContainer: {
     gap: 16,
@@ -234,7 +236,8 @@ const styles = StyleSheet.create({
   },
   conditionBlock: {
     padding: 16,
-    borderLeftWidth: 2,
+    borderRadius: 8,
+    borderWidth: 1,
     gap: 8,
   },
   conditionHeader: {
@@ -250,10 +253,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 8,
     borderWidth: 1,
+    borderRadius: 8,
   },
   conditionValue: {
     padding: 8,
     borderWidth: 1,
+    borderRadius: 8,
   },
   addConditionBtn: {
     flexDirection: 'row',
@@ -262,6 +267,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderWidth: 1,
     borderStyle: 'dashed',
+    borderRadius: 8,
   },
   analyticsGrid: {
     flexDirection: 'row',
@@ -276,6 +282,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
     marginTop: 16,
+    borderRadius: 8,
   },
   chartBars: {
     position: 'absolute',
@@ -307,13 +314,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 24,
-    borderRadius: 32,
+    borderRadius: 12,
   },
   draftBtn: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
     borderWidth: 1,
   },
   bottomNav: {

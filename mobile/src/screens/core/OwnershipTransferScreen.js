@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -40,7 +41,7 @@ const OwnershipTransferScreen = ({ navigation }) => {
           </View>
 
           {/* Source Card */}
-          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10, position: 'absolute', top: 16, right: 16, opacity: 0.5 }]}>SOURCE</Text>
             <View style={styles.cardRow}>
               <View style={[styles.avatarContainer, { borderColor: colors.outlineVariant }]}>
@@ -86,7 +87,7 @@ const OwnershipTransferScreen = ({ navigation }) => {
             <Text style={[typography.labelCaps, { color: colors.secondary, marginLeft: 8 }]}>TRANSFER JUSTIFICATION</Text>
           </View>
 
-          <View style={[styles.textareaCard, { borderColor: colors.outlineVariant }]}>
+          <View style={[styles.textareaCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <TextInput 
               style={[styles.textarea, typography.labelSm, { color: colors.primary }]}
               placeholder="Enter technical rationale for ownership migration..."
@@ -114,7 +115,7 @@ const OwnershipTransferScreen = ({ navigation }) => {
           </View>
 
           <View style={styles.impactGrid}>
-            <View style={[styles.impactCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.impactCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary, marginBottom: 8 }]}>AFFECTED MANDATES</Text>
               <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>14</Text>
               <View style={[styles.impactBadge, { backgroundColor: colors.tertiaryFixedDim, marginTop: 8 }]}>
@@ -122,7 +123,7 @@ const OwnershipTransferScreen = ({ navigation }) => {
               </View>
             </View>
             
-            <View style={[styles.impactCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.impactCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary, marginBottom: 8 }]}>SYSTEM RISK</Text>
               <View style={styles.riskRow}>
                 <View style={[styles.riskDot, { backgroundColor: colors.error }]} />
@@ -203,9 +204,8 @@ const styles = StyleSheet.create({
   },
   bentoCard: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 32,
-    backgroundColor: '#ffffff',
   },
   cardRow: {
     flexDirection: 'row',
@@ -241,9 +241,8 @@ const styles = StyleSheet.create({
   },
   textareaCard: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#ffffff',
   },
   textarea: {
     height: 128, // h-32
@@ -262,15 +261,14 @@ const styles = StyleSheet.create({
   impactCard: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    backgroundColor: '#ffffff',
   },
   impactBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 16,
+    borderRadius: 8,
   },
   riskRow: {
     flexDirection: 'row',
@@ -314,14 +312,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     borderWidth: 1,
-    borderRadius: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   executeBtn: {
     flex: 1,
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,

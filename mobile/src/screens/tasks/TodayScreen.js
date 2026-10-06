@@ -1,406 +1,775 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, RefreshControl,
-  ImageBackground, Animated
-} from "react-native";
+import React, { useEffect, useMemo } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
-import { useSocket } from "../../context/SocketContext";
 import { useDataStore } from "../../store/useDataStore";
 import { useTheme } from "../../context/ThemeContext";
-import api from "../../services/api";
+import AppHeader from "../../components/layout/AppHeader";
 
 const TodayScreen = ({ navigation }) => {
   const { user } = useAuth();
-  const { tasks, loading, loadTasks, subscribeToSocket } = useDataStore(state => state);
-  const [burnoutData, setBurnoutData] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
-  const { socket } = useSocket();
-  const { colors, typography, spacing, borderRadius } = useTheme();
-
-  // Pulse animation for LIVE indicator
-  const [pulseAnim] = useState(new Animated.Value(1));
-
-  useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 0.4, duration: 1000, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true })
-      ])
-    );
-    pulse.start();
-    return () => pulse.stop();
-  }, [pulseAnim]);
+  const { tasks, loading, loadTasks } = useDataStore((state) => state);
+  const { colors, typography } = useTheme();
 
   useEffect(() => {
     if (user) {
       loadTasks();
-      api.get("/ai/burnout")
-        .then(res => setBurnoutData(res.data))
-        .catch(() => setBurnoutData(null));
     }
   }, [user, loadTasks]);
 
-  useEffect(() => {
-    if (!socket) return;
-    return subscribeToSocket(socket);
-  }, [socket, subscribeToSocket]);
+  const activeTasks = Array.isArray(tasks) ? tasks : (Array.isArray(tasks?.data) ? tasks.data : []);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await Promise.all([
-      loadTasks(),
-      api.get("/ai/burnout").then(res => setBurnoutData(res.data)).catch(() => {})
-    ]);
-    setRefreshing(false);
+  const today = new Date();
+  const dayStr = today
+    .toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
+    .replace(/\//g, ".");
+
+  // Focus task: urgent/high priority active task, or first active task
+  const focusTask =
+    activeTasks.find(
+      (t) =>
+        t.status !== "completed" &&
+        t.status !== "done" &&
+        (t.priority === "urgent" || t.priority === "high")
+    ) ||
+    activeTasks.find((t) => t.status !== "completed" && t.status !== "done") ||
+    activeTasks[0];
+
+  const scheduledTasks = useMemo(() => {
+    return [...activeTasks]
+      .sort((a, b) => new Date(a.dueDate || 0) - new Date(b.dueDate || 0))
+      .slice(0, 10);
+  }, [activeTasks]);
+
+  const focusIdStr = String(focusTask?._id || focusTask?.id || "0000");
+  const refCode =
+    focusIdStr.length >= 4
+      ? focusIdStr.slice(-4).toUpperCase()
+      : focusIdStr.toUpperCase();
+  const mndCode =
+    focusIdStr.length >= 3
+      ? focusIdStr.slice(-3).toUpperCase()
+      : focusIdStr.toUpperCase();
+
+  const completedScheduledCount = scheduledTasks.filter(
+    (t) => t.status === "completed" || t.status === "done"
+  ).length;
+  const progressPercent =
+    scheduledTasks.length > 0
+      ? Math.round((completedScheduledCount / scheduledTasks.length) * 100)
+      : 0;
+
+  const renderStatusBadge = (task) => {
+    const isCompleted = task.status === "completed" || task.status === "done";
+    const isActive =
+      task.status === "in-progress" ||
+      task.status === "in_progress" ||
+      String(task._id) === String(focusTask?._id);
+
+    if (isCompleted) {
+      return (
+        <View
+          style={[
+            styles.statusPill,
+            {
+              backgroundColor: colors.surfaceContainerHighest,
+              borderColor: colors.outlineVariant,
+            },
+          ]}
+        >
+          <MaterialIcons name="check" size={12} color={colors.onSurfaceVariant} />
+          <Text style={[styles.statusPillText, { color: colors.onSurfaceVariant }]}>
+            COMPLETED
+          </Text>
+        </View>
+      );
+    }
+
+    if (isActive) {
+      return (
+        <View
+          style={[
+            styles.statusPill,
+            {
+              backgroundColor: colors.tertiaryContainer,
+              borderColor: colors.outlineVariant,
+            },
+          ]}
+        >
+          <View style={[styles.pulseDot, { backgroundColor: colors.tertiary }]} />
+          <Text style={[styles.statusPillText, { color: colors.onTertiaryContainer }]}>
+            ACTIVE
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View
+        style={[
+          styles.statusPill,
+          {
+            backgroundColor: colors.secondaryContainer,
+            borderColor: colors.outlineVariant,
+          },
+        ]}
+      >
+        <Text style={[styles.statusPillText, { color: colors.onSecondaryContainer }]}>
+          PENDING
+        </Text>
+      </View>
+    );
   };
 
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.status.toLowerCase() === "completed" || t.status.toLowerCase() === "done").length;
-  const efficiency = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : "0.0";
-  const activeTasks = tasks.filter(t => t.status.toLowerCase() !== "completed" && t.status.toLowerCase() !== "done");
-  const recentActivity = [...tasks].sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)).slice(0, 6);
-
-  // Compute dynamic task distribution heights
-  const priorityDistribution = [
-    tasks.filter(t => t.priority === 'urgent').length,
-    tasks.filter(t => t.priority === 'high').length,
-    tasks.filter(t => t.priority === 'medium').length,
-    tasks.filter(t => t.priority === 'low').length,
-    completedTasks,
-    activeTasks.length,
-    Math.max(totalTasks, 1)
-  ];
-  const maxP = Math.max(...priorityDistribution, 1);
-  const graphHeights = priorityDistribution.map(val => `${Math.max(Math.round((val / maxP) * 100), 12)}%`);
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity>
-            <MaterialIcons name="menu" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginLeft: spacing.sm }]}>MANDATE</Text>
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={{ marginRight: spacing.md, padding: 4, backgroundColor: colors.surfaceContainerLow, borderRadius: 4 }}>
-            <MaterialIcons name="search" size={20} color={colors.secondary} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
-            <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </View>
+    <SafeAreaView edges={["top"]} style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <AppHeader title="TODAY" navigation={navigation} />
 
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      <ScrollView
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={loadTasks}
+            tintColor={colors.primary}
+          />
+        }
+        showsVerticalScrollIndicator={false}
       >
-        {/* Hero Metrics Canvas */}
-        <View style={styles.section}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
-            <Text style={[typography.labelCaps, { color: colors.secondary, textTransform: 'uppercase' }]}>Operational Matrix</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-              <Animated.View style={[styles.liveDot, { backgroundColor: colors.onTertiaryContainer, opacity: pulseAnim }]} />
-              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>LIVE</Text>
+        {/* ACTIVE FOCUS SECTION (Hero Card matching web TodayPage.jsx) */}
+        <View
+          style={[
+            styles.focusHeroCard,
+            {
+              backgroundColor: colors.surfaceContainerLowest,
+              borderColor: colors.outlineVariant,
+            },
+          ]}
+        >
+          {/* Big MND Code Watermark */}
+          <Text
+            style={[
+              styles.watermarkText,
+              { color: colors.onSurfaceVariant },
+            ]}
+          >
+            MND-{mndCode}
+          </Text>
+
+          {/* Top Badges */}
+          <View style={styles.focusTopBadges}>
+            <View
+              style={[
+                styles.focusStatusPill,
+                {
+                  backgroundColor: colors.tertiaryContainer,
+                  borderColor: colors.outlineVariant,
+                },
+              ]}
+            >
+              <View style={[styles.pulseDot, { backgroundColor: colors.tertiary }]} />
+              <Text style={[styles.focusStatusText, { color: colors.onTertiaryContainer }]}>
+                Status: {focusTask ? "Ready" : "Idle"}
+              </Text>
+            </View>
+
+            <View
+              style={[
+                styles.refCodeBadge,
+                {
+                  backgroundColor: colors.surfaceContainer,
+                  borderColor: colors.outlineVariant,
+                },
+              ]}
+            >
+              <Text style={[styles.refCodeText, { color: colors.onSurfaceVariant }]}>
+                Task #{refCode}
+              </Text>
             </View>
           </View>
 
-          {/* Metric Cards: High Density Grid */}
-          <View style={styles.gridContainer}>
-            {/* Efficiency */}
-            <TouchableOpacity style={[styles.metricCard, styles.gridItem, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest, borderRadius: 4 }]}>
-              <MaterialIcons name="bolt" size={24} color={colors.primary} />
-              <View style={{ marginTop: spacing.md }}>
-                <Text style={[typography.labelCaps, { color: colors.secondary }]}>EFFICIENCY</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-                  <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{loading ? "—" : efficiency}</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}>%</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
+          {/* Headline & Description */}
+          <Text style={[styles.focusTitle, { color: colors.onSurface }]}>
+            {focusTask ? focusTask.title : "NO ACTIVE TASK"}
+          </Text>
 
-            {/* Throughput */}
-            <TouchableOpacity style={[styles.metricCard, styles.gridItem, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest, borderRadius: 4 }]}>
-              <MaterialIcons name="speed" size={24} color={colors.primary} />
-              <View style={{ marginTop: spacing.md }}>
-                <Text style={[typography.labelCaps, { color: colors.secondary }]}>THROUGHPUT</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
-                  <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{loading ? "—" : (totalTasks > 0 ? (completedTasks * 0.1).toFixed(1) : "0.0")}</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}>GB/S</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
+          <Text
+            style={[styles.focusDescription, { color: colors.onSurfaceVariant }]}
+            numberOfLines={3}
+          >
+            {focusTask
+              ? focusTask.description ||
+                "Focus on your most important task for today, or select one from your task list."
+              : "All clear! You have completed all scheduled tasks for today."}
+          </Text>
 
-            {/* Nodes Active */}
-            <TouchableOpacity style={[styles.metricCard, styles.gridFull, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest, borderRadius: 4, height: 128 }]}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <View>
-                  <Text style={[typography.labelCaps, { color: colors.secondary }]}>ACTIVE TASKS / TOTAL</Text>
-                  <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>
-                    {loading ? "—" : `${completedTasks} / ${totalTasks}`}
-                  </Text>
-                </View>
-                <MaterialIcons name="check-circle" size={24} color={colors.onTertiaryContainer} />
-              </View>
-              
-              {/* Mini Graph Placeholder */}
-              <View style={styles.miniGraph}>
-                {graphHeights.map((h, i) => (
-                  <View key={i} style={[styles.graphBar, { backgroundColor: colors.primary, height: h, opacity: 0.2 + (i * 0.1) }]} />
-                ))}
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Health Map */}
-        <View style={styles.section}>
-          <View style={[styles.healthMapCard, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest, borderRadius: 4 }]}>
-            <View style={[styles.healthMapHeader, { backgroundColor: colors.surfaceContainerLow }]}>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>INFRASTRUCTURE HEALTH</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary }]}>GLOBAL CLUSTER</Text>
-            </View>
-            <View style={[styles.mapContainer, { backgroundColor: colors.surfaceDim }]}>
-              <ImageBackground 
-                source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCAeWArOJi6U0Y7AFftWc9jjXjRcfvghbPs5Bk5A4H1aGMUXxv5Ns_FXQQe9jxw1bptt54-CN6hVgoNLn3bODI5A589gHlZ-PU5GL0hBoVDCFX31pDzrmVBfhfEkK6syYBcB1egDwmMdhQ1IFVfkQKAd4nVlXkIISmbQAi8EdN6i7Z03OCN8rb4adTAKeTCRcJnOVMCrBt3VBOUiqmVUUQselsfpjCzE-PI61GK6N9Am48rBj-eEP_f_g' }}
-                style={StyleSheet.absoluteFillObject}
-                imageStyle={{ opacity: 0.6 }}
+          {/* Action Buttons */}
+          {focusTask ? (
+            <View style={styles.focusActionRow}>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("FocusMode", {
+                    taskId: focusTask._id || focusTask.id,
+                  })
+                }
+                style={[styles.startSessionBtn, { backgroundColor: colors.primary }]}
+                activeOpacity={0.85}
               >
-                <View style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0,0,0,0.05)' }]} />
-                
-                {/* Map markers */}
-                <Animated.View style={[styles.mapMarker, { top: '25%', left: '33%', opacity: pulseAnim }]} />
-                <Animated.View style={[styles.mapMarker, { bottom: '33%', right: '25%', opacity: pulseAnim }]} />
-              </ImageBackground>
+                <Text style={[styles.startSessionBtnText, { color: colors.onPrimary }]}>
+                  START SESSION
+                </Text>
+                <MaterialIcons name="play-arrow" size={16} color={colors.onPrimary} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("TaskDetail", {
+                    task: focusTask,
+                    taskId: focusTask._id || focusTask.id,
+                  })
+                }
+                style={[
+                  styles.detailsBtn,
+                  {
+                    backgroundColor: colors.surfaceContainerLow,
+                    borderColor: colors.outlineVariant,
+                  },
+                ]}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.detailsBtnText, { color: colors.onSurface }]}>
+                  DETAILS
+                </Text>
+              </TouchableOpacity>
             </View>
-            <View style={[styles.healthStatsRow, { borderTopColor: colors.outlineVariant }]}>
-              <View style={styles.healthStatItem}>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>LATENCY</Text>
-                <Text style={[typography.labelCaps, { color: colors.primary }]}>12ms</Text>
-              </View>
-              <View style={[styles.healthStatItem, { borderLeftWidth: 1, borderRightWidth: 1, borderColor: colors.outlineVariant, paddingHorizontal: spacing.md }]}>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>UPTIME</Text>
-                <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer }]}>99.99%</Text>
-              </View>
-              <View style={styles.healthStatItem}>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>LOAD</Text>
-                <Text style={[typography.labelCaps, { color: colors.primary }]}>42%</Text>
-              </View>
-            </View>
-          </View>
+          ) : null}
         </View>
 
-        {/* Pinned Mandates */}
-        <View style={styles.section}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
-            <Text style={[typography.labelCaps, { color: colors.secondary }]}>PINNED MANDATES</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Kanban")} style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-              <Text style={[typography.labelSm, { color: colors.primary }]}>VIEW ALL</Text>
-              <MaterialIcons name="arrow-forward" size={14} color={colors.primary} />
-            </TouchableOpacity>
+        {/* SCHEDULED TASKS SECTION */}
+        <View style={styles.scheduledSection}>
+          <View style={[styles.sectionHeaderRow, { borderBottomColor: colors.outlineVariant }]}>
+            <View style={styles.sectionHeaderLeft}>
+              <MaterialIcons name="schedule" size={20} color={colors.primary} />
+              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>
+                Today's Schedule
+              </Text>
+            </View>
+            <Text style={[styles.dayText, { color: colors.onSurfaceVariant }]}>
+              {dayStr}
+            </Text>
           </View>
 
-          <View style={{ gap: spacing.sm }}>
-            {activeTasks.length === 0 ? (
-              <Text style={[typography.labelSm, { color: colors.secondary, textAlign: 'center', padding: spacing.md }]}>No active mandates.</Text>
+          {/* Tasks List */}
+          <View
+            style={[
+              styles.protocolsListCard,
+              {
+                backgroundColor: colors.surfaceContainerLowest,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          >
+            {scheduledTasks.length === 0 ? (
+              <View style={styles.emptyProtocolsBox}>
+                <Text style={[styles.emptyProtocolsText, { color: colors.onSurfaceVariant }]}>
+                  NO TASKS SCHEDULED
+                </Text>
+              </View>
             ) : (
-              activeTasks.slice(0, 2).map((task, i) => (
-                <TouchableOpacity key={task._id} style={[styles.metricCard, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest, borderRadius: 4, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: spacing.md }]}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-                    <View style={[styles.iconBox, { backgroundColor: colors.surfaceContainer }]}>
-                      <MaterialIcons name={i === 0 ? "precision-manufacturing" : "inventory-2"} size={20} color={colors.secondary} />
-                    </View>
-                    <View>
-                      <Text style={[typography.labelCaps, { color: colors.primary }]} numberOfLines={1}>
-                        MN-{task._id?.substring(0,3).toUpperCase() || 'XXX'}: {task.title.toUpperCase()}
+              scheduledTasks.map((task, i) => {
+                const taskId = String(task._id || task.id || i);
+                const isDone = task.status === "completed" || task.status === "done";
+                const isFocus =
+                  String(task._id || task.id) ===
+                  String(focusTask?._id || focusTask?.id);
+
+                const timeLabel = task.dueDate
+                  ? new Date(task.dueDate).toLocaleTimeString("en-GB", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : `${String(8 + i).padStart(2, "0")}:00`;
+
+                return (
+                  <TouchableOpacity
+                    key={taskId}
+                    onPress={() =>
+                      navigation.navigate("TaskDetail", { task, taskId })
+                    }
+                    style={[
+                      styles.protocolItem,
+                      {
+                        borderBottomColor: colors.outlineVariant,
+                        opacity: isDone ? 0.65 : 1,
+                      },
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    {isFocus ? (
+                      <View
+                        style={[
+                          styles.focusLeftBar,
+                          { backgroundColor: colors.primary },
+                        ]}
+                      />
+                    ) : null}
+
+                    {/* Time Column */}
+                    <Text style={[styles.protocolTime, { color: colors.onSurfaceVariant }]}>
+                      {timeLabel}
+                    </Text>
+
+                    {/* Task Info */}
+                    <View style={styles.protocolInfo}>
+                      <Text
+                        style={[
+                          styles.protocolTitle,
+                          {
+                            color: colors.onSurface,
+                            textDecorationLine: isDone ? "line-through" : "none",
+                          },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {task.title}
                       </Text>
-                      <Text style={[typography.labelSm, { color: colors.secondary }]}>Priority: {task.priority?.toUpperCase() || 'MID'}</Text>
+
+                      <View style={styles.protocolBadgesRow}>
+                        {renderStatusBadge(task)}
+                        {!isDone ? (
+                          <View
+                            style={[
+                              styles.priorityBadge,
+                              {
+                                backgroundColor: colors.surfaceContainer,
+                                borderColor: colors.outlineVariant,
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.priorityBadgeText,
+                                { color: colors.onSurfaceVariant },
+                              ]}
+                            >
+                              PRIORITY: {task.priority?.toUpperCase() || "MEDIUM"}
+                            </Text>
+                          </View>
+                        ) : null}
+                      </View>
                     </View>
-                  </View>
-                  <View style={[styles.priorityIndicator, { backgroundColor: i === 0 ? colors.error : colors.primary, opacity: i === 0 ? 0.8 : 0.2 }]} />
-                </TouchableOpacity>
-              ))
+
+                    {/* Action Icon */}
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate("TaskDetail", { task, taskId })
+                      }
+                      style={[
+                        styles.protocolActionBtn,
+                        { borderColor: colors.outlineVariant },
+                      ]}
+                    >
+                      <MaterialIcons
+                        name={isDone ? "visibility" : "play-arrow"}
+                        size={16}
+                        color={colors.onSurfaceVariant}
+                      />
+                    </TouchableOpacity>
+                  </TouchableOpacity>
+                );
+              })
             )}
           </View>
         </View>
 
-        {/* System Pulse Feed */}
-        <View style={[styles.section, { paddingBottom: spacing.xl }]}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.md }]}>SYSTEM PULSE</Text>
-          <View style={[styles.pulseContainer, { backgroundColor: colors.primaryContainer, borderRadius: 8 }]}>
-            <View style={styles.logFeed}>
-              {recentActivity.length === 0 ? (
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>No recent activity logs.</Text>
-              ) : (
-                recentActivity.map((task, i) => {
-                  let borderColor = colors.outlineVariant;
-                  let colorClass = { color: colors.secondary };
-                  let timeColor = { color: colors.secondary, opacity: 0.5 };
-                  
-                  if (i === 0) {
-                    borderColor = colors.onTertiaryContainer;
-                    colorClass = { color: colors.onPrimaryContainer }; // Using this for white text
-                    timeColor = { color: colors.onTertiaryContainer };
-                  } else if (i === 2) {
-                    borderColor = colors.error;
-                    colorClass = { color: colors.onPrimaryContainer };
-                    timeColor = { color: colors.error };
-                  }
-
-                  const time = new Date(task.updatedAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                  
-                  return (
-                    <View key={task._id || i} style={[styles.logEntry, { borderLeftColor: borderColor }]}>
-                      <Text style={[typography.labelSm, timeColor, { width: 70 }]}>[{time}]</Text>
-                      <Text style={[typography.labelSm, colorClass, { flex: 1 }]} numberOfLines={2}>
-                        {i === 2 && !task.title.includes("deviation") ? "Minor deviation detected in grid. Auto-correcting." : 
-                          `Task "${task.title}" updated by operator.`}
-                      </Text>
-                    </View>
-                  );
-                })
-              )}
+        {/* ANALYTICS BENTO SECTION */}
+        <View style={styles.bentoSection}>
+          {/* Card 1: Today's Execution Progress */}
+          <View
+            style={[
+              styles.bentoCard,
+              {
+                backgroundColor: colors.surfaceContainerLowest,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          >
+            <View style={styles.bentoTopRow}>
+              <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>
+                Today's Execution Progress
+              </Text>
+              <Text style={[styles.bentoProgressCount, { color: colors.primary }]}>
+                {completedScheduledCount} / {scheduledTasks.length} COMPLETED
+              </Text>
             </View>
+
+            <View
+              style={[
+                styles.bentoProgressBox,
+                {
+                  backgroundColor: colors.surfaceContainerLow,
+                  borderColor: colors.outlineVariant,
+                },
+              ]}
+            >
+              <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainerHigh }]}>
+                <View
+                  style={[
+                    styles.progressBarFill,
+                    {
+                      backgroundColor: colors.primary,
+                      width: `${progressPercent}%`,
+                    },
+                  ]}
+                />
+              </View>
+
+              <View style={styles.progressLabelsRow}>
+                <Text style={[styles.progressStepText, { color: colors.onSurfaceVariant }]}>
+                  0% Initiated
+                </Text>
+                <Text style={[styles.progressCenterVal, { color: colors.primary }]}>
+                  {progressPercent}%
+                </Text>
+                <Text style={[styles.progressStepText, { color: colors.onSurfaceVariant }]}>
+                  100% Target
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Card 2: Active Directive */}
+          <View
+            style={[
+              styles.bentoCard,
+              {
+                backgroundColor: colors.surfaceContainerHigh,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          >
+            <Text style={[styles.bentoLabel, { color: colors.onSurfaceVariant }]}>
+              Priority Task
+            </Text>
+            <Text style={[styles.activeDirectiveTitle, { color: colors.onSurface }]} numberOfLines={1}>
+              {focusTask ? focusTask.title : "All Tasks Clear"}
+            </Text>
+            <Text style={[styles.activeDirectiveMeta, { color: colors.onSurfaceVariant }]}>
+              Priority: {focusTask?.priority?.toUpperCase() || "MEDIUM"} • Status:{" "}
+              {focusTask?.status?.toUpperCase() || "IDLE"}
+            </Text>
+
+            <TouchableOpacity
+              onPress={() =>
+                focusTask
+                  ? navigation.navigate("FocusMode", {
+                      taskId: focusTask._id || focusTask.id,
+                    })
+                  : navigation.navigate("Kanban")
+              }
+              style={[styles.focusActionBottomBtn, { backgroundColor: colors.primary }]}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.focusActionBottomBtnText, { color: colors.onPrimary }]}>
+                {focusTask ? "ENTER FOCUS MODE" : "VIEW KANBAN"}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
+        <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1 },
   container: {
-    flex: 1,
+    padding: 16,
+    gap: 20,
   },
-  header: {
+  // Hero Focus Card
+  focusHeroCard: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 20,
+    position: "relative",
+    overflow: "hidden",
+    gap: 12,
+  },
+  watermarkText: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 48,
+    opacity: 0.08,
+  },
+  focusTopBadges: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    height: 64,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  scrollContent: {
-    paddingTop: 24,
-  },
-  section: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
-  },
-  liveDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexWrap: "wrap",
     gap: 8,
   },
-  metricCard: {
+  focusStatusPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 9999,
     borderWidth: 1,
-    padding: 16,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
+    gap: 6,
   },
-  gridItem: {
-    width: '48.5%', // Slightly less than 50 to account for gap
-    aspectRatio: 1,
+  pulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
-  gridFull: {
-    width: '100%',
+  focusStatusText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+    textTransform: "uppercase",
   },
-  miniGraph: {
-    width: '100%',
-    height: 32,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
+  refCodeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  refCodeText: {
+    fontFamily: "JetBrainsMono-Medium",
+    fontSize: 10,
+    textTransform: "uppercase",
+  },
+  focusTitle: {
+    fontFamily: "HankenGrotesk-ExtraBold",
+    fontSize: 24,
+    lineHeight: 28,
+    letterSpacing: -0.6,
+    textTransform: "uppercase",
+  },
+  focusDescription: {
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  focusActionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 4,
+  },
+  startSessionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 9999,
+    gap: 6,
+  },
+  startSessionBtnText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    letterSpacing: 0.8,
+  },
+  detailsBtn: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 9999,
+    borderWidth: 1,
+  },
+  detailsBtnText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    letterSpacing: 0.8,
+  },
+  // Scheduled Protocols Section
+  scheduledSection: {
+    gap: 10,
+  },
+  sectionHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+  },
+  sectionHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  sectionTitle: {
+    fontFamily: "HankenGrotesk-Bold",
+    fontSize: 16,
+    textTransform: "uppercase",
+    letterSpacing: -0.2,
+  },
+  dayText: {
+    fontFamily: "JetBrainsMono-Medium",
+    fontSize: 11,
+  },
+  protocolsListCard: {
+    borderWidth: 1,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  emptyProtocolsBox: {
+    padding: 32,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyProtocolsText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+  },
+  protocolItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    borderBottomWidth: 1,
+    position: "relative",
+    gap: 12,
+  },
+  focusLeftBar: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+  },
+  protocolTime: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    width: 44,
+  },
+  protocolInfo: {
+    flex: 1,
     gap: 4,
   },
-  graphBar: {
-    flex: 1,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
+  protocolTitle: {
+    fontFamily: "HankenGrotesk-Bold",
+    fontSize: 13,
+    textTransform: "uppercase",
   },
-  healthMapCard: {
-    borderWidth: 1,
-    overflow: 'hidden',
+  protocolBadgesRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    flexWrap: "wrap",
   },
-  healthMapHeader: {
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  mapContainer: {
-    height: 192,
-    width: '100%',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  mapMarker: {
-    position: 'absolute',
-    width: 12,
-    height: 12,
-    backgroundColor: '#000',
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
-  },
-  healthStatsRow: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    padding: 16,
-    justifyContent: 'space-around',
-  },
-  healthStatItem: {
-    alignItems: 'center',
-  },
-  iconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  priorityIndicator: {
-    width: 8,
-    height: 40,
+  statusPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
     borderRadius: 9999,
+    borderWidth: 1,
+    gap: 4,
   },
-  pulseContainer: {
+  statusPillText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+  },
+  priorityBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  priorityBadgeText: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 9,
+  },
+  protocolActionBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  // Bento Section
+  bentoSection: {
+    gap: 12,
+  },
+  bentoCard: {
+    borderWidth: 1,
+    borderRadius: 12,
     padding: 16,
+    gap: 10,
   },
-  logFeed: {
-    maxHeight: 192,
+  bentoTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  bentoLabel: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+  bentoProgressCount: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+  },
+  bentoProgressBox: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
     gap: 8,
   },
-  logEntry: {
-    flexDirection: 'row',
-    gap: 16,
-    borderLeftWidth: 1,
-    paddingLeft: 8,
-  }
+  progressBarBg: {
+    height: 8,
+    borderRadius: 4,
+    overflow: "hidden",
+    width: "100%",
+  },
+  progressBarFill: {
+    height: "100%",
+    borderRadius: 4,
+  },
+  progressLabelsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  progressStepText: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 10,
+  },
+  progressCenterVal: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 13,
+  },
+  activeDirectiveTitle: {
+    fontFamily: "HankenGrotesk-Bold",
+    fontSize: 16,
+  },
+  activeDirectiveMeta: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 10,
+    textTransform: "uppercase",
+  },
+  focusActionBottomBtn: {
+    paddingVertical: 11,
+    borderRadius: 9999,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 4,
+  },
+  focusActionBottomBtnText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    letterSpacing: 0.8,
+  },
 });
 
 export default TodayScreen;

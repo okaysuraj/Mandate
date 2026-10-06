@@ -1,412 +1,193 @@
 import React, { useState, useEffect } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, 
-  TextInput, Image, Modal, Platform 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
+import { useAuth } from "../../context/AuthContext";
 import { useDataStore } from "../../store/useDataStore";
+import AppHeader from "../../components/layout/AppHeader";
+import api from "../../services/api";
 
 const InboxScreen = ({ navigation }) => {
-  const { colors, typography, spacing, borderRadius } = useTheme();
-  const { notifications, loadNotifications, markNotificationRead } = useDataStore(state => state);
-  const [selectedFilter, setSelectedFilter] = useState('ALL');
-  const [selectedMessage, setSelectedMessage] = useState(null);
-  
+  const { colors, typography } = useTheme();
+  const { user } = useAuth();
+  const { tasks, loadTasks } = useDataStore((state) => state);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchInbox = async () => {
+    try {
+      setLoading(true);
+      const [notifsRes] = await Promise.all([
+        api.get("/notifications").catch(() => ({ data: [] })),
+        loadTasks().catch(() => {}),
+      ]);
+      setNotifications(Array.isArray(notifsRes?.data) ? notifsRes.data : []);
+    } catch (e) {
+      console.warn("Failed to load notifications", e);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    loadNotifications();
-  }, [loadNotifications]);
+    if (user) fetchInbox();
+  }, [user]);
 
-  // Adapt store notifications cleanly
-  const rawNotifications = notifications || [];
-  const displayMessages = rawNotifications.map((n) => ({
-    id: n._id || n.id,
-    title: n.title || "Notification",
-    snippet: n.message || n.snippet || "",
-    type: (n.type || "SYSTEM").toUpperCase(),
-    read: n.isRead !== undefined ? n.isRead : !!n.read,
-    time: n.createdAt ? new Date(n.createdAt).toLocaleDateString([], { month: "short", day: "numeric" }) : (n.time || "Recent"),
-    sender: n.user?.name || "COMMAND",
-    typeColor: n.type === 'reminder' ? 'tertiary' : n.type === 'assignment' ? 'primary' : 'secondary',
-    senderIcon: n.type === 'reminder' ? 'alarm' : 'notifications'
-  }));
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchInbox();
+  };
 
-  const filters = ['ALL', 'ALERTS', 'MENTIONS', 'SYSTEM'];
+  const markAllRead = async () => {
+    try {
+      await api.put("/notifications/read").catch(() => {});
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch (e) {
+      console.warn("Could not mark all read", e);
+    }
+  };
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.iconButton}>
-            <MaterialIcons name="menu" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 8 }]}>
-            MANDATE
-          </Text>
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.iconButton}>
-            <MaterialIcons name="notifications" size={24} color={colors.secondary} />
-            <View style={[styles.notificationDot, { backgroundColor: colors.error }]} />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.iconButton, { marginLeft: 8 }]}>
-            <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <AppHeader title="INBOX & ALERTS" navigation={navigation} />
 
-      {/* Search & Filters */}
-      <View style={[styles.searchSection, { backgroundColor: colors.surface }]}>
-        <View style={styles.searchBarContainer}>
-          <MaterialIcons name="search" size={20} color={colors.secondary} style={styles.searchIcon} />
-          <TextInput 
-            style={[styles.searchInput, { backgroundColor: colors.surfaceContainerLow, color: colors.primary }]}
-            placeholder="SEARCH COMMUNICATIONS..."
-            placeholderTextColor={colors.secondary}
-          />
-        </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
-          {filters.map(f => (
-            <TouchableOpacity 
-              key={f}
-              style={[
-                styles.filterChip, 
-                { 
-                  backgroundColor: selectedFilter === f ? colors.primary : colors.surfaceContainer,
-                  borderColor: selectedFilter === f ? colors.primary : colors.outlineVariant,
-                }
-              ]}
-              onPress={() => setSelectedFilter(f)}
-            >
-              <Text style={[
-                typography.labelCaps, 
-                { color: selectedFilter === f ? colors.onPrimary : colors.secondary }
-              ]}>{f}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* Message List */}
-      <ScrollView contentContainerStyle={styles.messageList}>
-        {displayMessages.length === 0 ? (
-          <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 48 }}>
-            <MaterialIcons name="inbox" size={48} color={colors.outlineVariant} />
-            <Text style={[typography.labelCaps, { color: colors.secondary, marginTop: 12 }]}>
-              NO COMMUNICATIONS LOGGED
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      >
+        {/* Header Section matching web InboxPage.jsx */}
+        <View style={styles.pageHeader}>
+          <View style={styles.breadcrumbRow}>
+            <View style={[styles.brandDot, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.breadcrumbText, { color: colors.onSurfaceVariant }]}>
+              OPERATIONS QUEUE · DISPATCH LOG
             </Text>
           </View>
-        ) : (
-          displayMessages.map((msg) => {
-            const badgeColor = colors[msg.typeColor] || colors.primary;
-            return (
-              <TouchableOpacity 
-                key={msg.id} 
-                style={[
-                  styles.messageItem, 
-                  { backgroundColor: msg.read ? 'transparent' : colors.surfaceContainerLow },
-                  !msg.read && { borderLeftWidth: 4, borderLeftColor: colors.primary }
-                ]}
-                onPress={() => {
-                  setSelectedMessage(msg);
-                  if (!msg.read && markNotificationRead) {
-                    markNotificationRead(msg.id);
-                  }
-                }}
-              >
-                <View style={styles.msgHeaderRow}>
-                  <View style={[styles.typeBadge, { backgroundColor: `${badgeColor}25` }]}>
-                    <Text style={[typography.labelCaps, { color: badgeColor, fontSize: 10 }]}>{msg.type}</Text>
+          <Text style={[styles.title, { color: colors.onSurface }]}>
+            Inbox &amp; Alerts
+          </Text>
+
+          <TouchableOpacity
+            onPress={markAllRead}
+            style={[styles.markReadBtn, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLow }]}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.markReadBtnText, { color: colors.onSurface }]}>MARK ALL READ</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* 3 Summary Cards matching web InboxPage.jsx */}
+        <View style={styles.summaryGrid}>
+          <View style={[styles.summaryCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <Text style={[styles.summaryLabel, { color: colors.onSurfaceVariant }]}>UNREAD ALERTS</Text>
+            <Text style={[styles.summaryValue, { color: colors.onSurface }]}>{unreadCount}</Text>
+          </View>
+
+          <View style={[styles.summaryCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <Text style={[styles.summaryLabel, { color: colors.onSurfaceVariant }]}>ACTIVE TASKS</Text>
+            <Text style={[styles.summaryValue, { color: colors.onSurface }]}>{tasks.length}</Text>
+          </View>
+
+          <View style={[styles.summaryCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <Text style={[styles.summaryLabel, { color: colors.onSurfaceVariant }]}>WORKSPACE STATUS</Text>
+            <View style={styles.liveStatusRow}>
+              <View style={[styles.liveDot, { backgroundColor: colors.tertiary }]} />
+              <Text style={[styles.liveText, { color: colors.onSurface }]}>LIVE</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Notification Feed */}
+        <View style={[styles.feedCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <View style={styles.feedHeader}>
+            <Text style={[styles.feedTitle, { color: colors.onSurface }]}>NOTIFICATION FEED</Text>
+            <Text style={[styles.feedRealtime, { color: colors.onSurfaceVariant }]}>REALTIME</Text>
+          </View>
+
+          <View style={styles.feedList}>
+            {notifications.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <MaterialIcons name="inbox" size={40} color={colors.outlineVariant} />
+                <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
+                  NO NOTIFICATIONS YET
+                </Text>
+              </View>
+            ) : (
+              notifications.map((item, idx) => {
+                const isRead = item.isRead;
+                return (
+                  <View 
+                    key={item._id || item.id || idx}
+                    style={[
+                      styles.notifItem,
+                      {
+                        backgroundColor: isRead ? colors.surfaceContainerLowest : colors.surfaceContainerLow,
+                        borderColor: isRead ? colors.outlineVariant : colors.primary,
+                      },
+                    ]}
+                  >
+                    <View style={styles.notifTop}>
+                      <View style={styles.notifTitleRow}>
+                        <View style={[styles.notifDot, { backgroundColor: isRead ? colors.outline : colors.primary }]} />
+                        <Text style={[styles.notifTitle, { color: colors.onSurface }]}>
+                          {item.title || "Task Update"}
+                        </Text>
+                      </View>
+                      <Text style={[styles.notifTime, { color: colors.onSurfaceVariant }]}>
+                        {item.createdAt ? new Date(item.createdAt).toLocaleDateString([], { month: "short", day: "numeric" }) : "Recent"}
+                      </Text>
+                    </View>
+                    <Text style={[styles.notifMessage, { color: colors.onSurfaceVariant }]}>
+                      {item.message || item.snippet || "Task updated in your workspace."}
+                    </Text>
                   </View>
-                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>{msg.time}</Text>
-                </View>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700', marginBottom: 4 }]}>{msg.title}</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]} numberOfLines={2}>{msg.snippet}</Text>
-                
-                <View style={styles.senderRow}>
-                  {msg.senderAvatar ? (
-                    <View style={[styles.senderAvatar, { backgroundColor: colors.surfaceDim }]}>
-                      <Image source={{ uri: msg.senderAvatar }} style={{ width: '100%', height: '100%' }} />
-                    </View>
-                  ) : (
-                    <View style={[styles.senderAvatar, { backgroundColor: colors.surfaceDim }]}>
-                      <MaterialIcons name={msg.senderIcon || "notifications"} size={14} color={colors.primary} />
-                    </View>
-                  )}
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, fontSize: 10, letterSpacing: 1 }]}>{msg.sender}</Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })
-        )}
+                );
+              })
+            )}
+          </View>
+        </View>
       </ScrollView>
-
-      {/* Detail Modal */}
-      <Modal visible={!!selectedMessage} animationType="slide" presentationStyle="formSheet">
-        {selectedMessage && (
-          <SafeAreaView style={[styles.modalContainer, { backgroundColor: colors.surfaceContainerLowest }]}>
-            
-            {/* Modal Header */}
-            <View style={[styles.modalHeader, { borderBottomColor: colors.outlineVariant }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                <TouchableOpacity style={styles.iconButton} onPress={() => setSelectedMessage(null)}>
-                  <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
-                </TouchableOpacity>
-                <View style={{ marginLeft: 8 }}>
-                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>{selectedMessage.type}</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>ID: 0x9928-SHIFT</Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <TouchableOpacity style={styles.iconButton}>
-                  <MaterialIcons name="archive" size={20} color={colors.secondary} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.iconButton}>
-                  <MaterialIcons name="delete" size={20} color={colors.error} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <ScrollView contentContainerStyle={styles.modalContent}>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '800', marginBottom: 16 }]}>
-                {selectedMessage.title}
-              </Text>
-              
-              <View style={[styles.senderIdentity, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                <View style={[styles.identityIcon, { backgroundColor: colors.primary }]}>
-                  <MaterialIcons name="security" size={20} color={colors.onPrimary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700', fontSize: 14 }]}>System Monitor Node 04</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>Sent to Primary Admin Cluster</Text>
-                </View>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>8:42:01 AM</Text>
-              </View>
-
-              <Text style={[typography.bodyMd, { color: colors.primary, marginTop: 24, lineHeight: 24 }]}>
-                During the routine cycle scan of <Text style={{ fontWeight: '700' }}>Sector 7-B</Text>, an anomalous kernel integrity signature was captured. The entropy level shifted by <Text style={{ color: colors.error, fontWeight: '700' }}>+14.2%</Text> within a 400ms window.
-              </Text>
-
-              <View style={[styles.alertBlock, { backgroundColor: colors.primaryContainer, borderLeftColor: colors.error }]}>
-                <Text style={[typography.bodyMd, { color: colors.onPrimaryContainer, fontWeight: '700', marginBottom: 4 }]}>IMMEDIATE ACTION REQUIRED</Text>
-                <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.8 }]}>
-                  Manual verification of hardware security modules in sub-level 3 is requested to prevent potential cascading buffer overflows.
-                </Text>
-              </View>
-
-              <Text style={[typography.labelCaps, { color: colors.primary, marginTop: 24, marginBottom: 8 }]}>TELEMETRY DATA</Text>
-              <View style={[styles.codeBlock, { backgroundColor: colors.surfaceContainerHigh }]}>
-                <Text style={[typography.labelSm, { color: colors.primary, fontFamily: 'monospace' }]}>
-                  {selectedMessage.content?.log || "No telemetry available."}
-                </Text>
-              </View>
-
-              <View style={[styles.assetLink, { borderColor: colors.outlineVariant }]}>
-                <View style={[styles.assetImg, { backgroundColor: colors.surfaceContainerHighest }]}>
-                  <Image 
-                    source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAU-EZtoG51q1AR9V0BZd865oyniTvXecYXaBQ60NY5wp5JhumQ-w7cGmfTlhDMSC44vuajmD3leGMYBMxZsAtzcLBGBAU0VO0sbomz3gdJoujEDuNmHpYOxDGnbXEJCW3NzX0eRLZp0xoKblhCYkUxLqHH4gCyyX4JvJ7RWeGdcK5-MKZYq6muCiHShOMGNaIvaorZDE8rn0Xf5fGyuwhAa2G7L2qnffTqS1jfq31LAVKw9Q_j6vELKg' }}
-                    style={{ width: '100%', height: '100%' }}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>SOURCE LOCATION</Text>
-                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>{selectedMessage.content?.location || 'UNKNOWN'}</Text>
-                </View>
-                <MaterialIcons name="chevron-right" size={24} color={colors.secondary} />
-              </View>
-            </ScrollView>
-
-            <View style={[styles.modalActionbar, { backgroundColor: colors.surface, borderTopColor: colors.outlineVariant }]}>
-              <TouchableOpacity style={[styles.ackBtn, { backgroundColor: colors.primary }]} activeOpacity={0.8} onPress={() => setSelectedMessage(null)}>
-                <MaterialIcons name="reply" size={18} color={colors.onPrimary} style={{ marginRight: 8 }} />
-                <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>ACKNOWLEDGE</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.moreBtn, { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}>
-                <MaterialIcons name="more-horiz" size={24} color={colors.primary} />
-              </TouchableOpacity>
-            </View>
-
-          </SafeAreaView>
-        )}
-      </Modal>
-
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    height: 56,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
-    padding: 4,
-    borderRadius: 16,
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  searchSection: {
-    padding: 16,
-    paddingBottom: 8,
-  },
-  searchBarContainer: {
-    position: 'relative',
-    marginBottom: 16,
-  },
-  searchIcon: {
-    position: 'absolute',
-    left: 12,
-    top: 10,
-    zIndex: 1,
-  },
-  searchInput: {
-    height: 40,
-    borderRadius: 20,
-    paddingLeft: 40,
-    paddingRight: 16,
-  },
-  filterScroll: {
-    gap: 8,
-    paddingBottom: 4,
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  messageList: {
-    paddingBottom: 40,
-  },
-  messageItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
-  },
-  msgHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  typeBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  senderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 12,
-    gap: 8,
-  },
-  senderAvatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  modalContainer: {
-    flex: 1,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-  },
-  modalContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  senderIdentity: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    gap: 12,
-  },
-  identityIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  alertBlock: {
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 4,
-    borderLeftWidth: 4,
-  },
-  codeBlock: {
-    padding: 16,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  assetLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 24,
-    padding: 16,
-    borderWidth: 1,
-    borderRadius: 8,
-    gap: 16,
-  },
-  assetImg: {
-    width: 48,
-    height: 48,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  modalActionbar: {
-    flexDirection: 'row',
-    padding: 16,
-    borderTopWidth: 1,
-    gap: 12,
-  },
-  ackBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 24,
-    height: 48,
-  },
-  moreBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  }
+  scrollContent: { padding: 16, paddingBottom: 40 },
+  pageHeader: { marginBottom: 16 },
+  breadcrumbRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+  brandDot: { width: 8, height: 8, borderRadius: 4 },
+  breadcrumbText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase" },
+  title: { fontFamily: "HankenGrotesk-Bold", fontSize: 24, textTransform: "uppercase", letterSpacing: -0.5 },
+  markReadBtn: { paddingVertical: 8, paddingHorizontal: 14, borderWidth: 1, borderRadius: 8, alignSelf: "flex-start", marginTop: 10 },
+  markReadBtnText: { fontFamily: "JetBrainsMono-Bold", fontSize: 10, letterSpacing: 1 },
+  summaryGrid: { flexDirection: "row", gap: 8, marginBottom: 16 },
+  summaryCard: { flex: 1, borderWidth: 1, borderRadius: 12, padding: 12 },
+  summaryLabel: { fontFamily: "JetBrainsMono-Bold", fontSize: 9, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 },
+  summaryValue: { fontFamily: "JetBrainsMono-Bold", fontSize: 22 },
+  liveStatusRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  liveDot: { width: 8, height: 8, borderRadius: 4 },
+  liveText: { fontFamily: "JetBrainsMono-Bold", fontSize: 16 },
+  feedCard: { borderWidth: 1, borderRadius: 14, padding: 16 },
+  feedHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14, borderBottomWidth: 1, borderBottomColor: "rgba(150,150,150,0.15)", paddingBottom: 8 },
+  feedTitle: { fontFamily: "JetBrainsMono-Bold", fontSize: 12, letterSpacing: 1 },
+  feedRealtime: { fontFamily: "JetBrainsMono-Regular", fontSize: 10 },
+  feedList: { gap: 10 },
+  notifItem: { borderWidth: 1, borderRadius: 10, padding: 12 },
+  notifTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
+  notifTitleRow: { flexDirection: "row", alignItems: "center", gap: 6, flex: 1 },
+  notifDot: { width: 6, height: 6, borderRadius: 3 },
+  notifTitle: { fontFamily: "HankenGrotesk-Bold", fontSize: 13 },
+  notifTime: { fontFamily: "JetBrainsMono-Regular", fontSize: 10 },
+  notifMessage: { fontFamily: "HankenGrotesk-Regular", fontSize: 12, lineHeight: 16, marginTop: 2 },
+  emptyContainer: { alignItems: "center", paddingVertical: 36, gap: 8 },
+  emptyText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1 },
 });
 
 export default InboxScreen;

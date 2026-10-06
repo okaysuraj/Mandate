@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import Svg, { Line, Polyline, Circle } from 'react-native-svg';
@@ -76,10 +77,10 @@ const GoalProgressTrackingScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Burn-up Telemetry */}
+          {/* Burn-up Progress */}
           <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.cardHeader}>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>BURN-UP_TELEMETRY</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>BURN-UP PROGRESS</Text>
               <View style={styles.syncBadge}>
                 <View style={[styles.syncDot, { backgroundColor: colors.onTertiaryContainer }]} />
                 <Text style={[typography.labelSm, { color: colors.secondary }]}>SYNCED</Text>

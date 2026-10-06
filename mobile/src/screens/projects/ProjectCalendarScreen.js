@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 import api from "../../services/api";
@@ -225,10 +224,10 @@ const ProjectCalendarScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Scheduled Protocols Section */}
+        {/* Scheduled Tasks Section */}
         <View style={styles.protocolsSection}>
           <View style={styles.protocolsHeader}>
-            <Text style={[typography.labelCaps, { color: colors.secondary }]}>SCHEDULED PROTOCOLS</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary }]}>SCHEDULED TASKS</Text>
             <Text style={[typography.labelSm, { color: colors.primary }]}>
               DAY {selectedDate}
             </Text>

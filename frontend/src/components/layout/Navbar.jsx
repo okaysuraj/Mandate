@@ -76,7 +76,7 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
             <span>MANDATE</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className={linkClass("/")}>Command</Link>
+            <Link to="/" className={linkClass("/")}>Dashboard</Link>
             <Link to="/pricing" className={linkClass("/pricing")}>Pricing</Link>
           </nav>
         </div>

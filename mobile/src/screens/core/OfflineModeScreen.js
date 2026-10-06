@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -57,7 +58,7 @@ const OfflineModeScreen = ({ navigation }) => {
           {/* Cache Details */}
           <View style={styles.gridSection}>
             {/* Local Cache Card */}
-            <View style={[styles.bentoCard, { borderColor: colors.outlineVariant, padding: 32 }]}>
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: 32 }]}>
               <View style={styles.cardHeader}>
                 <Text style={[typography.labelCaps, { color: colors.secondary }]}>SYSTEM_CACHE</Text>
                 <MaterialIcons name="storage" size={16} color={colors.secondary} />
@@ -182,8 +183,7 @@ const styles = StyleSheet.create({
   },
   bentoCard: {
     borderWidth: 1,
-    borderRadius: 16,
-    backgroundColor: '#ffffff',
+    borderRadius: 12,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 32,
+    borderRadius: 12,
   },
   secondaryBtn: {
     flexDirection: 'row',
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 32,
+    borderRadius: 12,
     borderWidth: 1,
   },
   pendingAlertWrapper: {
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 12,
     gap: 16,
   },
   pendingText: {

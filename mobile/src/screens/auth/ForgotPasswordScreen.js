@@ -139,7 +139,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
             {/* Technical Sidebar Content (Stacked Mobile Format) */}
             <View style={styles.sidebarContent}>
               {/* Security Protocol Card */}
-              <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLow, borderLeftWidth: 4, borderLeftColor: colors.primary, padding: spacing.md }]}>
+              <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, padding: spacing.md }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
                   <MaterialIcons name="verified-user" size={24} color={colors.primary} style={{ marginTop: 2 }} />
                   <View style={{ flex: 1 }}>
@@ -222,6 +222,7 @@ const styles = StyleSheet.create({
   },
   bentoCard: {
     borderWidth: 1,
+    borderRadius: 12,
     borderColor: 'transparent',
   },
   successContainer: {
@@ -241,6 +242,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     flexDirection: 'row',
     height: 56,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     gap: 8,

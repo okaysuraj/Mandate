@@ -1,24 +1,32 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import {
-  View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, RefreshControl, Dimensions, Animated, Image, FlatList, Platform
-} from "react-native";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, TextInput, Dimensions } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import { useDataStore } from "../../store/useDataStore";
 import { useTheme } from "../../context/ThemeContext";
+import AppHeader from "../../components/layout/AppHeader";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
+
+const COLUMNS = [
+  { id: "pending", title: "Backlog", status: "pending" },
+  { id: "in-progress", title: "In Progress", status: "in-progress" },
+  { id: "validation", title: "Validation", status: "validation" },
+  { id: "completed", title: "Deployed", status: "completed" },
+];
 
 const KanbanScreen = ({ navigation }) => {
   const { user } = useAuth();
-  const { tasks, loading, loadTasks, subscribeToSocket, moveTask } = useDataStore(state => state);
-  const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState(0);
-  const scrollViewRef = useRef(null);
+  const { tasks, loading, loadTasks, subscribeToSocket, moveTask } =
+    useDataStore((state) => state);
   const { socket } = useSocket();
-  const { colors, typography, spacing, borderRadius } = useTheme();
+  const { colors, typography } = useTheme();
+
+  const [activeTab, setActiveTab] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const scrollViewRef = useRef(null);
 
   useEffect(() => {
     if (user) loadTasks();
@@ -30,15 +38,31 @@ const KanbanScreen = ({ navigation }) => {
   }, [socket, subscribeToSocket]);
 
   const onRefresh = async () => {
-    setRefreshing(true);
     await loadTasks();
-    setRefreshing(false);
   };
 
-  const backlogTasks = tasks.filter(t => t.status && (t.status.toLowerCase() === 'todo' || t.status.toLowerCase() === 'pending'));
-  const inProgressTasks = tasks.filter(t => t.status && (t.status.toLowerCase() === 'in progress' || t.status.toLowerCase() === 'in-progress'));
-  const validationTasks = tasks.filter(t => t.status && (t.status.toLowerCase() === 'done' || t.status.toLowerCase() === 'completed'));
-  const archivedTasks = tasks.filter(t => t.status && t.status.toLowerCase() === 'archived');
+  const filteredTasks = useMemo(() => {
+    const taskList = Array.isArray(tasks) ? tasks : (Array.isArray(tasks?.data) ? tasks.data : []);
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return taskList;
+    return taskList.filter(
+      (t) =>
+        (t?.title && t.title.toLowerCase().includes(q)) ||
+        (t?.description && t.description.toLowerCase().includes(q))
+    );
+  }, [tasks, searchQuery]);
+
+  const getColumnTasks = (status) => {
+    return filteredTasks.filter((t) => {
+      const s = (t.status || "pending").toLowerCase();
+      if (status === "pending") return s === "pending" || s === "todo";
+      if (status === "in-progress")
+        return s === "in-progress" || s === "in_progress" || s === "in progress";
+      if (status === "validation") return s === "validation";
+      if (status === "completed") return s === "completed" || s === "done";
+      return false;
+    });
+  };
 
   const scrollToTab = (index) => {
     setActiveTab(index);
@@ -48,197 +72,286 @@ const KanbanScreen = ({ navigation }) => {
   const handleScroll = (event) => {
     const x = event.nativeEvent.contentOffset.x;
     const activeIndex = Math.round(x / width);
-    if (activeIndex !== activeTab) {
+    if (activeIndex !== activeTab && activeIndex >= 0 && activeIndex < 4) {
       setActiveTab(activeIndex);
     }
   };
 
-  const renderPriority = (priority) => {
-    let pBg = colors.surfaceContainerHigh;
-    let pText = colors.onSecondaryContainer;
-    let pLabel = (priority || 'MED').toUpperCase();
-    
-    if (priority === 'urgent' || priority === 'high') {
-      pBg = colors.tertiaryFixed;
-      pText = colors.onTertiaryContainer;
+  const getPriorityDetails = (priority) => {
+    switch (priority) {
+      case "urgent":
+        return {
+          label: "CRITICAL",
+          dotColor: colors.error,
+          textColor: colors.error,
+          bg: colors.errorContainer,
+        };
+      case "high":
+        return {
+          label: "HIGH",
+          dotColor: colors.primary,
+          textColor: colors.primary,
+          bg: colors.surfaceContainerHighest,
+        };
+      case "medium":
+        return {
+          label: "MEDIUM",
+          dotColor: colors.tertiary,
+          textColor: colors.onTertiaryContainer,
+          bg: colors.tertiaryContainer,
+        };
+      default:
+        return {
+          label: "ROUTINE",
+          dotColor: colors.outline,
+          textColor: colors.onSurfaceVariant,
+          bg: colors.surfaceContainer,
+        };
     }
-    
-    return (
-      <View style={[styles.priorityChip, { backgroundColor: pBg }]}>
-        <Text style={[typography.labelCaps, { color: pText }]}>{pLabel}</Text>
-      </View>
-    );
   };
 
-  const renderTaskCard = (task, type) => {
-    const timeAgo = (dateStr) => {
-      if (!dateStr) return 'Unknown';
-      const hours = Math.floor((new Date() - new Date(dateStr)) / 3600000);
-      return hours < 24 ? `${hours}h ago` : `${Math.floor(hours / 24)}d ago`;
-    };
-
-    let cardBorder = colors.outlineVariant;
-    if (type === 'in-progress') cardBorder = colors.primary;
+  const renderCard = (task, colStatus) => {
+    const taskIdStr = String(task._id || task.id || "0000");
+    const displayCode =
+      taskIdStr.length >= 6
+        ? taskIdStr.slice(-6).toUpperCase()
+        : taskIdStr.toUpperCase();
+    const priority = getPriorityDetails(task.priority);
+    const isCompleted = colStatus === "completed";
+    const isInProgress = colStatus === "in-progress";
 
     return (
-      <TouchableOpacity 
-        key={task._id || task.id} 
-        style={[styles.taskCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: cardBorder, borderRadius: borderRadius.DEFAULT }]}
-        activeOpacity={0.7}
-        onPress={() => navigation.navigate("TaskDetail", { task })}
+      <TouchableOpacity
+        key={taskIdStr}
+        onPress={() =>
+          navigation.navigate("TaskDetail", { task, taskId: task._id || task.id })
+        }
+        style={[
+          styles.taskCard,
+          {
+            backgroundColor: colors.surfaceContainerLowest,
+            borderColor: isInProgress ? colors.primary : colors.outlineVariant,
+          },
+        ]}
+        activeOpacity={0.75}
       >
-        {type === 'in-progress' && (
-          <View style={[styles.activeStrip, { backgroundColor: colors.primary }]} />
-        )}
-        
+        {/* Card Header: Ref Code & Priority */}
         <View style={styles.cardHeader}>
-          <Text style={[typography.labelSm, { color: colors.onPrimaryContainer }]}>
-            #MN-{(task._id || task.id || 'XXX').substring(0,3).toUpperCase()}
+          <Text style={[styles.refCodeText, { color: colors.onSurfaceVariant, backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}>
+            #MND-{displayCode}
           </Text>
-          {type === 'completed' ? (
-            <View style={[styles.priorityChip, { backgroundColor: colors.tertiaryFixed }]}>
-              <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer }]}>DONE</Text>
-            </View>
-          ) : renderPriority(task.priority)}
-        </View>
-        
-        <Text style={[typography.headlineLgMobile, { fontSize: 18, marginBottom: spacing.md, color: colors.primary }]} numberOfLines={2}>
-          {task.title}
-        </Text>
-        
-        {type === 'in-progress' && (
-          <View style={styles.progressSection}>
-            <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainerLow }]}>
-              <View style={[styles.progressBarFill, { backgroundColor: colors.primary, width: '65%' }]} />
-            </View>
-            <View style={styles.progressFooter}>
-              <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 12 }]}>65% Complete</Text>
-              <View style={styles.avatarStack}>
-                <View style={[styles.avatarMini, { borderColor: colors.surface, backgroundColor: colors.surfaceDim }]} />
-                <View style={[styles.avatarMini, { borderColor: colors.surface, backgroundColor: colors.secondary, marginLeft: -8 }]} />
-              </View>
-            </View>
+          <View
+            style={[
+              styles.priorityBadge,
+              { backgroundColor: priority.bg, borderColor: colors.outlineVariant },
+            ]}
+          >
+            <View style={[styles.priorityDot, { backgroundColor: priority.dotColor }]} />
+            <Text style={[styles.priorityText, { color: priority.textColor }]}>
+              {priority.label}
+            </Text>
           </View>
-        )}
-        
-        {type !== 'in-progress' && (
-          <View style={styles.cardFooter}>
-            {type === 'completed' ? (
-              <View style={styles.approvedBadge}>
-                <MaterialIcons name="check-circle" size={14} color={colors.onTertiaryContainer} style={{ marginRight: 4 }} />
-                <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, fontSize: 12 }]}>Approved</Text>
+        </View>
+
+        {/* Task Title */}
+        <Text
+          style={[
+            styles.cardTitle,
+            {
+              color: colors.onSurface,
+              textDecorationLine: isCompleted ? "line-through" : "none",
+            },
+          ]}
+          numberOfLines={2}
+        >
+          {task.title || "Untitled Mandate"}
+        </Text>
+
+        {/* Description */}
+        {task.description ? (
+          <Text style={[styles.cardDescription, { color: colors.onSurfaceVariant }]} numberOfLines={2}>
+            {task.description}
+          </Text>
+        ) : null}
+
+        {/* Tags */}
+        {task.tags && task.tags.length > 0 ? (
+          <View style={styles.tagsRow}>
+            {task.tags.slice(0, 3).map((tag, tIdx) => (
+              <View
+                key={tIdx}
+                style={[
+                  styles.tagPill,
+                  {
+                    backgroundColor: colors.surfaceContainer,
+                    borderColor: colors.outlineVariant,
+                  },
+                ]}
+              >
+                <Text style={[styles.tagText, { color: colors.onSurfaceVariant }]}>
+                  #{tag}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
+        {/* Footer Meta */}
+        <View style={[styles.cardFooter, { borderTopColor: colors.outlineVariant }]}>
+          <View style={styles.metaLeft}>
+            {task.dueDate ? (
+              <View style={styles.dateRow}>
+                <MaterialIcons name="calendar-today" size={12} color={colors.onSurfaceVariant} />
+                <Text style={[styles.metaText, { color: colors.onSurfaceVariant }]}>
+                  {new Date(task.dueDate).toLocaleDateString([], {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </Text>
               </View>
             ) : (
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <MaterialIcons name="history" size={16} color={colors.secondary} style={{ marginRight: 4 }} />
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 12 }]}>Updated {timeAgo(task.updatedAt)}</Text>
+              <View style={styles.dateRow}>
+                <MaterialIcons name="schedule" size={12} color={colors.onSurfaceVariant} />
+                <Text style={[styles.metaText, { color: colors.onSurfaceVariant }]}>QUEUE</Text>
               </View>
             )}
-          </View>
-        )}
 
-        {/* Quick status transition actions */}
-        <View style={{ flexDirection: 'row', gap: 6, marginTop: spacing.sm, paddingTop: spacing.xs, borderTopWidth: 1, borderTopColor: colors.outlineVariant + '40', flexWrap: 'wrap' }}>
-          {type !== 'pending' && (
-            <TouchableOpacity 
-              style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4, backgroundColor: colors.surfaceContainerHigh }}
-              onPress={() => moveTask(task._id || task.id, 'pending')}
+            {isInProgress ? (
+              <View style={styles.activePill}>
+                <View style={[styles.activeDot, { backgroundColor: colors.primary }]} />
+                <Text style={[styles.activePillText, { color: colors.primary }]}>ACTIVE</Text>
+              </View>
+            ) : null}
+
+            {isCompleted ? (
+              <View style={styles.activePill}>
+                <MaterialIcons name="check-circle" size={12} color={colors.tertiary} />
+                <Text style={[styles.activePillText, { color: colors.tertiary }]}>DONE</Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
+
+        {/* Quick Status Transition Actions */}
+        <View style={[styles.statusActionsRow, { borderTopColor: colors.outlineVariant }]}>
+          {colStatus !== "pending" ? (
+            <TouchableOpacity
+              onPress={() => moveTask(task._id || task.id, "pending")}
+              style={[styles.transitionBtn, { backgroundColor: colors.surfaceContainerHigh }]}
             >
-              <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary }]}>TO BACKLOG</Text>
+              <Text style={[styles.transitionBtnText, { color: colors.secondary }]}>TO BACKLOG</Text>
             </TouchableOpacity>
-          )}
-          {type !== 'in-progress' && (
-            <TouchableOpacity 
-              style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4, backgroundColor: colors.primary }}
-              onPress={() => moveTask(task._id || task.id, 'in-progress')}
+          ) : null}
+
+          {colStatus !== "in-progress" ? (
+            <TouchableOpacity
+              onPress={() => moveTask(task._id || task.id, "in-progress")}
+              style={[styles.transitionBtn, { backgroundColor: colors.primary }]}
             >
-              <Text style={[typography.labelCaps, { fontSize: 10, color: colors.onPrimary }]}>START</Text>
+              <Text style={[styles.transitionBtnText, { color: colors.onPrimary }]}>START</Text>
             </TouchableOpacity>
-          )}
-          {type !== 'completed' && (
-            <TouchableOpacity 
-              style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4, backgroundColor: colors.tertiaryFixed }}
-              onPress={() => moveTask(task._id || task.id, 'completed')}
+          ) : null}
+
+          {colStatus !== "validation" ? (
+            <TouchableOpacity
+              onPress={() => moveTask(task._id || task.id, "validation")}
+              style={[styles.transitionBtn, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, borderWidth: 1 }]}
             >
-              <Text style={[typography.labelCaps, { fontSize: 10, color: colors.onTertiaryContainer }]}>COMPLETE</Text>
+              <Text style={[styles.transitionBtnText, { color: colors.onSurfaceVariant }]}>VALIDATE</Text>
             </TouchableOpacity>
-          )}
-          {type !== 'archived' && (
-            <TouchableOpacity 
-              style={{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4, backgroundColor: colors.surfaceContainerLow }}
-              onPress={() => moveTask(task._id || task.id, 'archived')}
+          ) : null}
+
+          {colStatus !== "completed" ? (
+            <TouchableOpacity
+              onPress={() => moveTask(task._id || task.id, "completed")}
+              style={[styles.transitionBtn, { backgroundColor: colors.tertiary }]}
             >
-              <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary }]}>ARCHIVE</Text>
+              <Text style={[styles.transitionBtnText, { color: colors.onTertiary }]}>DEPLOY</Text>
             </TouchableOpacity>
-          )}
+          ) : null}
         </View>
       </TouchableOpacity>
     );
   };
 
-  const renderColumn = (columnTasks, id, type) => (
-    <FlatList 
-      data={columnTasks}
-      keyExtractor={(item) => item._id || item.id}
-      renderItem={({ item }) => renderTaskCard(item, type)}
-      style={styles.columnContainer}
-      contentContainerStyle={styles.columnContent}
-      showsVerticalScrollIndicator={false}
-      initialNumToRender={6}
-      maxToRenderPerBatch={8}
-      windowSize={5}
-      removeClippedSubviews={Platform.OS === 'android'}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
-      ListEmptyComponent={
-        <Text style={[typography.labelCaps, { color: colors.secondary, textAlign: 'center', marginTop: spacing.xl }]}>
-          NO TASKS IN {id}
-        </Text>
-      }
-    />
-  );
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity style={[styles.iconButton, { backgroundColor: 'transparent' }]}>
-            <MaterialIcons name="grid-view" size={24} color={colors.primary} />
+    <SafeAreaView edges={["top"]} style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <AppHeader title="KANBAN" navigation={navigation} />
+
+      {/* Board Header matching web KanbanPage.jsx */}
+      <View style={[styles.boardHeader, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
+        <View style={styles.boardHeaderTop}>
+          <View>
+            <View style={styles.pipelineTagRow}>
+              <View style={[styles.pipelineDot, { backgroundColor: colors.primary }]} />
+              <Text style={[styles.pipelineTagText, { color: colors.onSurfaceVariant }]}>
+                EXECUTION PIPELINE · REALTIME INTERACTIVE
+              </Text>
+            </View>
+            <Text style={[styles.boardTitle, { color: colors.onSurface }]}>Kanban Board</Text>
+          </View>
+
+          {/* New Mandate Button */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate("CreateTask")}
+            style={[styles.newMandateBtn, { backgroundColor: colors.primary }]}
+            activeOpacity={0.85}
+          >
+            <MaterialIcons name="add" size={16} color={colors.onPrimary} />
+            <Text style={[styles.newMandateBtnText, { color: colors.onPrimary }]}>
+              New Mandate
+            </Text>
           </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', marginLeft: spacing.sm }]}>MANDATE</Text>
         </View>
-        <View style={[styles.avatarContainer, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainer }]}>
-          <Image 
-            source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC13kNXtfuyZkOF9Irh5XlWloe5gUNmYCU0oX5W9IG2dkmAfnxfoSUdDIQGZDFkDMF0jcSYO-8X7W7BaIG9hXCjwd4JGvdqTwH_Z3VuKM-sVj3DFEIr9aJ1Rhykj6QXHYmtmQlwO1ASS_lg8vfedVtiSoC-jogC9xLfDks13phUon0keEIDbk7Lj8Q4I436LmXq98T4iFJDWyiVcJrX5qqzEN65QDNf7rZ36FZG8UBAZJloLz0Uz5HeAQ' }}
-            style={styles.avatarImage}
+
+        {/* Filter Mandates Search Bar */}
+        <View style={[styles.searchBox, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <MaterialIcons name="search" size={18} color={colors.onSurfaceVariant} style={{ marginRight: 6 }} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.onSurface }]}
+            placeholder="Filter mandates..."
+            placeholderTextColor={colors.onSurfaceVariant}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
+          {searchQuery ? (
+            <TouchableOpacity onPress={() => setSearchQuery("")}>
+              <MaterialIcons name="close" size={16} color={colors.onSurfaceVariant} />
+            </TouchableOpacity>
+          ) : null}
         </View>
       </View>
 
-      {/* Board Header / Tab Switcher */}
-      <View style={styles.tabScrollWrapper}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScrollContent}>
-          {['BACKLOG', 'IN PROGRESS', 'VALIDATION', 'ARCHIVE'].map((tab, idx) => {
-            const counts = [backlogTasks.length, inProgressTasks.length, validationTasks.length, archivedTasks.length];
-            const isActive = activeTab === idx;
-            
+      {/* Column Switcher Tabs */}
+      <View style={[styles.columnTabsRow, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScrollContent}>
+          {COLUMNS.map((col, idx) => {
+            const count = getColumnTasks(col.status).length;
+            const isSelected = activeTab === idx;
+
             return (
-              <TouchableOpacity 
-                key={tab}
-                style={[
-                  styles.tabButton, 
-                  { 
-                    backgroundColor: isActive ? colors.primary : colors.surfaceContainerLowest,
-                    borderColor: isActive ? colors.primary : colors.outlineVariant
-                  }
-                ]}
+              <TouchableOpacity
+                key={col.id}
                 onPress={() => scrollToTab(idx)}
+                style={[
+                  styles.tabChip,
+                  {
+                    backgroundColor: isSelected ? colors.primary : colors.surfaceContainerLow,
+                    borderColor: isSelected ? colors.primary : colors.outlineVariant,
+                  },
+                ]}
+                activeOpacity={0.8}
               >
-                <Text style={[
-                  typography.labelCaps, 
-                  { color: isActive ? colors.onPrimary : colors.secondary }
-                ]}>
-                  {tab} ({counts[idx]})
+                <Text
+                  style={[
+                    styles.tabChipText,
+                    {
+                      color: isSelected ? colors.onPrimary : colors.onSurfaceVariant,
+                      fontWeight: isSelected ? "bold" : "600",
+                    },
+                  ]}
+                >
+                  {col.title.toUpperCase()} ({count})
                 </Text>
               </TouchableOpacity>
             );
@@ -246,170 +359,287 @@ const KanbanScreen = ({ navigation }) => {
         </ScrollView>
       </View>
 
-      {/* Swipeable Kanban Container */}
+      {/* Swipeable Columns */}
       <ScrollView
         ref={scrollViewRef}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={handleScroll}
-        style={styles.kanbanContainer}
+        style={styles.columnsPager}
       >
-        {renderColumn(backlogTasks, "BACKLOG", "pending")}
-        {renderColumn(inProgressTasks, "IN PROGRESS", "in-progress")}
-        {renderColumn(validationTasks, "VALIDATION", "completed")}
-        {renderColumn(archivedTasks, "ARCHIVE", "archived")}
-      </ScrollView>
+        {COLUMNS.map((col) => {
+          const colTasks = getColumnTasks(col.status);
 
-      {/* Deploy Action Footer */}
-      <View style={styles.actionFooter}>
-        <TouchableOpacity 
-          style={[styles.deployButton, { backgroundColor: colors.primary, borderRadius: borderRadius.full }]} 
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate("CreateTask")}
-        >
-          <MaterialIcons name="add" size={20} color={colors.onPrimary} style={{ marginRight: spacing.sm }} />
-          <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2 }]}>CREATE MANDATE</Text>
-        </TouchableOpacity>
-      </View>
+          return (
+            <ScrollView
+              key={col.id}
+              style={{ width }}
+              contentContainerStyle={styles.columnScrollContent}
+              refreshControl={
+                <RefreshControl
+                  refreshing={loading}
+                  onRefresh={onRefresh}
+                  tintColor={colors.primary}
+                />
+              }
+              showsVerticalScrollIndicator={false}
+            >
+              {colTasks.length === 0 ? (
+                <View style={[styles.emptyColumnBox, { borderColor: colors.outlineVariant }]}>
+                  <MaterialIcons name="add-task" size={28} color={colors.outline} style={{ marginBottom: 6 }} />
+                  <Text style={[styles.emptyColumnTitle, { color: colors.onSurfaceVariant }]}>
+                    No tasks in {col.title}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate("CreateTask")}
+                    style={[styles.emptyAssignBtn, { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}
+                  >
+                    <Text style={[styles.emptyAssignText, { color: colors.primary }]}>
+                      + Create Task
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                colTasks.map((t) => renderCard(t, col.status))
+              )}
+            </ScrollView>
+          );
+        })}
+      </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  safeArea: { flex: 1 },
+  boardHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    gap: 10,
   },
-  header: {
+  boardHeaderTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+  },
+  pipelineTagRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    height: 64,
+    gap: 6,
+    marginBottom: 2,
+  },
+  pipelineDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  pipelineTagText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+    letterSpacing: 0.8,
+  },
+  boardTitle: {
+    fontFamily: "HankenGrotesk-Bold",
+    fontSize: 22,
+    letterSpacing: -0.5,
+    textTransform: "uppercase",
+  },
+  newMandateBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
+    gap: 4,
+  },
+  newMandateBtnText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  searchBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    height: 38,
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 12,
+  },
+  columnTabsRow: {
+    paddingVertical: 8,
     borderBottomWidth: 1,
   },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
-    padding: 8,
-    borderRadius: 8,
-    marginLeft: -8,
-  },
-  avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: '100%',
-    height: '100%',
-  },
-  tabScrollWrapper: {
-    paddingVertical: 16,
-  },
-  tabScrollContent: {
+  tabsScrollContent: {
     paddingHorizontal: 16,
     gap: 8,
   },
-  tabButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+  tabChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     borderRadius: 9999,
     borderWidth: 1,
   },
-  kanbanContainer: {
+  tabChipText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+    letterSpacing: 0.5,
+  },
+  columnsPager: {
     flex: 1,
   },
-  columnContainer: {
-    width: width,
-  },
-  columnContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 100, // Space for footer
-    gap: 16,
+  columnScrollContent: {
+    padding: 16,
+    paddingBottom: 48,
+    gap: 12,
   },
   taskCard: {
-    padding: 24,
     borderWidth: 1,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  activeStrip: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 4,
-    height: '100%',
+    borderRadius: 12,
+    padding: 14,
+    gap: 8,
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  priorityChip: {
-    paddingHorizontal: 8,
+  refCodeText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+    letterSpacing: 0.8,
+    paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
-  },
-  progressSection: {
-    marginTop: 8,
-  },
-  progressBarBg: {
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
-    marginBottom: 8,
-    width: '100%',
-  },
-  progressBarFill: {
-    height: '100%',
-  },
-  progressFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  avatarStack: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarMini: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
     borderWidth: 1,
   },
+  priorityBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 9999,
+    borderWidth: 1,
+    gap: 4,
+  },
+  priorityDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+  },
+  priorityText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+  },
+  cardTitle: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  cardDescription: {
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  tagsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+  },
+  tagPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  tagText: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 9,
+  },
   cardFooter: {
-    marginTop: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTopWidth: 1,
+    paddingTop: 8,
   },
-  approvedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  metaLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
-  actionFooter: {
-    position: 'absolute',
-    bottom: 24, // App.js has BottomNav taking bottom, so this goes above it (usually 64px, but SafeArea handles some of it)
-    left: 0,
-    width: '100%',
-    paddingHorizontal: 16,
-    zIndex: 40,
+  dateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
-  deployButton: {
-    height: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  }
+  metaText: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 10,
+  },
+  activePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  activeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  activePillText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+  },
+  statusActionsRow: {
+    flexDirection: "row",
+    gap: 6,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    flexWrap: "wrap",
+  },
+  transitionBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+  },
+  transitionBtnText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+    letterSpacing: 0.5,
+  },
+  emptyColumnBox: {
+    padding: 32,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 24,
+  },
+  emptyColumnTitle: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    textTransform: "uppercase",
+  },
+  emptyAssignBtn: {
+    marginTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  emptyAssignText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+  },
 });
 
 export default KanbanScreen;

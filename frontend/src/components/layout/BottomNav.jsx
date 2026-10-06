@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router";
 
 const navItems = [
-  { path: "/dashboard", icon: "dashboard", label: "Command" },
+  { path: "/dashboard", icon: "dashboard", label: "Dashboard" },
   { path: "/today", icon: "event_upcoming", label: "Today" },
   { path: "/kanban", icon: "view_kanban", label: "Kanban" },
   { path: "/calendar", icon: "calendar_today", label: "Calendar" },
@@ -26,7 +26,7 @@ const BottomNav = ({ onOpenMenu, onNewTask }) => {
           <span className="absolute top-0 w-8 h-0.5 bg-primary rounded-full" />
         )}
         <span className="material-symbols-outlined text-[20px]">dashboard</span>
-        <span className="text-[9px] font-mono uppercase tracking-wider mt-0.5">Command</span>
+        <span className="text-[9px] font-mono uppercase tracking-wider mt-0.5">Dashboard</span>
       </Link>
 
       {/* Today */}
@@ -51,7 +51,7 @@ const BottomNav = ({ onOpenMenu, onNewTask }) => {
           <button
             onClick={onNewTask}
             className="w-10 h-10 rounded-full bg-primary text-on-primary shadow-md flex items-center justify-center hover:opacity-90 active:scale-95 transition-all cursor-pointer"
-            title="Create Mandate"
+            title="New Task"
           >
             <span className="material-symbols-outlined text-[22px]">add</span>
           </button>

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -17,7 +18,7 @@ const TaskReflectionScreen = () => {
               style={styles.avatarImg}
             />
           </View>
-          <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '900', letterSpacing: 2, marginLeft: 12 }]}>CORE_OS_V1.0</Text>
+          <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '900', letterSpacing: 2, marginLeft: 12 }]}>MANDATE</Text>
         </View>
         <TouchableOpacity style={styles.iconBtn}>
           <MaterialIcons name="settings" size={24} color={colors.primary} />
@@ -28,8 +29,8 @@ const TaskReflectionScreen = () => {
         
         {/* Screen Title Section */}
         <View style={styles.titleSection}>
-          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 4 }]}>SESSION_ID: 992-X-K</Text>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase' }]}>Post-Op Review</Text>
+          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 4 }]}>TASK RETROSPECTIVE</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase' }]}>Task Review</Text>
         </View>
 
         <View style={styles.mainGrid}>
@@ -37,15 +38,15 @@ const TaskReflectionScreen = () => {
           {/* Efficiency Rating Card */}
           <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, position: 'relative', overflow: 'hidden' }]}>
             <View style={{ position: 'relative', zIndex: 10 }}>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 16 }]}>EFFICIENCY_RATING</Text>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 16 }]}>COMPLETION SCORE</Text>
               <View style={styles.ratingRow}>
                 <Text style={[typography.displayLg, { color: colors.primary, fontSize: 60 }]}>94.2</Text>
                 <View style={[styles.optimalTag, { backgroundColor: 'rgba(60, 227, 106, 0.2)' }]}>
-                  <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer }]}>OPTIMAL</Text>
+                  <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer }]}>ON TRACK</Text>
                 </View>
               </View>
               <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, marginTop: 16 }]}>
-                System performance exceeds baseline benchmarks by 12.4%.
+                Task completed ahead of expected schedule with all subtasks verified.
               </Text>
             </View>
             <View style={styles.bgIconWrapper}>
@@ -55,27 +56,27 @@ const TaskReflectionScreen = () => {
 
           {/* Phase Bar Chart */}
           <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 32 }]}>PHASE_INTENSITY_DISTRIBUTION</Text>
+            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 32 }]}>EFFORT DISTRIBUTION</Text>
             <View style={styles.barChartContainer}>
               <View style={styles.barCol}>
                 <View style={[styles.barFill, { backgroundColor: colors.primary, height: '100%' }]} />
-                <Text style={[typography.labelCaps, { fontSize: 10 }]}>INIT</Text>
+                <Text style={[typography.labelCaps, { fontSize: 10 }]}>PLAN</Text>
               </View>
               <View style={styles.barCol}>
                 <View style={[styles.barFill, { backgroundColor: colors.primary, height: '75%' }]} />
-                <Text style={[typography.labelCaps, { fontSize: 10 }]}>SYNC</Text>
+                <Text style={[typography.labelCaps, { fontSize: 10 }]}>EXEC</Text>
               </View>
               <View style={styles.barCol}>
                 <View style={[styles.barFill, { backgroundColor: colors.primary, height: '50%' }]} />
-                <Text style={[typography.labelCaps, { fontSize: 10 }]}>PROC</Text>
+                <Text style={[typography.labelCaps, { fontSize: 10 }]}>TEST</Text>
               </View>
               <View style={styles.barCol}>
                 <View style={[styles.barFill, { backgroundColor: colors.primary, height: '80%' }]} />
-                <Text style={[typography.labelCaps, { fontSize: 10 }]}>VALI</Text>
+                <Text style={[typography.labelCaps, { fontSize: 10 }]}>REVIEW</Text>
               </View>
               <View style={styles.barCol}>
                 <View style={[styles.barFill, { backgroundColor: colors.outlineVariant, height: '25%' }]} />
-                <Text style={[typography.labelCaps, { fontSize: 10 }]}>IDLE</Text>
+                <Text style={[typography.labelCaps, { fontSize: 10 }]}>DOCS</Text>
               </View>
             </View>
           </View>
@@ -83,15 +84,15 @@ const TaskReflectionScreen = () => {
           {/* Operator Logs */}
           <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.cardHeaderFlex}>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>OPERATOR_LOGS</Text>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>RETROSPECTIVE NOTES</Text>
               <MaterialIcons name="edit-note" size={20} color={colors.onSurfaceVariant} />
             </View>
-            <View style={[styles.quoteBlock, { borderLeftColor: colors.primary }]}>
+            <View style={[styles.quoteBlock, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, borderWidth: 1, borderRadius: 8, padding: 16 }]}>
               <Text style={[typography.bodyMd, { color: colors.onSurface, fontSize: 14, fontStyle: 'italic', lineHeight: 22 }]}>
-                "Minor latency spike detected during SYNC phase. Recalibration of thermal sinks initiated manually. Performance remained within strict industrial tolerance levels."
+                "Completed the sprint milestone with minimal blockers. Handed off deliverables to the design team for final review and sign-off."
               </Text>
               <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontSize: 10, marginTop: 16 }]}>
-                TIMESTAMP: 2024-05-24T14:22:01Z
+                LOGGED: Oct 24, 2024 • 14:22
               </Text>
             </View>
           </View>
@@ -99,28 +100,28 @@ const TaskReflectionScreen = () => {
           {/* Resource Load Metrics */}
           <View style={styles.resourceGrid}>
             <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, flex: 1 }]}>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>CPU_LOAD</Text>
-              <Text style={[typography.headlineLgMobile, { fontSize: 24, fontWeight: 'bold' }]}>42%</Text>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>FOCUS TIME</Text>
+              <Text style={[typography.headlineLgMobile, { fontSize: 24, fontWeight: 'bold' }]}>4.2h</Text>
               <View style={[styles.progressBg, { backgroundColor: colors.surfaceContainerHigh }]}>
-                <View style={[styles.progressFill, { backgroundColor: colors.primary, width: '42%' }]} />
+                <View style={[styles.progressFill, { backgroundColor: colors.primary, width: '70%' }]} />
               </View>
             </View>
             
             <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, flex: 1 }]}>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>THERMAL</Text>
-              <Text style={[typography.headlineLgMobile, { fontSize: 24, fontWeight: 'bold' }]}>58°C</Text>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>ACCURACY</Text>
+              <Text style={[typography.headlineLgMobile, { fontSize: 24, fontWeight: 'bold' }]}>92%</Text>
               <View style={[styles.progressBg, { backgroundColor: colors.surfaceContainerHigh }]}>
-                <View style={[styles.progressFill, { backgroundColor: colors.primary, width: '65%' }]} />
+                <View style={[styles.progressFill, { backgroundColor: colors.primary, width: '92%' }]} />
               </View>
             </View>
           </View>
 
-          {/* Atmospheric Visual Element */}
-          <View style={[styles.atmosphericBox, { backgroundColor: '#000000' }]}>
-            <View style={[styles.telemetryOverlay, { borderColor: 'rgba(255,255,255,0.3)' }]}>
-              <View style={[styles.telemetryTextBg, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)' }]}>
-                <Text style={[typography.labelCaps, { color: '#ffffff', fontSize: 10, letterSpacing: 2 }]}>REALTIME_TELEMETRY_FEED</Text>
-                <Text style={[typography.labelSm, { color: 'rgba(255,255,255,0.4)', fontSize: 8, marginTop: 4 }]}>ENCRYPTED DATA STREAM_021</Text>
+          {/* Activity Visual Element */}
+          <View style={[styles.atmosphericBox, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderWidth: 1 }]}>
+            <View style={[styles.telemetryOverlay, { borderColor: colors.outlineVariant }]}>
+              <View style={[styles.telemetryTextBg, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+                <Text style={[typography.labelCaps, { color: colors.primary, fontSize: 10, letterSpacing: 2 }]}>ACTIVITY VERIFIED</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 8, marginTop: 4 }]}>ALL CRITERIA SATISFIED</Text>
               </View>
             </View>
           </View>
@@ -140,16 +141,16 @@ const TaskReflectionScreen = () => {
           <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginTop: 4, fontSize: 10 }]}>DASHBOARD</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.navItem, { borderRightColor: colors.outlineVariant }]}>
-          <MaterialIcons name="inventory-2" size={24} color={colors.onSurfaceVariant} />
-          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginTop: 4, fontSize: 10 }]}>ASSETS</Text>
+          <MaterialIcons name="folder-open" size={24} color={colors.onSurfaceVariant} />
+          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginTop: 4, fontSize: 10 }]}>PROJECTS</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.navItem, { borderRightColor: colors.outlineVariant }]}>
-          <MaterialIcons name="notifications-active" size={24} color={colors.onSurfaceVariant} />
+          <MaterialIcons name="notifications-none" size={24} color={colors.onSurfaceVariant} />
           <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginTop: 4, fontSize: 10 }]}>ALERTS</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.navItemActive, { backgroundColor: colors.primary, borderLeftColor: colors.outline, borderRightColor: colors.outline }]}>
-          <MaterialIcons name="settings-input-component" size={24} color={colors.onPrimary} />
-          <Text style={[typography.labelCaps, { color: colors.onPrimary, marginTop: 4, fontSize: 10 }]}>SYSTEM</Text>
+          <MaterialIcons name="settings" size={24} color={colors.onPrimary} />
+          <Text style={[typography.labelCaps, { color: colors.onPrimary, marginTop: 4, fontSize: 10 }]}>SETTINGS</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -206,6 +207,7 @@ const styles = StyleSheet.create({
   },
   bentoCard: {
     borderWidth: 1,
+    borderRadius: 12,
     padding: 32,
   },
   ratingRow: {
@@ -216,7 +218,7 @@ const styles = StyleSheet.create({
   optimalTag: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   bgIconWrapper: {
     position: 'absolute',
@@ -246,8 +248,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   quoteBlock: {
-    borderLeftWidth: 2,
-    paddingLeft: 16,
+    marginBottom: 8,
   },
   resourceGrid: {
     flexDirection: 'row',
@@ -266,6 +267,7 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
     overflow: 'hidden',
+    borderRadius: 12,
   },
   telemetryOverlay: {
     position: 'absolute',
@@ -274,6 +276,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     borderWidth: 1,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -281,6 +284,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderWidth: 1,
+    borderRadius: 8,
     alignItems: 'center',
   },
   fab: {
@@ -289,7 +293,7 @@ const styles = StyleSheet.create({
     right: 24,
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,

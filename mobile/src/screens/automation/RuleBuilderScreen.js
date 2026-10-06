@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
+import AppHeader from "../../components/layout/AppHeader";
 
 const RuleBuilderScreen = ({ navigation }) => {
   const { colors, typography } = useTheme();
@@ -15,18 +15,7 @@ const RuleBuilderScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
-        <View style={styles.headerLeft}>
-          <MaterialIcons name="terminal" size={20} color={colors.primary} />
-          <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2, marginLeft: 8 }]}>
-            MANDATE OS
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.iconButton}>
-          <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+      <AppHeader title="RULE BUILDER" showBack={true} navigation={navigation} />
 
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -175,7 +164,7 @@ const RuleBuilderScreen = ({ navigation }) => {
                 <View style={[styles.logicNode, { backgroundColor: colors.surfaceDim, borderColor: colors.background }]} />
                 <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>CONDITION</Text>
                 <View style={[styles.logicBox, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
-                  <Text style={[typography.labelSm, { color: colors.primary }]}>PAYLOAD.SIZE > 512KB</Text>
+                  <Text style={[typography.labelSm, { color: colors.primary }]}>{'PAYLOAD.SIZE > 512KB'}</Text>
                   <MaterialIcons name="edit" size={20} color={colors.secondary} />
                 </View>
               </View>
@@ -184,20 +173,22 @@ const RuleBuilderScreen = ({ navigation }) => {
               <View style={[styles.logicStep, { borderLeftColor: 'transparent' }]}>
                 <View style={[styles.logicNode, { backgroundColor: colors.tertiary, borderColor: colors.background }]} />
                 <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>ACTION EXECUTION</Text>
-                <View style={styles.terminalBox}>
-                  <View style={[styles.terminalHeader, { borderBottomColor: colors.onSecondaryFixedVariant }]}>
+                <View style={[styles.terminalBox, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderWidth: 1 }]}>
+                  <View style={[styles.terminalHeader, { borderBottomColor: colors.outlineVariant }]}>
                     <View style={styles.macButtons}>
                       <View style={[styles.macBtn, { backgroundColor: '#ef4444' }]} />
                       <View style={[styles.macBtn, { backgroundColor: '#eab308' }]} />
                       <View style={[styles.macBtn, { backgroundColor: '#22c55e' }]} />
                     </View>
-                    <Text style={[{ fontFamily: 'JetBrainsMono-Regular', fontSize: 10, color: 'rgba(255,255,255,0.5)' }]}>main.protocol.sh</Text>
+                    <Text style={[{ fontFamily: 'JetBrainsMono-Regular', fontSize: 10, color: colors.secondary }]}>main.protocol.sh</Text>
                   </View>
-                  <Text style={[{ fontFamily: 'JetBrainsMono-Regular', fontSize: 12, color: '#fff', lineHeight: 20 }]}>
-                    <Text style={{ color: '#fff' }}>if </Text>
-                    (event.payload_size > <Text style={{ color: colors.tertiaryFixedDim }}>524288</Text>) {'{\n'}
+                  <Text style={[{ fontFamily: 'JetBrainsMono-Regular', fontSize: 12, color: colors.primary, lineHeight: 20 }]}>
+                    <Text style={{ color: colors.primary }}>if </Text>
+                    {'(event.payload_size > '}
+                    <Text style={{ color: colors.tertiaryFixedDim }}>524288</Text>
+                    {') {\n'}
                     <Text style={{ color: colors.secondaryFixedDim }}>  // Initialize upstream sync{'\n'}</Text>
-                    {'  '}await <Text style={{ color: '#fff' }}>dispatch</Text>(<Text style={{ color: colors.tertiaryFixedDim }}>'SYNC_L2'</Text>, {'{\n'}
+                    {'  '}await <Text style={{ color: colors.primary }}>dispatch</Text>(<Text style={{ color: colors.tertiaryFixedDim }}>'SYNC_L2'</Text>, {'{\n'}
                     {'    '}origin: event.source_id,{'\n'}
                     {'    '}mode: <Text style={{ color: colors.tertiaryFixedDim }}>'SECURE'</Text>{'\n'}
                     {'  }'});{'\n'}
@@ -297,14 +288,14 @@ const styles = StyleSheet.create({
   },
   segmentedControl: {
     flexDirection: 'row',
-    borderRadius: 24,
+    borderRadius: 10,
     padding: 4,
   },
   segmentBtn: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: 12,
-    borderRadius: 20,
+    borderRadius: 8,
   },
   paramsGrid: {
     flexDirection: 'row',
@@ -314,7 +305,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     borderWidth: 1,
-    borderRadius: 0, // bento
+    borderRadius: 12, // squircle bento
   },
   valRow: {
     flexDirection: 'row',
@@ -344,7 +335,7 @@ const styles = StyleSheet.create({
   stepperBtn: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -353,7 +344,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    borderRadius: 0,
+    borderRadius: 12,
   },
   logicSequence: {
     paddingLeft: 4,
@@ -379,12 +370,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderWidth: 1,
-    borderRadius: 0,
+    borderRadius: 12,
   },
   terminalBox: {
-    backgroundColor: '#1c1b1b',
     padding: 16,
-    borderRadius: 0,
+    borderRadius: 12,
   },
   terminalHeader: {
     flexDirection: 'row',
@@ -407,8 +397,8 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   deployBtn: {
-    paddingVertical: 24,
-    borderRadius: 32,
+    paddingVertical: 18,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   }

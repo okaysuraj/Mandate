@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, RefreshControl 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
+import AppHeader from "../../components/layout/AppHeader";
 import api from "../../services/api";
-import { useDataStore } from "../../store/useDataStore";
 
 const DailyPlanningScreen = ({ navigation }) => {
-  const { colors, typography, spacing } = useTheme();
-  const { tasks } = useDataStore((state) => state);
+  const { colors, typography } = useTheme();
   const [suggestions, setSuggestions] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -32,203 +30,106 @@ const DailyPlanningScreen = ({ navigation }) => {
     setRefreshing(false);
   };
 
+  const focusBlocks = [
+    { time: "09:00 - 11:30", label: "Deep Work: Core Architecture Sprint" },
+    { time: "13:00 - 14:00", label: "Admin & Async Slack Reviews" },
+    { time: "15:30 - 17:00", label: "Code Review & Quality Gateways" },
+  ];
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.background }]}>
-        <View style={styles.headerLeft}>
-          <View style={[styles.avatar, { backgroundColor: colors.surfaceContainer }]}>
-            <Image 
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBjNe21TYsXpuojrX1tJppz2eeBkaFsG-XeLpYxqCzqMPwMdJvG3X4M3qpoYsx8_jAfkbmAuR4s1JxGTsXmt6_32m807pjHdNoD4-eONbXOOIqyA_r4QmPLhQpLGLpOKjonig9uUXUHnSn6AFzbRpvTswKs1sGYOJ1gd9pXXewV7e28f2BNkJ6844UzvHSHdEJCjMy8i4olFQL5v20wGw3jWHT0Rijz48IQU7FQFTYzxy5TPJWcOxJBeA' }}
-              style={{ width: '100%', height: '100%' }}
-            />
+      <AppHeader title="DAILY PLANNING" navigation={navigation} />
+
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      >
+        {/* Header Section matching web DailyPlanningPage.jsx */}
+        <View style={styles.pageHeader}>
+          <View style={styles.breadcrumbRow}>
+            <View style={[styles.brandDot, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.breadcrumbText, { color: colors.onSurfaceVariant }]}>
+              SCHEDULE &amp; TIME-BOXING
+            </Text>
           </View>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 12 }]}>
-            MANDATE
+          <Text style={[styles.title, { color: colors.onSurface }]}>
+            Daily Planning
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
+            Map out time-boxed focus windows, sync calendar commitments, and establish top priorities.
           </Text>
         </View>
-        <TouchableOpacity style={styles.iconButton}>
-          <MaterialIcons name="smart-toy" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* Terminal Briefing Section */}
-        <View style={styles.briefingSection}>
-          <View style={styles.briefingHeader}>
-            <View>
-              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>SYSTEM_STATUS</Text>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>Daily Briefing</Text>
-            </View>
-            <View style={[styles.optimizedBadge, { backgroundColor: `${colors.tertiaryFixedDim}33` }]}>
-              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>OPTIMIZED</Text>
+        {/* Time-Boxed Focus Blocks Module */}
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <View style={styles.cardHeader}>
+            <Text style={[styles.cardTitle, { color: colors.onSurface }]}>
+              TIME-BOXED FOCUS BLOCKS
+            </Text>
+            <View style={[styles.countBadge, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+              <Text style={[styles.countBadgeText, { color: colors.primary }]}>
+                {focusBlocks.length} BLOCKS
+              </Text>
             </View>
           </View>
 
-          {/* Dashboard Summary Bento */}
-          <View style={styles.bentoGrid}>
-            {/* Throughput Card */}
-            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <View style={styles.bentoCardHeader}>
-                <Text style={[typography.labelCaps, { color: colors.secondary }]}>THROUGHPUT</Text>
-                <MaterialIcons name="speed" size={20} color={colors.primary} />
+          <View style={styles.blocksList}>
+            {focusBlocks.map((item) => (
+              <View 
+                key={item.time} 
+                style={[styles.blockItem, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}
+              >
+                <Text style={[styles.blockTime, { color: colors.primary }]}>{item.time}</Text>
+                <Text style={[styles.blockLabel, { color: colors.onSurface }]}>{item.label}</Text>
               </View>
-              <View style={styles.bentoCardBody}>
-                <Text style={[{ fontFamily: 'HankenGrotesk-ExtraBold', fontSize: 36, color: colors.primary }]}>94.2%</Text>
-                <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginTop: 4 }]}>+2.4% vs Yesterday</Text>
-              </View>
-            </View>
-
-            {/* Switching Risk Card (Histogram) */}
-            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <View style={styles.bentoCardHeader}>
-                <Text style={[typography.labelCaps, { color: colors.secondary }]}>SWITCHING_RISK</Text>
-                <MaterialIcons name="warning" size={20} color={colors.error} />
-              </View>
-              <View style={styles.histogramContainer}>
-                <View style={[styles.histoBar, { height: '20%', backgroundColor: colors.surfaceDim }]} />
-                <View style={[styles.histoBar, { height: '40%', backgroundColor: colors.surfaceDim }]} />
-                <View style={[styles.histoBar, { height: '30%', backgroundColor: colors.surfaceDim }]} />
-                <View style={[styles.histoBar, { height: '80%', backgroundColor: colors.primary }]} />
-                <View style={[styles.histoBar, { height: '95%', backgroundColor: colors.primary }]} />
-                <View style={[styles.histoBar, { height: '60%', backgroundColor: colors.error }]} />
-                <View style={[styles.histoBar, { height: '20%', backgroundColor: colors.surfaceDim }]} />
-                <View style={[styles.histoBar, { height: '15%', backgroundColor: colors.surfaceDim }]} />
-              </View>
-              <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 8 }]}>Critical density peak: 14:00 — 16:00</Text>
-            </View>
+            ))}
           </View>
         </View>
 
-        {/* Suggested Focus Windows */}
-        <View style={styles.windowsSection}>
-          <View style={styles.windowsHeader}>
-            <Text style={[typography.labelCaps, { color: colors.secondary }]}>FOCUS_WINDOWS_STREAMS</Text>
-            <TouchableOpacity>
-              <Text style={[typography.labelSm, { color: colors.primary, textDecorationLine: 'underline' }]}>RECALCULATE</Text>
-            </TouchableOpacity>
+        {/* Calendar & Cadence Sync Module */}
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <View style={styles.cardHeader}>
+            <Text style={[styles.cardTitle, { color: colors.onSurface }]}>
+              CALENDAR &amp; CADENCE SYNC
+            </Text>
+            <MaterialIcons name="sync" size={20} color={colors.primary} />
           </View>
-
-          <View style={styles.windowsList}>
-            {/* Window 1 */}
-            <View style={[styles.windowItem, { backgroundColor: colors.surfaceContainerLowest, borderLeftColor: colors.primary }]}>
-              <View style={[styles.windowTime, { borderRightColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700', fontSize: 14 }]}>09:00</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>START</Text>
-              </View>
-              <View style={styles.windowContent}>
-                <View style={styles.windowRow1}>
-                  <View style={[styles.tagBadge, { backgroundColor: colors.primary }]}>
-                    <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 10 }]}>ALPHA</Text>
-                  </View>
-                  <MaterialIcons name="more-vert" size={16} color={colors.secondary} />
-                </View>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Strategic Kernel Review</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>Deep Work Block • No Comms</Text>
-              </View>
-              <View style={styles.windowIcon}>
-                <MaterialIcons name="bolt" size={20} color={colors.primary} />
-              </View>
-            </View>
-
-            {/* Window 2 */}
-            <View style={[styles.windowItem, { backgroundColor: colors.surfaceContainerLowest, borderLeftColor: colors.tertiaryFixedDim }]}>
-              <View style={[styles.windowTime, { borderRightColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700', fontSize: 14 }]}>11:30</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>START</Text>
-              </View>
-              <View style={styles.windowContent}>
-                <View style={styles.windowRow1}>
-                  <View style={[styles.tagBadge, { backgroundColor: colors.tertiaryContainer }]}>
-                    <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, fontSize: 10 }]}>HIGH FLOW</Text>
-                  </View>
-                  <MaterialIcons name="more-vert" size={16} color={colors.secondary} />
-                </View>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Systems Integration Dev</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>Terminal Locked • Priority A</Text>
-              </View>
-              <View style={styles.windowIcon}>
-                <MaterialIcons name="water-drop" size={20} color={colors.onTertiaryContainer} />
-              </View>
-            </View>
-
-            {/* Window 3 */}
-            <View style={[styles.windowItem, { backgroundColor: colors.surfaceContainerLowest, borderLeftColor: colors.secondary }]}>
-              <View style={[styles.windowTime, { borderRightColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700', fontSize: 14 }]}>14:00</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>START</Text>
-              </View>
-              <View style={styles.windowContent}>
-                <View style={styles.windowRow1}>
-                  <View style={[styles.tagBadge, { backgroundColor: colors.secondaryContainer }]}>
-                    <Text style={[typography.labelCaps, { color: colors.onSecondaryContainer, fontSize: 10 }]}>BETA</Text>
-                  </View>
-                  <MaterialIcons name="more-vert" size={16} color={colors.secondary} />
-                </View>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Stakeholder Sync</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>External Comms Allowed</Text>
-              </View>
-              <View style={styles.windowIcon}>
-                <MaterialIcons name="groups" size={20} color={colors.secondary} />
-              </View>
-            </View>
-
-            {/* Window 4 */}
-            <View style={[styles.windowItem, { backgroundColor: colors.surfaceContainerLowest, borderLeftColor: colors.tertiaryFixedDim, opacity: 0.6 }]}>
-              <View style={[styles.windowTime, { borderRightColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700', fontSize: 14 }]}>16:30</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>START</Text>
-              </View>
-              <View style={styles.windowContent}>
-                <View style={styles.windowRow1}>
-                  <View style={[styles.tagBadge, { backgroundColor: colors.tertiaryContainer }]}>
-                    <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, fontSize: 10 }]}>HIGH FLOW</Text>
-                  </View>
-                  <MaterialIcons name="lock" size={16} color={colors.secondary} />
-                </View>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Documentation Sprint</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>Pending completion of Slot 2</Text>
-              </View>
-              <View style={styles.windowIcon}>
-                <MaterialIcons name="pending" size={20} color={colors.secondary} />
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Dynamic Ambient Visualization */}
-        <View style={[styles.ambientBlock, { backgroundColor: colors.primaryContainer, borderColor: colors.outline, marginBottom: 24 }]}>
-          <View style={{ flex: 1, justifyContent: 'flex-end', padding: 16 }}>
-            <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, fontSize: 10 }]}>COGNITIVE_LOAD_STREAM</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-              <View style={[styles.dot, { backgroundColor: colors.tertiaryFixedDim }]} />
-              <Text style={[typography.labelSm, { color: colors.primaryFixedDim, textTransform: 'uppercase', letterSpacing: 2, marginLeft: 8 }]}>STEADY STATE</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Enter Lock-In Protocol Action Button */}
-        <TouchableOpacity 
-          style={{
-            backgroundColor: colors.primary,
-            paddingVertical: 16,
-            borderRadius: 8,
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'row',
-            gap: 8,
-            marginBottom: 32
-          }}
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate('LockIn')}
-        >
-          <MaterialIcons name="lock" size={20} color={colors.onPrimary} />
-          <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2, fontSize: 12 }]}>
-            ENTER LOCK-IN PROTOCOL
+          <Text style={[styles.cadenceDescription, { color: colors.onSurfaceVariant }]}>
+            Your top 3 strategic priorities are harmoniously scheduled with your external calendar, allocating zero conflicting meetings during designated flow state windows.
           </Text>
-        </TouchableOpacity>
 
+          <TouchableOpacity
+            onPress={() => navigation?.navigate("Calendar")}
+            style={[styles.calendarBtn, { backgroundColor: colors.primary }]}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.calendarBtnText, { color: colors.onPrimary }]}>
+              OPEN FULL CALENDAR
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Throughput & Switching Risk Telemetry */}
+        <View style={styles.telemetryRow}>
+          <View style={[styles.miniCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <View style={styles.miniCardHeader}>
+              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>THROUGHPUT</Text>
+              <MaterialIcons name="speed" size={16} color={colors.primary} />
+            </View>
+            <Text style={[styles.bigStat, { color: colors.primary }]}>94.2%</Text>
+            <Text style={[styles.subStat, { color: colors.tertiary }]}>+2.4% vs Yesterday</Text>
+          </View>
+
+          <View style={[styles.miniCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <View style={styles.miniCardHeader}>
+              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>OPTIMIZATION</Text>
+              <MaterialIcons name="bolt" size={16} color={colors.primary} />
+            </View>
+            <Text style={[styles.bigStat, { color: colors.primary }]}>READY</Text>
+            <Text style={[styles.subStat, { color: colors.onSurfaceVariant }]}>Peak Flow: 14:00 - 16:00</Text>
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -236,129 +137,30 @@ const DailyPlanningScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 20,
-  },
-  scrollContent: {
-    padding: 24,
-    paddingBottom: 64,
-  },
-  briefingSection: {
-    marginBottom: 32,
-  },
-  briefingHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginBottom: 16,
-  },
-  optimizedBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  bentoGrid: {
-    gap: 16,
-  },
-  bentoCard: {
-    padding: 24,
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  bentoCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  histogramContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: 64,
-    width: '100%',
-  },
-  histoBar: {
-    flex: 1,
-    marginHorizontal: 2,
-    borderTopLeftRadius: 2,
-    borderTopRightRadius: 2,
-  },
-  windowsSection: {
-    marginBottom: 32,
-  },
-  windowsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  windowsList: {
-    gap: 8,
-  },
-  windowItem: {
-    flexDirection: 'row',
-    borderLeftWidth: 4,
-    padding: 16,
-  },
-  windowTime: {
-    alignItems: 'center',
-    minWidth: 56,
-    paddingRight: 16,
-    borderRightWidth: 1,
-  },
-  windowContent: {
-    flex: 1,
-    paddingLeft: 16,
-  },
-  windowRow1: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  tagBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 16,
-  },
-  windowIcon: {
-    alignItems: 'flex-end',
-    justifyContent: 'flex-start',
-  },
-  ambientBlock: {
-    height: 128,
-    borderRadius: 8,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  }
+  scrollContent: { padding: 16, paddingBottom: 40 },
+  pageHeader: { marginBottom: 16 },
+  breadcrumbRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+  brandDot: { width: 8, height: 8, borderRadius: 4 },
+  breadcrumbText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase" },
+  title: { fontFamily: "HankenGrotesk-Bold", fontSize: 24, textTransform: "uppercase", letterSpacing: -0.5 },
+  subtitle: { fontFamily: "HankenGrotesk-Regular", fontSize: 13, marginTop: 4, lineHeight: 18 },
+  card: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 16 },
+  cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  cardTitle: { fontFamily: "JetBrainsMono-Bold", fontSize: 12, letterSpacing: 1, textTransform: "uppercase" },
+  countBadge: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 8, paddingVertical: 2 },
+  countBadgeText: { fontFamily: "JetBrainsMono-Bold", fontSize: 10 },
+  blocksList: { gap: 10 },
+  blockItem: { borderWidth: 1, borderRadius: 10, padding: 12 },
+  blockTime: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, textTransform: "uppercase", marginBottom: 4 },
+  blockLabel: { fontFamily: "HankenGrotesk-Bold", fontSize: 13 },
+  cadenceDescription: { fontFamily: "HankenGrotesk-Regular", fontSize: 13, lineHeight: 19, marginBottom: 16 },
+  calendarBtn: { width: "100%", paddingVertical: 12, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  calendarBtnText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
+  telemetryRow: { flexDirection: "row", gap: 12 },
+  miniCard: { flex: 1, borderWidth: 1, borderRadius: 14, padding: 14 },
+  miniCardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+  bigStat: { fontFamily: "HankenGrotesk-Bold", fontSize: 24 },
+  subStat: { fontFamily: "JetBrainsMono-Regular", fontSize: 10, marginTop: 4 },
 });
 
 export default DailyPlanningScreen;

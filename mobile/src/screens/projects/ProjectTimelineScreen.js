@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -13,10 +14,10 @@ const ProjectTimelineScreen = ({ navigation }) => {
       {/* TopAppBar */}
       <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.outlineVariant }]}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.iconBtn}>
-            <MaterialIcons name="grid-view" size={24} color={colors.primary} />
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation?.goBack?.()}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 8 }]}>PROMETHEUS</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 8 }]}>TIMELINE</Text>
         </View>
         <View style={[styles.avatarContainer, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerHigh }]}>
           <Image 
@@ -31,7 +32,7 @@ const ProjectTimelineScreen = ({ navigation }) => {
         {/* Section Header & View Toggle */}
         <View style={styles.headerSection}>
           <View>
-            <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>OPERATIONAL ROADMAP</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>PROJECT ROADMAP</Text>
             <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>Project Timeline</Text>
           </View>
 
@@ -85,11 +86,11 @@ const ProjectTimelineScreen = ({ navigation }) => {
                   <Text style={[typography.labelCaps, { fontSize: 10, color: colors.onTertiaryContainer }]}>DONE</Text>
                 </View>
               </View>
-              <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary, marginBottom: 16 }]}>Foundation of the distributed ledger and security protocols.</Text>
+              <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary, marginBottom: 16 }]}>Foundation of the core application architecture and security standards.</Text>
               
               <View style={styles.subtaskList}>
                 <View style={styles.subtaskItem}>
-                  <Text style={[typography.labelSm, { fontSize: 12, color: colors.secondary }]}>Protocol v1.0</Text>
+                  <Text style={[typography.labelSm, { fontSize: 12, color: colors.secondary }]}>Release v1.0</Text>
                   <Text style={[typography.labelSm, { fontSize: 12, fontWeight: 'bold', color: colors.primary }]}>100%</Text>
                 </View>
                 <View style={styles.subtaskItem}>
@@ -104,32 +105,32 @@ const ProjectTimelineScreen = ({ navigation }) => {
           <View style={styles.timelineItem}>
             <View style={[styles.timelineDotWrapper, { backgroundColor: colors.background }]}>
               <View style={[styles.timelineDotActive, { backgroundColor: colors.primary, borderColor: colors.surface }]}>
-                <View style={styles.timelineDotActiveInner} />
+                <View style={[styles.timelineDotActiveInner, { backgroundColor: colors.surface }]} />
               </View>
             </View>
-            <View style={[styles.timelineCard, { backgroundColor: '#ffffff', borderColor: colors.primary, borderWidth: 2 }]}>
+            <View style={[styles.timelineCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.primary, borderWidth: 1 }]}>
               <View style={styles.timelineCardHeader}>
-                <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>Mesh Node Deployment</Text>
+                <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>Infrastructure Deployment</Text>
                 <View style={[styles.badge, { backgroundColor: colors.primary }]}>
                   <Text style={[typography.labelCaps, { fontSize: 10, color: colors.onPrimary }]}>ACTIVE</Text>
                 </View>
               </View>
-              <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary, marginBottom: 16 }]}>Scaling the physical node infrastructure across initial test zones.</Text>
+              <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary, marginBottom: 16 }]}>Scaling backend service infrastructure and staging environments.</Text>
               
               <View style={styles.statsGrid}>
                 <View style={[styles.statBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                  <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary, marginBottom: 4 }]}>NODES ONLINE</Text>
+                  <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary, marginBottom: 4 }]}>SERVICES ONLINE</Text>
                   <Text style={[typography.headlineLgMobile, { fontSize: 20, color: colors.primary }]}>412</Text>
                 </View>
                 <View style={[styles.statBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                  <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary, marginBottom: 4 }]}>STABILITY</Text>
+                  <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary, marginBottom: 4 }]}>UPTIME</Text>
                   <Text style={[typography.headlineLgMobile, { fontSize: 20, color: colors.primary }]}>99.4%</Text>
                 </View>
               </View>
 
               <View style={[styles.expansionSection, { borderTopColor: colors.outlineVariant }]}>
                 <View style={styles.expansionHeader}>
-                  <Text style={[typography.labelSm, { fontSize: 12, fontWeight: 'bold', color: colors.primary, textTransform: 'uppercase' }]}>Zone B Expansion</Text>
+                  <Text style={[typography.labelSm, { fontSize: 12, fontWeight: 'bold', color: colors.primary, textTransform: 'uppercase' }]}>Staging Environment</Text>
                   <Text style={[typography.labelSm, { fontSize: 12, color: colors.primary }]}>72%</Text>
                 </View>
                 <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainerHigh }]}>
@@ -146,12 +147,12 @@ const ProjectTimelineScreen = ({ navigation }) => {
             </View>
             <View style={[styles.timelineCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, opacity: 0.7 }]}>
               <View style={styles.timelineCardHeader}>
-                <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>Neural API Integration</Text>
+                <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>API Integration</Text>
                 <View style={[styles.badge, { backgroundColor: colors.surfaceContainerHigh }]}>
                   <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary }]}>UPCOMING</Text>
                 </View>
               </View>
-              <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary, marginBottom: 16 }]}>Automated system interfacing for third-party neural processing nodes.</Text>
+              <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary, marginBottom: 16 }]}>Automated integration and webhook syncing for external workspace services.</Text>
               
               <View style={styles.upcomingFooter}>
                 <View style={styles.avatarRow}>
@@ -162,7 +163,7 @@ const ProjectTimelineScreen = ({ navigation }) => {
                     />
                   </View>
                   <View style={[styles.smallAvatarContainer, { backgroundColor: colors.primary, borderColor: colors.surface, marginLeft: -8, alignItems: 'center', justifyContent: 'center' }]}>
-                    <Text style={{ fontSize: 8, fontWeight: 'bold', color: '#ffffff' }}>+3</Text>
+                    <Text style={{ fontSize: 8, fontWeight: 'bold', color: colors.onPrimary }}>+3</Text>
                   </View>
                 </View>
                 <Text style={[typography.labelSm, { fontSize: 11, color: colors.secondary }]}>Scheduled: Jan 12</Text>
@@ -177,12 +178,12 @@ const ProjectTimelineScreen = ({ navigation }) => {
             </View>
             <View style={[styles.timelineCard, { backgroundColor: colors.surface, borderColor: colors.outlineVariant, opacity: 0.7 }]}>
               <View style={styles.timelineCardHeader}>
-                <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>Public Beta Phase</Text>
+                <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary }]}>Beta Testing Phase</Text>
                 <View style={[styles.badge, { backgroundColor: colors.surfaceContainerHigh }]}>
                   <Text style={[typography.labelCaps, { fontSize: 10, color: colors.secondary }]}>Q1 2024</Text>
                 </View>
               </View>
-              <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary }]}>Full scale network stress test and initial public validator onboarding.</Text>
+              <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary }]}>Full-scale system performance review and initial beta customer onboarding.</Text>
             </View>
           </View>
 
@@ -265,18 +266,18 @@ const styles = StyleSheet.create({
   },
   toggleContainer: {
     flexDirection: 'row',
-    borderRadius: 20,
+    borderRadius: 10,
     padding: 4,
     borderWidth: 1,
   },
   toggleBtn: {
     paddingHorizontal: 16,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 8,
   },
   progressCard: {
     borderWidth: 1,
-    borderRadius: 16, // rounded-lg
+    borderRadius: 12, // squircle
     padding: 32, // p-lg
     marginBottom: 32,
     gap: 16, // gap-md
@@ -347,7 +348,6 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#ffffff',
   },
   timelineDotUpcoming: {
     width: 16,
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   },
   timelineCard: {
     borderWidth: 1,
-    borderRadius: 16, // rounded-lg
+    borderRadius: 12, // squircle
     padding: 16, // p-md
   },
   timelineCardHeader: {
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 16,
+    borderRadius: 8,
   },
   subtaskList: {
     gap: 8,
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     bottom: 96,
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,

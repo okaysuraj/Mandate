@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -54,7 +55,7 @@ const SyncConflictResolutionScreen = () => {
               </View>
             </View>
 
-            <View style={[styles.bentoModule, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoModule, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.metaGrid}>
                 <View style={styles.metaItem}>
                   <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>SOURCE ID</Text>
@@ -108,7 +109,7 @@ const SyncConflictResolutionScreen = () => {
               </View>
             </View>
 
-            <View style={[styles.bentoModule, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoModule, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.metaGrid}>
                 <View style={styles.metaItem}>
                   <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>SOURCE ID</Text>
@@ -146,7 +147,7 @@ const SyncConflictResolutionScreen = () => {
 
         {/* Diff Summary */}
         <View style={styles.diffSummaryContainer}>
-          <View style={[styles.diffSummaryBox, { backgroundColor: colors.surfaceContainerHigh, borderLeftColor: colors.primary }]}>
+          <View style={[styles.diffSummaryBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: 16 }]}>CONFLICT SUMMARY</Text>
             
             <View style={styles.diffList}>
@@ -280,6 +281,7 @@ const styles = StyleSheet.create({
   },
   jsonBox: {
     borderWidth: 1,
+    borderRadius: 8,
     padding: 16,
     marginTop: 8,
   },
@@ -289,6 +291,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     paddingHorizontal: 32,
+    borderRadius: 12,
   },
   resolveBtnSecondary: {
     flexDirection: 'row',
@@ -296,6 +299,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     paddingHorizontal: 32,
+    borderRadius: 12,
     borderWidth: 1,
   },
   vsDividerContainer: {
@@ -321,7 +325,8 @@ const styles = StyleSheet.create({
   },
   diffSummaryBox: {
     padding: 32,
-    borderLeftWidth: 4,
+    borderRadius: 12,
+    borderWidth: 1,
   },
   diffList: {
     gap: 8,

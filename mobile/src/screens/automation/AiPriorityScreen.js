@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Animated, Easing 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Animated, Easing } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 import { useDataStore } from "../../store/useDataStore";
@@ -103,13 +102,13 @@ const AiPriorityScreen = ({ navigation }) => {
             <View>
               <View style={styles.warningHeader}>
                 <MaterialIcons name="warning" size={20} color={colors.error} />
-                <Text style={[typography.labelCaps, { color: '#fff', marginLeft: 8 }]}>URGENT ATTENTION</Text>
+                <Text style={[typography.labelCaps, { color: colors.onPrimary, marginLeft: 8 }]}>URGENT ATTENTION</Text>
               </View>
               <Text style={[typography.bodyMd, { color: colors.primaryFixedDim, lineHeight: 24 }]}>
                 You have {urgentTasks.length} urgent task(s) pending. Failure to clear may result in bottleneck accumulation.
               </Text>
             </View>
-            <TouchableOpacity onPress={() => navigation.navigate("Kanban")} style={[styles.executeBtn, { backgroundColor: '#fff' }]} activeOpacity={0.9}>
+            <TouchableOpacity onPress={() => navigation.navigate("Kanban")} style={[styles.executeBtn, { backgroundColor: colors.surface }]} activeOpacity={0.9}>
               <Text style={[typography.labelCaps, { color: colors.primary }]}>TRIAGE URGENT TASKS</Text>
             </TouchableOpacity>
           </View>
@@ -151,7 +150,7 @@ const AiPriorityScreen = ({ navigation }) => {
             <Text style={[typography.labelSm, { color: colors.secondary, paddingVertical: 16 }]}>All critical paths are clear.</Text>
           ) : (
             allCritical.slice(0, 5).map(task => (
-              <TouchableOpacity key={task._id} style={[styles.triageItem, { backgroundColor: '#fff', borderColor: colors.outlineVariant }]} activeOpacity={0.9}>
+              <TouchableOpacity key={task._id} style={[styles.triageItem, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]} activeOpacity={0.9}>
                 <View style={styles.triageItemLeft}>
                   <View style={[styles.triageDot, { backgroundColor: task.priority === 'urgent' ? colors.error : colors.tertiaryFixedDim }]} />
                   <View style={{ flex: 1, paddingRight: 8 }}>
@@ -246,7 +245,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 4, 
+    borderRadius: 12, 
     marginTop: 32,
   },
   resourceRow: {
@@ -282,7 +281,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     marginBottom: 8,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   triageItemLeft: {
     flexDirection: 'row',

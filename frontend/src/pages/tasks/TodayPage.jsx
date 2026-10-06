@@ -67,15 +67,15 @@ const TodayPage = () => {
                 Status: {focusTask ? "Ready" : "Idle"}
               </span>
               <span className="text-on-surface-variant font-mono text-xs uppercase tracking-wider px-2 py-0.5 bg-surface-container rounded border border-outline-variant">
-                Ref: PROTO-SEC-{refCode}
+                Task #{refCode}
               </span>
             </div>
             <div className="space-y-2 max-w-2xl">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight uppercase tracking-tight text-on-surface">
-                {focusTask ? focusTask.title : "NO ACTIVE MANDATE"}
+                {focusTask ? focusTask.title : "NO ACTIVE TASK"}
               </h1>
               <p className="text-on-surface-variant text-sm sm:text-base leading-relaxed line-clamp-3">
-                {focusTask ? (focusTask.description || "Execute strategic directive across relevant subsystem components. Awaiting operator initialization.") : "System is currently idling. All core objectives have been satisfied for the current cycle."}
+                {focusTask ? (focusTask.description || "Focus on your most important task for today, or select one from your task list.") : "All clear! You have completed all scheduled tasks for today."}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -105,20 +105,20 @@ const TodayPage = () => {
           </div>
         </div>
 
-        {/* SCHEDULED PROTOCOLS */}
+        {/* SCHEDULED TASKS */}
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-outline-variant pb-3">
             <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2 uppercase tracking-tight text-on-surface">
               <span className="material-symbols-outlined text-primary">schedule</span>
-              Scheduled Protocols
+              Today's Schedule
             </h2>
             <span className="text-xs font-mono font-medium text-on-surface-variant">{dayStr}</span>
           </div>
           <div className="border border-outline-variant divide-y divide-outline-variant overflow-hidden rounded-xl bg-surface-container-lowest shadow-sm">
             {loading && activeTasks.length === 0 ? (
-              <div className="p-8 text-center font-mono text-xs uppercase tracking-wider text-on-surface-variant">LOADING DIRECTIVES...</div>
+              <div className="p-8 text-center font-mono text-xs uppercase tracking-wider text-on-surface-variant">LOADING TASKS...</div>
             ) : scheduledTasks.length === 0 ? (
-              <div className="p-8 text-center font-mono text-xs uppercase tracking-wider text-on-surface-variant">NO PROTOCOLS SCHEDULED</div>
+              <div className="p-8 text-center font-mono text-xs uppercase tracking-wider text-on-surface-variant">NO TASKS SCHEDULED</div>
             ) : (
               scheduledTasks.map((task, i) => {
                 const taskId = String(task._id || task.id || i);
@@ -194,13 +194,13 @@ const TodayPage = () => {
           
           <div className="lg:col-span-4 bg-surface-container-high border border-outline-variant p-5 sm:p-6 flex flex-col justify-between rounded-xl shadow-sm space-y-4">
             <div>
-              <h4 className="font-label-caps text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-2">Active Directive</h4>
+              <h4 className="font-label-caps text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-2">Priority Focus</h4>
               <div className="space-y-1">
                 <div className="text-lg sm:text-xl font-bold text-on-surface truncate">
                   {focusTask ? focusTask.title : "All Tasks Clear"}
                 </div>
                 <p className="text-[11px] text-on-surface-variant uppercase tracking-wider font-mono">
-                  Priority: {focusTask?.priority?.toUpperCase() || "NORMAL"} // Status: {focusTask?.status?.toUpperCase() || "IDLE"}
+                  Priority: {focusTask?.priority?.toUpperCase() || "MEDIUM"} • Status: {focusTask?.status?.toUpperCase() || "IDLE"}
                 </p>
               </div>
             </div>

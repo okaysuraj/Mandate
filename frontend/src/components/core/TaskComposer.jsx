@@ -138,7 +138,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 bg-primary rounded-full inline-block"></span>
               <h3 className="font-mono text-xs md:text-sm font-black text-primary uppercase tracking-wider">
-                Initiate New Mandate / Protocol
+                Create New Task
               </h3>
             </div>
             <button 
@@ -156,7 +156,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
               <input 
                 ref={titleInputRef}
                 type="text" 
-                placeholder="Directive Title or Command (e.g. Deploy v2.4 to staging #infra p1)"
+                placeholder="Task title (e.g. Deploy v2.4 to staging #infra p1)"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 className="w-full bg-transparent text-xl md:text-2xl font-mono font-bold text-on-surface placeholder:text-outline focus:outline-none pr-10 border-b border-outline-variant pb-2"
@@ -164,7 +164,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
               <button 
                 onClick={handleParse}
                 disabled={isParsing || !title.trim()}
-                title="Smart AI Directive Parse"
+                title="AI Task Breakdown"
                 className="absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-xl border border-outline-variant bg-surface-container hover:bg-surface-container-high text-primary transition-all disabled:opacity-40 cursor-pointer shadow-xs"
               >
                 <Sparkles className="w-4 h-4" />
@@ -175,10 +175,10 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
             <div>
               <label className="flex items-center text-xs font-mono font-bold text-primary mb-1.5 uppercase tracking-wider">
                 <Zap className="w-3.5 h-3.5 mr-1" />
-                Strategic Intent / Objective (Why)
+                Key Objective / Purpose
               </label>
               <textarea 
-                placeholder="Detail purpose, expected outcome, or operational motivation..."
+                placeholder="Detail purpose, expected outcome, or context..."
                 value={intent}
                 onChange={e => setIntent(e.target.value)}
                 className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-xs md:text-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary min-h-[70px] resize-y font-body-md transition-colors"
@@ -319,7 +319,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId }) => {
                 disabled={loading || !title.trim()}
                 className="px-5 py-2 text-xs font-mono font-bold uppercase tracking-wider bg-primary text-on-primary border border-primary hover:opacity-90 rounded-md transition-opacity disabled:opacity-40 cursor-pointer shadow-sm"
               >
-                {loading ? 'Saving...' : 'Deploy Mandate'}
+                {loading ? 'Saving...' : 'Create Task'}
               </button>
             </div>
           </div>

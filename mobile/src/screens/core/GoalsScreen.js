@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { getGoals } from "../../services/goalService";
+import AppHeader from "../../components/layout/AppHeader";
 
 const GoalsScreen = ({ navigation }) => {
   const [goals, setGoals] = useState([]);
@@ -39,54 +41,43 @@ const GoalsScreen = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.surface }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
-        <View style={styles.headerLeft}>
-          <MaterialIcons name="terminal" size={24} color={colors.primary} />
-          <Text style={[typography.labelCaps, { color: colors.primary, marginLeft: spacing.sm, letterSpacing: 2 }]}>
-            MANDATE
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.iconButton}>
-          <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <AppHeader title="STRATEGIC GOALS" showBack={true} navigation={navigation} />
 
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Telemetry Header */}
+        {/* Overview Header */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[typography.labelCaps, { color: colors.secondary }]}>SYSTEM TELEMETRY</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary }]}>GOALS OVERVIEW</Text>
             <View style={[styles.liveBadge, { backgroundColor: 'rgba(60, 227, 106, 0.2)' }]}>
-              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, fontSize: 10 }]}>LIVE_FEED</Text>
+              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, fontSize: 10 }]}>ACTIVE</Text>
             </View>
           </View>
           
           <View style={styles.bentoGrid}>
             <View style={[styles.bentoCell, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
-              <Text style={[typography.labelSm, { fontSize: 10, color: colors.secondary }]}>ACTIVE_OBJECTIVES</Text>
+              <Text style={[typography.labelSm, { fontSize: 10, color: colors.secondary }]}>ACTIVE GOALS</Text>
               <View style={styles.metricValue}>
                 <Text style={[typography.displayLg, { fontSize: 40, color: colors.primary }]}>{activeCount}</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>units</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary }]}>goals</Text>
               </View>
             </View>
             <View style={[styles.bentoCell, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
-              <Text style={[typography.labelSm, { fontSize: 10, color: colors.secondary }]}>SYS_EFFICIENCY</Text>
+              <Text style={[typography.labelSm, { fontSize: 10, color: colors.secondary }]}>AVG PROGRESS</Text>
               <View style={styles.metricValue}>
                 <Text style={[typography.displayLg, { fontSize: 40, color: colors.primary }]}>{avgProgress}</Text>
                 <Text style={[typography.labelSm, { color: colors.secondary }]}>%</Text>
               </View>
             </View>
             <View style={[styles.bentoCell, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
-              <Text style={[typography.labelSm, { fontSize: 10, color: colors.secondary }]}>URGENT_DIRECTIVES</Text>
+              <Text style={[typography.labelSm, { fontSize: 10, color: colors.secondary }]}>NEEDS ATTENTION</Text>
               <View style={styles.metricValue}>
                 <Text style={[typography.displayLg, { fontSize: 40, color: colors.error }]}>0{urgentCount}</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>hot</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary }]}>urgent</Text>
               </View>
             </View>
             <View style={[styles.bentoCell, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
-              <Text style={[typography.labelSm, { fontSize: 10, color: colors.secondary }]}>MEAN_T_RESOLUTION</Text>
+              <Text style={[typography.labelSm, { fontSize: 10, color: colors.secondary }]}>AVG RESOLUTION</Text>
               <View style={styles.metricValue}>
                 <Text style={[typography.displayLg, { fontSize: 40, color: colors.primary }]}>{mttr}</Text>
                 <Text style={[typography.labelSm, { color: colors.secondary }]}>days</Text>
@@ -97,9 +88,9 @@ const GoalsScreen = ({ navigation }) => {
 
         {/* Action Bar */}
         <View style={styles.section}>
-          <TouchableOpacity style={[styles.primaryActionBtn, { backgroundColor: colors.primary, borderRadius: borderRadius.full }]} activeOpacity={0.8}>
+          <TouchableOpacity style={[styles.primaryActionBtn, { backgroundColor: colors.primary, borderRadius: borderRadius.DEFAULT }]} activeOpacity={0.8}>
             <MaterialIcons name="add-circle" size={24} color={colors.onPrimary} />
-            <Text style={[typography.labelSm, { color: colors.onPrimary, letterSpacing: 2 }]}>INITIALIZE_GOAL</Text>
+            <Text style={[typography.labelSm, { color: colors.onPrimary, letterSpacing: 2 }]}>CREATE GOAL</Text>
           </TouchableOpacity>
         </View>
 
@@ -128,7 +119,6 @@ const GoalsScreen = ({ navigation }) => {
                   style={[styles.goalCard, { 
                     backgroundColor: colors.surfaceContainerLowest, 
                     borderColor: colors.outlineVariant,
-                    borderLeftColor: pColor
                   }]}
                   activeOpacity={0.7}
                   onPress={() => { navigation.navigate('GoalDetail', { goal: item }) }}
@@ -209,7 +199,7 @@ const styles = StyleSheet.create({
   liveBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   bentoGrid: {
     flexDirection: 'row',
@@ -219,6 +209,7 @@ const styles = StyleSheet.create({
   bentoCell: {
     width: '48%',
     borderWidth: 1,
+    borderRadius: 12,
     padding: 16,
     justifyContent: 'space-between',
     height: 128,
@@ -242,7 +233,7 @@ const styles = StyleSheet.create({
   },
   goalCard: {
     borderWidth: 1,
-    borderLeftWidth: 4,
+    borderRadius: 12,
     padding: 16,
     marginBottom: 16,
   },
@@ -256,7 +247,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   progressContainer: {
     gap: 8,

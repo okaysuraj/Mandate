@@ -1,330 +1,561 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, ActivityIndicator } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../../context/ThemeContext';
-import { useDataStore } from '../../store/useDataStore';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState, useEffect, useMemo } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useAuth } from "../../context/AuthContext";
+import { useDataStore } from "../../store/useDataStore";
+import { useTheme } from "../../context/ThemeContext";
+import AppHeader from "../../components/layout/AppHeader";
 
 const BacklogScreen = ({ navigation }) => {
-  const { colors, typography, spacing, borderRadius } = useTheme();
-  const [activeFilter, setActiveFilter] = useState('ALL TASKS');
-  const [search, setSearch] = useState('');
-  
-  const { tasks, loading, loadTasks } = useDataStore(state => state);
   const { user } = useAuth();
+  const { tasks, loading, loadTasks } = useDataStore((state) => state);
+  const { colors, typography } = useTheme();
+
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    if (user) {
-      loadTasks();
-    }
+    if (user) loadTasks();
   }, [user, loadTasks]);
 
-  const renderFilterChip = (label, isActive) => (
-    <TouchableOpacity
-      key={label}
-      onPress={() => setActiveFilter(label)}
-      style={[
-        styles.filterChip,
-        isActive 
-          ? { backgroundColor: colors.primary, borderColor: colors.primary }
-          : { backgroundColor: 'transparent', borderColor: colors.outlineVariant }
-      ]}
-    >
-      <Text style={[
-        typography.labelSm,
-        isActive ? { color: colors.onPrimary } : { color: colors.secondary }
-      ]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
+  const taskList = useMemo(() => {
+    if (Array.isArray(tasks)) return tasks;
+    if (Array.isArray(tasks?.data)) return tasks.data;
+    if (Array.isArray(tasks?.tasks)) return tasks.tasks;
+    return [];
+  }, [tasks]);
+
+  const activeCount = taskList.filter(
+    (t) => t && t.status !== "completed" && t.status !== "done"
+  ).length;
+  const criticalCount = taskList.filter(
+    (t) =>
+      t &&
+      t.status !== "completed" &&
+      t.status !== "done" &&
+      (t.priority === "urgent" || t.priority === "high")
+  ).length;
+  const stablePercentage =
+    taskList.length > 0
+      ? Math.round(((taskList.length - criticalCount) / taskList.length) * 100)
+      : 100;
 
   const filteredTasks = useMemo(() => {
-    return tasks.filter(t => {
-      if (search && !t.title.toLowerCase().includes(search.toLowerCase()) && !(t.description && t.description.toLowerCase().includes(search.toLowerCase()))) {
-        return false;
-      }
-      if (activeFilter === 'PENDING' && t.status !== 'pending') return false;
-      if (activeFilter === 'IN-PROGRESS' && t.status !== 'in-progress') return false;
-      if (activeFilter === 'COMPLETED' && t.status !== 'completed') return false;
-      return true;
-    });
-  }, [tasks, search, activeFilter]);
+    const q = search.trim().toLowerCase();
+    if (!q) return taskList;
+    return taskList.filter(
+      (t) =>
+        (t?.title && t.title.toLowerCase().includes(q)) ||
+        (t?.description && t.description.toLowerCase().includes(q))
+    );
+  }, [taskList, search]);
 
-  const getStatusColor = (status) => {
-    if (status === 'completed') return colors.onTertiaryContainer;
-    if (status === 'in-progress') return colors.tertiaryFixedDim;
-    if (status === 'failed') return colors.error;
-    return colors.outline;
-  };
+  const getStatusChip = (task) => {
+    const isCompleted = task.status === "completed" || task.status === "done";
+    const isCritical =
+      task.priority === "urgent" || task.priority === "high";
+    const isActive =
+      task.status === "in-progress" ||
+      task.status === "in_progress" ||
+      task.status === "in progress";
 
-  const getPriorityBadge = (priority) => {
-    if (priority === 'urgent' || priority === 'high') {
-      return { bg: colors.errorContainer, text: colors.onErrorContainer, label: 'CRITICAL' };
+    if (isCompleted) {
+      return (
+        <View
+          style={[
+            styles.statusBadge,
+            {
+              backgroundColor: colors.surfaceContainerHighest,
+              borderColor: colors.outlineVariant,
+            },
+          ]}
+        >
+          <Text style={[styles.statusBadgeText, { color: colors.onSurfaceVariant }]}>
+            COMPLETED
+          </Text>
+        </View>
+      );
     }
-    if (priority === 'low') {
-      return { bg: colors.surfaceContainerHigh, text: colors.secondary, label: 'LOW' };
+
+    if (isCritical) {
+      return (
+        <View
+          style={[
+            styles.statusBadge,
+            {
+              backgroundColor: colors.errorContainer,
+              borderColor: colors.error,
+            },
+          ]}
+        >
+          <Text style={[styles.statusBadgeText, { color: colors.error }]}>
+            CRITICAL
+          </Text>
+        </View>
+      );
     }
-    return { bg: colors.surfaceContainerHigh, text: colors.secondary, label: 'NORMAL' };
+
+    if (isActive) {
+      return (
+        <View
+          style={[
+            styles.statusBadge,
+            {
+              backgroundColor: colors.tertiaryContainer,
+              borderColor: colors.outlineVariant,
+            },
+          ]}
+        >
+          <View style={[styles.pulseDot, { backgroundColor: colors.tertiary }]} />
+          <Text style={[styles.statusBadgeText, { color: colors.onTertiaryContainer }]}>
+            ACTIVE
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View
+        style={[
+          styles.statusBadge,
+          {
+            backgroundColor: colors.secondaryContainer,
+            borderColor: colors.outlineVariant,
+          },
+        ]}
+      >
+        <Text style={[styles.statusBadgeText, { color: colors.onSecondaryContainer }]}>
+          PENDING
+        </Text>
+      </View>
+    );
   };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity>
-            <MaterialIcons name="menu" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginLeft: spacing.sm, fontWeight: 'bold' }]}>MANDATE</Text>
-        </View>
-        <TouchableOpacity>
-          <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+      <AppHeader title="BACKLOG" navigation={navigation} />
 
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={[styles.mainContent, { paddingHorizontal: spacing.md, paddingTop: spacing.lg }]}>
-          
-          {/* Dashboard Stats */}
-          <View style={styles.statsRow}>
-            {/* System Load */}
-            <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
-              <View style={styles.statTop}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, textTransform: 'uppercase' }]}>Active Load</Text>
-                <MaterialIcons name="bolt" size={18} color={colors.onTertiaryContainer} />
-              </View>
-              <View>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{tasks.filter(t => t.status === 'in-progress').length}</Text>
-                <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainerHigh, marginTop: spacing.xs }]}>
-                  <View style={[styles.progressBarFill, { backgroundColor: colors.primary, width: `${Math.min(100, (tasks.filter(t => t.status === 'in-progress').length / (tasks.length || 1)) * 100)}%` }]} />
-                </View>
-              </View>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={loadTasks}
+            tintColor={colors.primary}
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header Section matching web BacklogPage.jsx */}
+        <View style={[styles.sectionHeader, { borderBottomColor: colors.outlineVariant }]}>
+          <View>
+            <View style={styles.headerTagRow}>
+              <View style={[styles.headerTagDot, { backgroundColor: colors.primary }]} />
+              <Text style={[styles.headerTagText, { color: colors.onSurfaceVariant }]}>
+                SYSTEM INVENTORY · REGISTRY LEDGER
+              </Text>
             </View>
-
-            {/* Operators */}
-            <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
-              <View style={styles.statTop}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, textTransform: 'uppercase' }]}>Total Tasks</Text>
-                <MaterialIcons name="group" size={18} color={colors.secondary} />
-              </View>
-              <View>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{tasks.length}</Text>
-                <View style={styles.standbyRow}>
-                  <View style={[styles.dot, { backgroundColor: colors.error }]} />
-                  <Text style={[typography.labelSm, { color: colors.error, marginLeft: 4 }]}>{tasks.filter(t => t.priority === 'urgent' || t.priority === 'high').length} CRITICAL</Text>
-                </View>
-              </View>
-            </View>
+            <Text style={[styles.pageTitle, { color: colors.onSurface }]}>List View</Text>
+            <Text style={[styles.pageSubtitle, { color: colors.onSurfaceVariant }]}>
+              High-density operational overview. Manage system backlogs, critical path items, and scheduled maintenance tasks with industrial precision.
+            </Text>
           </View>
 
-          {/* Search & Filter */}
-          <View style={{ marginBottom: spacing.lg }}>
-            <View style={styles.searchContainer}>
-              <MaterialIcons name="search" size={20} color={colors.secondary} style={styles.searchIcon} />
+          {/* Search & Actions Bar */}
+          <View style={styles.searchActionsRow}>
+            <View
+              style={[
+                styles.searchBox,
+                {
+                  backgroundColor: colors.surfaceContainerLowest,
+                  borderColor: colors.outlineVariant,
+                },
+              ]}
+            >
+              <MaterialIcons name="search" size={18} color={colors.onSurfaceVariant} style={{ marginRight: 6 }} />
               <TextInput
-                style={[styles.searchInput, typography.labelSm, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant, color: colors.primary }]}
-                placeholder="SEARCH TASK LEDGER..."
-                placeholderTextColor={colors.secondary}
+                style={[styles.searchInput, { color: colors.onSurface }]}
+                placeholder="Query mandates..."
+                placeholderTextColor={colors.onSurfaceVariant}
                 value={search}
                 onChangeText={setSearch}
               />
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterContainer}>
-              {['ALL TASKS', 'PENDING', 'IN-PROGRESS', 'FAILED'].map(filter => renderFilterChip(filter, activeFilter === filter))}
-            </ScrollView>
-          </View>
-
-          {/* Task Ledger List */}
-          <View>
-            <View style={styles.ledgerHeader}>
-              <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2 }]}>TASK LEDGER</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary }]}>{filteredTasks.length} TOTAL</Text>
+              {search ? (
+                <TouchableOpacity onPress={() => setSearch("")}>
+                  <MaterialIcons name="close" size={16} color={colors.onSurfaceVariant} />
+                </TouchableOpacity>
+              ) : null}
             </View>
 
-            {loading ? (
-              <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 32 }} />
-            ) : filteredTasks.length === 0 ? (
-              <Text style={[typography.labelSm, { color: colors.secondary, textAlign: 'center', marginTop: 32 }]}>NO TASKS FOUND</Text>
-            ) : (
-              filteredTasks.map((task, i) => {
-                const priority = getPriorityBadge(task.priority);
-                
-                return (
-                  <View key={task._id || i} style={[styles.taskCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT }]}>
-                    <View style={styles.taskTop}>
-                      <View style={{ flex: 1, paddingRight: 8 }}>
-                        <Text style={[typography.labelSm, { color: colors.secondary, opacity: 0.6 }]}>UID: MDT-{String(task._id).substring(0,6).toUpperCase() || 'XXX'}</Text>
-                        <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]} numberOfLines={2}>{task.title}</Text>
-                      </View>
-                      <View style={[styles.priorityBadge, { backgroundColor: priority.bg }]}>
-                        <Text style={[typography.labelCaps, { color: priority.text, fontSize: 10 }]}>{priority.label}</Text>
-                      </View>
-                    </View>
-                    <View style={[styles.taskBottom, { borderTopColor: colors.surfaceContainerHigh }]}>
-                      <View style={styles.statusRow}>
-                        <View style={[styles.statusDot, { backgroundColor: getStatusColor(task.status) }]} />
-                        <Text style={[typography.labelSm, { color: getStatusColor(task.status), marginLeft: spacing.sm, textTransform: 'uppercase' }]}>{task.status || 'UNKNOWN'}</Text>
-                      </View>
-                      <View style={styles.avatarsRow}>
-                        <View style={[styles.avatarRound, { backgroundColor: colors.surfaceDim, borderColor: colors.surfaceContainerLowest }]} />
-                      </View>
-                    </View>
-                  </View>
-                );
-              })
-            )}
-
+            <TouchableOpacity
+              onPress={() => navigation.navigate("CreateTask")}
+              style={[styles.newBtn, { backgroundColor: colors.primary }]}
+              activeOpacity={0.85}
+            >
+              <MaterialIcons name="add" size={16} color={colors.onPrimary} />
+              <Text style={[styles.newBtnText, { color: colors.onPrimary }]}>NEW</Text>
+            </TouchableOpacity>
           </View>
         </View>
+
+        {/* Dashboard Summary Bento (4 cards) */}
+        <View style={styles.bentoSummaryGrid}>
+          {/* Card 1 */}
+          <View
+            style={[
+              styles.bentoCard,
+              {
+                backgroundColor: colors.surfaceContainerLowest,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          >
+            <Text style={[styles.bentoCardTag, { color: colors.onSurfaceVariant }]}>
+              ACTIVE_TASKS
+            </Text>
+            <Text style={[styles.bentoCardNumber, { color: colors.onSurface }]}>
+              {loading ? "—" : activeCount}
+            </Text>
+          </View>
+
+          {/* Card 2 */}
+          <View
+            style={[
+              styles.bentoCard,
+              {
+                backgroundColor: colors.surfaceContainerLowest,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          >
+            <Text style={[styles.bentoCardTag, { color: colors.error }]}>
+              CRITICAL_PATH
+            </Text>
+            <Text style={[styles.bentoCardNumber, { color: colors.onSurface }]}>
+              {loading ? "—" : criticalCount}
+            </Text>
+          </View>
+
+          {/* Card 3 */}
+          <View
+            style={[
+              styles.bentoCard,
+              {
+                backgroundColor: colors.surfaceContainerLowest,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          >
+            <Text style={[styles.bentoCardTag, { color: colors.tertiary }]}>
+              STABLE_STATE
+            </Text>
+            <Text style={[styles.bentoCardNumber, { color: colors.onSurface }]}>
+              {loading ? "—" : `${stablePercentage}%`}
+            </Text>
+          </View>
+
+          {/* Card 4 */}
+          <View
+            style={[
+              styles.bentoCard,
+              {
+                backgroundColor: colors.surfaceContainerLowest,
+                borderColor: colors.outlineVariant,
+              },
+            ]}
+          >
+            <Text style={[styles.bentoCardTag, { color: colors.onSurfaceVariant }]}>
+              OPERATOR_LOAD
+            </Text>
+            <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+              <Text style={[styles.bentoCardNumber, { color: colors.onSurface }]}>72</Text>
+              <Text style={[styles.bentoCardUnit, { color: colors.onSurfaceVariant }]}>/hr</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Task Cards List */}
+        <View style={styles.tasksList}>
+          {loading && tasks.length === 0 ? (
+            <View style={[styles.emptyBox, { borderColor: colors.outlineVariant }]}>
+              <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
+                LOADING DATA...
+              </Text>
+            </View>
+          ) : filteredTasks.length === 0 ? (
+            <View style={[styles.emptyBox, { borderColor: colors.outlineVariant }]}>
+              <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
+                NO ENTITIES FOUND
+              </Text>
+            </View>
+          ) : (
+            filteredTasks.map((task, i) => {
+              const taskId = task._id || task.id;
+              const refCode = String(taskId || i).slice(-5).toUpperCase();
+
+              return (
+                <TouchableOpacity
+                  key={taskId || i}
+                  onPress={() =>
+                    navigation.navigate("TaskDetail", { task, taskId })
+                  }
+                  style={[
+                    styles.taskCard,
+                    {
+                      backgroundColor: colors.surfaceContainerLowest,
+                      borderColor: colors.outlineVariant,
+                    },
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.taskCardHeader}>
+                    <Text style={[styles.refCodeBadge, { color: colors.onSurfaceVariant, backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}>
+                      #CX-{refCode}
+                    </Text>
+                    {getStatusChip(task)}
+                  </View>
+
+                  <Text style={[styles.taskTitle, { color: colors.onSurface }]} numberOfLines={1}>
+                    {task.title}
+                  </Text>
+
+                  {task.description ? (
+                    <Text style={[styles.taskDesc, { color: colors.onSurfaceVariant }]} numberOfLines={2}>
+                      {task.description}
+                    </Text>
+                  ) : null}
+
+                  <View style={[styles.taskFooter, { borderTopColor: colors.outlineVariant }]}>
+                    <Text style={[styles.taskDate, { color: colors.onSurfaceVariant }]}>
+                      {new Date(task.createdAt || Date.now()).toLocaleDateString("en-GB")}
+                    </Text>
+                    <MaterialIcons name="arrow-forward" size={16} color={colors.primary} />
+                  </View>
+                </TouchableOpacity>
+              );
+            })
+          )}
+        </View>
+
+        {/* Footer Pagination Bar */}
+        <View style={[styles.paginationBar, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <Text style={[styles.paginationSeq, { color: colors.onSurfaceVariant }]}>
+            PAGE_SEQUENCE: 1 OF 1
+          </Text>
+          <View style={styles.paginationButtons}>
+            <View style={[styles.pageNumBtn, { backgroundColor: colors.primary }]}>
+              <Text style={[styles.pageNumText, { color: colors.onPrimary }]}>1</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={{ height: 32 }} />
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  safeArea: { flex: 1 },
   container: {
-    flexGrow: 1,
-    paddingBottom: 64, // Extra padding for tab bar
-  },
-  mainContent: {
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  statCard: {
-    width: '48%',
-    borderWidth: 1,
     padding: 16,
-    height: 128,
-    justifyContent: 'space-between',
+    gap: 16,
   },
-  statTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+  sectionHeader: {
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    gap: 10,
   },
-  progressBarBg: {
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
-    width: '100%',
+  headerTagRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 2,
   },
-  progressBarFill: {
-    height: '100%',
-  },
-  standbyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  dot: {
+  headerTagDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
   },
-  searchContainer: {
-    position: 'relative',
-    marginBottom: 16,
+  headerTagText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+    letterSpacing: 0.8,
   },
-  searchIcon: {
-    position: 'absolute',
-    left: 16,
-    top: 16,
-    zIndex: 1,
+  pageTitle: {
+    fontFamily: "HankenGrotesk-Bold",
+    fontSize: 22,
+    letterSpacing: -0.5,
+    textTransform: "uppercase",
+  },
+  pageSubtitle: {
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 11,
+    lineHeight: 16,
+    marginTop: 2,
+  },
+  searchActionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 4,
+  },
+  searchBox: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    height: 38,
   },
   searchInput: {
-    paddingLeft: 44,
-    paddingRight: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 2,
+    flex: 1,
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 12,
   },
-  filterScroll: {
-    paddingVertical: 4,
+  newBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 8,
+    gap: 4,
   },
-  filterContainer: {
-    flexDirection: 'row',
+  newBtnText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+    letterSpacing: 0.5,
+  },
+  // Bento Summary
+  bentoSummaryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
   },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
+  bentoCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    padding: 12,
+    borderRadius: 12,
     borderWidth: 1,
-    marginRight: 8,
+    gap: 4,
   },
-  ledgerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    marginBottom: 16,
+  bentoCardTag: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+    letterSpacing: 0.6,
+  },
+  bentoCardNumber: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 22,
+  },
+  bentoCardUnit: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 12,
+    marginLeft: 2,
+  },
+  // Tasks List
+  tasksList: {
+    gap: 10,
   },
   taskCard: {
     borderWidth: 1,
-    padding: 16,
-    marginBottom: 12,
-  },
-  taskTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  priorityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  taskBottom: {
-    borderTopWidth: 1,
-    paddingTop: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  avatarsRow: {
-    flexDirection: 'row',
-  },
-  avatarRound: {
-    width: 24,
-    height: 24,
     borderRadius: 12,
+    padding: 14,
+    gap: 8,
+  },
+  taskCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  refCodeBadge: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
     borderWidth: 1,
   },
-  avatarOverlap: {
-    marginLeft: -8,
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 9999,
+    borderWidth: 1,
+    gap: 4,
   },
-  vizBento: {
+  pulseDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+  },
+  statusBadgeText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 9,
+  },
+  taskTitle: {
+    fontFamily: "HankenGrotesk-Bold",
+    fontSize: 13,
+    textTransform: "uppercase",
+  },
+  taskDesc: {
+    fontFamily: "HankenGrotesk-Regular",
+    fontSize: 11,
+    lineHeight: 16,
+  },
+  taskFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTopWidth: 1,
+    paddingTop: 8,
+  },
+  taskDate: {
+    fontFamily: "JetBrainsMono-Regular",
+    fontSize: 10,
+  },
+  emptyBox: {
     padding: 32,
-    marginBottom: 12,
-    overflow: 'hidden',
-  }
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderRadius: 12,
+  },
+  emptyText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+  },
+  // Pagination
+  paginationBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  paginationSeq: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+  },
+  paginationButtons: {
+    flexDirection: "row",
+    gap: 4,
+  },
+  pageNumBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pageNumText: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 11,
+  },
 });
 
 export default BacklogScreen;

@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { 
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, 
-  SafeAreaView, TextInput, ActivityIndicator, Alert 
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -149,21 +147,21 @@ const InviteMembersScreen = ({ navigation }) => {
           <View style={[styles.bentoCard, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
             <View style={styles.stepHeader}>
               <MaterialIcons name="security" size={20} color={colors.primary} />
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>02 PERMISSION MATRIX</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>02 ROLE PERMISSIONS</Text>
             </View>
 
             <View style={styles.protocolList}>
               <View style={[styles.protocolItem, { borderBottomColor: colors.outlineVariant }]}>
                 <View style={styles.protocolItemLeft}>
                   <MaterialIcons name="visibility" size={16} color={colors.secondary} />
-                  <Text style={[typography.labelSm, { color: colors.onSurface }]}>Read Telemetry & Mandates</Text>
+                  <Text style={[typography.labelSm, { color: colors.onSurface }]}>View Tasks & Dashboard</Text>
                 </View>
                 <MaterialIcons name="check-circle" size={16} color={colors.onTertiaryContainer} />
               </View>
               <View style={[styles.protocolItem, { borderBottomColor: colors.outlineVariant }]}>
                 <View style={styles.protocolItemLeft}>
                   <MaterialIcons name="edit" size={16} color={colors.secondary} />
-                  <Text style={[typography.labelSm, { color: colors.onSurface }]}>Execute & Create Tasks</Text>
+                  <Text style={[typography.labelSm, { color: colors.onSurface }]}>Create & Edit Tasks</Text>
                 </View>
                 <MaterialIcons 
                   name={role === 'Editor' || role === 'Admin' ? 'check-circle' : 'cancel'} 

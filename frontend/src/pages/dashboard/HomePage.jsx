@@ -76,15 +76,15 @@ const HomePage = () => {
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-3 mb-6">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight uppercase">Command Center</h1>
+          <h1 className="font-headline-lg text-headline-lg text-primary tracking-tight uppercase">Dashboard</h1>
           <p className="text-on-surface-variant font-label-caps uppercase tracking-widest text-xs mt-1">
-            Workspace: {user?.activeWorkspace ? "Active Workspace" : "Default"} // Live Telemetry
+            Workspace: {user?.activeWorkspace ? "Active Workspace" : "Personal"} • Live Updates
           </p>
         </div>
         <div className="flex gap-2">
           <div className="bg-surface-container-low px-3 py-1.5 rounded-full border border-outline-variant flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-on-tertiary-container animate-pulse"></div>
-            <span className="font-mono text-xs font-bold text-on-tertiary-container">LIVE CONNECTED</span>
+            <span className="font-mono text-xs font-bold text-on-tertiary-container">ONLINE</span>
           </div>
         </div>
       </div>
@@ -104,13 +104,13 @@ const HomePage = () => {
             <div className="bg-primary h-full transition-all duration-1000" style={{ width: `${loading ? 0 : efficiency}%` }}></div>
           </div>
           <p className="mt-3 text-xs font-mono text-on-surface-variant">
-            {completedTasks} of {totalTasks} directives resolved
+            {completedTasks} of {totalTasks} tasks completed
           </p>
         </div>
 
         <div className="col-span-12 md:col-span-4 bento-card p-5 rounded-lg group hover:border-primary transition-colors">
           <div className="flex justify-between items-start mb-4">
-            <span className="font-mono text-xs uppercase tracking-wider text-on-surface-variant font-bold">Active Mandates</span>
+            <span className="font-mono text-xs uppercase tracking-wider text-on-surface-variant font-bold">Active Tasks</span>
             <span className="material-symbols-outlined text-outline">hub</span>
           </div>
           <div className="flex items-baseline gap-2">
@@ -178,18 +178,18 @@ const HomePage = () => {
               ))}
               {recentActivity.length === 0 && !loading && (
                 <div className="p-3 bg-surface-container-low text-[11px] font-mono border border-outline-variant/60 rounded-lg">
-                  <p className="text-on-surface font-bold">[{formatTime(new Date())}] SYS_IDLE</p>
-                  <p className="text-on-surface-variant">Awaiting incoming directives</p>
+                  <p className="text-on-surface font-bold">[{formatTime(new Date())}] IDLE</p>
+                  <p className="text-on-surface-variant">No recent activity recorded</p>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Pinned Mandates */}
+        {/* Pinned Tasks */}
         <div className="col-span-12 md:col-span-4 bento-card p-5 rounded-lg flex flex-col">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-mono text-xs font-bold text-primary uppercase tracking-wider">Pinned Mandates</h3>
+            <h3 className="font-mono text-xs font-bold text-primary uppercase tracking-wider">Pinned Tasks</h3>
             <Link to="/today" className="text-[10px] font-mono text-outline hover:text-primary transition-colors uppercase font-bold">VIEW ALL</Link>
           </div>
           
@@ -226,13 +226,13 @@ const HomePage = () => {
             
             {activeTasks.length === 0 && !loading && (
               <div className="p-4 border border-outline-variant border-dashed text-center rounded-md">
-                <p className="font-mono text-xs text-on-surface-variant">NO ACTIVE MANDATES</p>
+                <p className="font-mono text-xs text-on-surface-variant">NO ACTIVE TASKS</p>
               </div>
             )}
           </div>
           
           <Link to="/today" className="mt-auto w-full py-2.5 border-t border-outline-variant text-center text-xs font-mono text-on-surface-variant hover:text-primary transition-colors uppercase font-bold block">
-            + ADD NEW MANDATE
+            + ADD NEW TASK
           </Link>
         </div>
 
@@ -241,11 +241,11 @@ const HomePage = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
               <h3 className="font-mono text-xs font-bold text-primary uppercase tracking-wider">Execution Health & Workstreams</h3>
-              <p className="text-xs text-on-surface-variant mt-0.5">Active directive load categorized by execution priority</p>
+              <p className="text-xs text-on-surface-variant mt-0.5">Active tasks categorized by execution priority</p>
             </div>
             <div className="flex gap-6">
               <div className="text-center">
-                <p className="text-[10px] font-mono uppercase text-on-surface-variant">TOTAL DIRECTIVES</p>
+                <p className="text-[10px] font-mono uppercase text-on-surface-variant">TOTAL TASKS</p>
                 <p className="font-mono font-bold text-xl text-primary">{totalTasks}</p>
               </div>
               <div className="text-center">
@@ -313,7 +313,7 @@ const HomePage = () => {
                   style={{ height: `${activeTasks.length > 0 ? Math.round((lowCount / activeTasks.length) * 100) : 0}%` }}
                 ></div>
               </div>
-              <p className="text-[10px] font-mono text-on-surface-variant">Backlog & deferred directives</p>
+              <p className="text-[10px] font-mono text-on-surface-variant">Backlog & deferred tasks</p>
             </div>
           </div>
         </div>

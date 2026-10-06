@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -108,9 +109,10 @@ const SelectionProtocolScreen = () => {
               key={item.id} 
               style={[
                 styles.protocolCard, 
-                { backgroundColor: '#ffffff', borderColor: colors.outlineVariant },
-                item.borderLeftColor === 'error' && { borderLeftWidth: 4, borderLeftColor: colors.error },
-                item.borderLeftColor === 'primary' && { borderLeftWidth: 4, borderLeftColor: colors.primary },
+                { 
+                  backgroundColor: colors.surfaceContainerLowest, 
+                  borderColor: item.checked ? colors.primary : colors.outlineVariant 
+                },
               ]}
               onPress={() => toggleProtocol(item.id)}
             >
@@ -320,7 +322,7 @@ const styles = StyleSheet.create({
   heroTag: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 2,
+    borderRadius: 8,
   },
   protocolList: {
     gap: 16,
@@ -329,6 +331,7 @@ const styles = StyleSheet.create({
   protocolCard: {
     flexDirection: 'row',
     borderWidth: 1,
+    borderRadius: 12,
     padding: 16,
     gap: 16,
   },
@@ -339,6 +342,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -357,10 +361,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   statusBadge: {
-    paddingHorizontal: 4,
+    paddingHorizontal: 6,
     paddingVertical: 2,
     borderWidth: 1,
-    borderRadius: 2,
+    borderRadius: 8,
   },
   strainContainer: {
     gap: 8,
@@ -380,7 +384,8 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   operationalCard: {
-    borderWidth: 2,
+    borderWidth: 1,
+    borderRadius: 12,
     padding: 32,
   },
   operationalHeader: {
@@ -405,10 +410,12 @@ const styles = StyleSheet.create({
   barBg: {
     height: 16,
     borderWidth: 1,
+    borderRadius: 4,
     padding: 2,
   },
   barFill: {
     height: '100%',
+    borderRadius: 2,
   },
   actionsContainer: {
     marginTop: 32,
@@ -418,17 +425,20 @@ const styles = StyleSheet.create({
   },
   executeBtn: {
     paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   resetBtn: {
     paddingVertical: 12,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
   },
   feedCard: {
     padding: 16,
+    borderRadius: 12,
   },
   feedHeader: {
     flexDirection: 'row',

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -11,7 +12,7 @@ const SmartViewsScreen = ({ navigation }) => {
       {/* Top Navigation */}
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
         <View style={styles.headerLeft}>
-          <MaterialIcons name="terminal" size={24} color={colors.primary} />
+          <MaterialIcons name="auto-awesome" size={24} color={colors.primary} />
           <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '900', letterSpacing: 2, marginLeft: 8 }]}>MANDATE</Text>
         </View>
         <View style={styles.headerRight}>
@@ -30,25 +31,25 @@ const SmartViewsScreen = ({ navigation }) => {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statusScroll} style={styles.statusSection}>
           <View style={[styles.statusPill, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={[styles.pulseDot, { backgroundColor: colors.tertiaryFixedDim }]} />
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, textTransform: 'uppercase' }]}>Pulse: Nominal</Text>
+            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, textTransform: 'uppercase' }]}>Status: Healthy</Text>
           </View>
           <View style={[styles.statusPill, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <MaterialIcons name="hub" size={14} color={colors.onSurfaceVariant} />
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, textTransform: 'uppercase' }]}>Clusters: 128/128</Text>
+            <MaterialIcons name="check-circle" size={14} color={colors.onSurfaceVariant} />
+            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, textTransform: 'uppercase' }]}>All Systems Synced</Text>
           </View>
           <View style={[styles.statusPill, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <MaterialIcons name="bolt" size={14} color={colors.onSurfaceVariant} />
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, textTransform: 'uppercase' }]}>Latency: 4ms</Text>
+            <MaterialIcons name="sync" size={14} color={colors.onSurfaceVariant} />
+            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, textTransform: 'uppercase' }]}>Real-Time Sync</Text>
           </View>
         </ScrollView>
 
         {/* Predictive Behavior Analytics */}
         <View style={styles.section}>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 8, paddingHorizontal: 4 }]}>Predictive Behavior</Text>
-          <View style={[styles.predictiveCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 8, paddingHorizontal: 4 }]}>Productivity Trends</Text>
+          <View style={[styles.predictiveCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.predictiveHeader}>
-              <Text style={[typography.labelCaps, { color: colors.secondary, textTransform: 'uppercase', marginBottom: 4 }]}>Current Cycle</Text>
-              <Text style={[typography.displayLg, { fontSize: 32, lineHeight: 36, color: colors.primary }]}>98.4% Accuracy</Text>
+              <Text style={[typography.labelCaps, { color: colors.secondary, textTransform: 'uppercase', marginBottom: 4 }]}>Weekly Completion</Text>
+              <Text style={[typography.displayLg, { fontSize: 32, lineHeight: 36, color: colors.primary }]}>98.4% On Track</Text>
             </View>
             
             <View style={styles.barChartContainer}>
@@ -63,22 +64,22 @@ const SmartViewsScreen = ({ navigation }) => {
         <View style={styles.modulesGrid}>
           
           {/* Operational Bottlenecks */}
-          <View style={[styles.moduleCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <View style={[styles.moduleCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.moduleHeader}>
-              <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2, textTransform: 'uppercase' }]}>Operational Bottlenecks</Text>
+              <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2, textTransform: 'uppercase' }]}>Workflow Attention</Text>
               <MaterialIcons name="warning" size={24} color={colors.error} />
             </View>
             <View style={styles.bottleneckList}>
               <View style={[styles.bottleneckItem, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 4 }]}>NODE_ALPHA_09</Text>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>Memory Leak Detected</Text>
+                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 4 }]}>TASK BACKLOG</Text>
+                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>3 Tasks Overdue</Text>
                 <View style={[styles.progressBarBg, { backgroundColor: colors.outlineVariant, marginTop: 8 }]}>
                   <View style={[styles.progressBarFill, { backgroundColor: colors.error, width: '88%' }]} />
                 </View>
               </View>
               <View style={[styles.bottleneckItem, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 4 }]}>GATEWAY_WEST</Text>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>Congestion Level 4</Text>
+                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 4 }]}>SPRINT REVIEW</Text>
+                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>4 Tasks Need Review</Text>
                 <View style={[styles.progressBarBg, { backgroundColor: colors.outlineVariant, marginTop: 8 }]}>
                   <View style={[styles.progressBarFill, { backgroundColor: colors.error, width: '72%' }]} />
                 </View>
@@ -87,29 +88,29 @@ const SmartViewsScreen = ({ navigation }) => {
           </View>
 
           {/* Idle Protocols */}
-          <View style={[styles.moduleCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <View style={[styles.moduleCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.moduleHeader}>
-              <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2, textTransform: 'uppercase' }]}>Idle Protocols</Text>
-              <MaterialIcons name="bedtime" size={24} color={colors.tertiaryFixedDim} />
+              <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2, textTransform: 'uppercase' }]}>Automations</Text>
+              <MaterialIcons name="auto-fix-high" size={24} color={colors.tertiaryFixedDim} />
             </View>
             <View style={styles.protocolList}>
               <View style={[styles.protocolItem, { borderBottomColor: colors.surfaceContainerHighest }]}>
-                <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Maintenance Cycle</Text>
+                <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Auto-archive Completed</Text>
                 <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>Active</Text>
               </View>
               <View style={[styles.protocolItem, { borderBottomColor: colors.surfaceContainerHighest }]}>
-                <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Optimization</Text>
+                <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Daily Backlog Sync</Text>
                 <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: 'bold' }]}>14m Remaining</Text>
               </View>
               <View style={[styles.protocolItem, { borderBottomWidth: 0 }]}>
-                <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Power Mode</Text>
+                <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>Smart Priority Rules</Text>
                 <View style={[styles.tag, { backgroundColor: colors.surfaceContainerHighest }]}>
-                  <Text style={[typography.labelCaps, { fontSize: 10, color: colors.primary }]}>ECO-STATIC</Text>
+                  <Text style={[typography.labelCaps, { fontSize: 10, color: colors.primary }]}>ACTIVE</Text>
                 </View>
               </View>
             </View>
             <TouchableOpacity style={[styles.overrideBtn, { backgroundColor: colors.primary }]}>
-              <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 1 }]}>OVERRIDE PROTOCOL</Text>
+              <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 1 }]}>MANAGE AUTOMATIONS</Text>
             </TouchableOpacity>
           </View>
 
@@ -121,8 +122,8 @@ const SmartViewsScreen = ({ navigation }) => {
               resizeMode="cover"
             >
               <View style={styles.imageOverlay}>
-                <Text style={[typography.labelCaps, { color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' }]}>Core Architecture</Text>
-                <Text style={[typography.headlineLgMobile, { color: '#ffffff' }]}>Phase 4 Deployment</Text>
+                <Text style={[typography.labelCaps, { color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' }]}>Workspace Strategy</Text>
+                <Text style={[typography.headlineLgMobile, { color: '#ffffff' }]}>Q4 Goals & Execution</Text>
               </View>
             </ImageBackground>
           </View>
@@ -138,16 +139,16 @@ const SmartViewsScreen = ({ navigation }) => {
           <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>GOALS</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="hub" size={24} color={colors.secondary} />
-          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>NETWORK</Text>
+          <MaterialIcons name="group" size={24} color={colors.secondary} />
+          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>TEAM</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.navItemActive, { backgroundColor: colors.primaryContainer, borderTopColor: colors.primary }]}>
           <MaterialIcons name="analytics" size={24} color={colors.onPrimaryContainer} />
-          <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, marginTop: 4, fontSize: 10 }]}>LOGS</Text>
+          <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, marginTop: 4, fontSize: 10 }]}>VIEWS</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="settings-input-component" size={24} color={colors.secondary} />
-          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>CONFIG</Text>
+          <MaterialIcons name="settings" size={24} color={colors.secondary} />
+          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>SETTINGS</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -30,7 +29,7 @@ const ProjectDetailScreen = ({ route, navigation }) => {
             <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
           <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1 }]}>
-            PROMETHEUS
+            MANDATE
           </Text>
         </View>
         <View style={[styles.avatarContainer, { borderColor: colors.outlineVariant }]}>
@@ -46,38 +45,38 @@ const ProjectDetailScreen = ({ route, navigation }) => {
         <View style={styles.section}>
           <View style={styles.titleBadgeRow}>
             <View style={[styles.sequenceBadge, { backgroundColor: 'rgba(60, 227, 106, 0.2)' }]}>
-              <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, fontSize: 10 }]}>ACTIVE SEQUENCE</Text>
+              <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, fontSize: 10 }]}>ACTIVE PROJECT</Text>
             </View>
             <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>
               #{project._id?.substring(0,6).toUpperCase() || 'PX-909'}
             </Text>
           </View>
           <Text style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase' }]}>
-            {project.name || "HELIOS-PRIMARY INTERFACE"}
+            {project.name || "Mobile App Redesign"}
           </Text>
         </View>
 
-        {/* Status Telemetry Bento */}
+        {/* Status Bento */}
         <View style={[styles.section, styles.telemetryBento, { backgroundColor: colors.primaryContainer, borderColor: colors.primary }]}>
           <View style={styles.telemetryHeader}>
             <View>
-              <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, opacity: 0.6 }]}>SYSTEM STATUS</Text>
+              <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, opacity: 0.6 }]}>PROJECT STATUS</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                 <View style={[styles.pulseDot, { backgroundColor: colors.tertiaryFixed }]} />
-                <Text style={[typography.headlineLgMobile, { color: colors.onTertiaryFixedVariant }]}>Status: Nominal</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.onTertiaryFixedVariant }]}>Status: On Track</Text>
               </View>
             </View>
-            <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.4 }]}>AUTO_REFRESH: ON</Text>
+            <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.4 }]}>AUTO-SYNC: ON</Text>
           </View>
 
           <View style={[styles.telemetryFooter, { borderTopColor: 'rgba(255,255,255,0.1)' }]}>
             <View style={{ flex: 1 }}>
-              <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, opacity: 0.6 }]}>UPTIME</Text>
-              <Text style={[typography.labelSm, { color: colors.onSecondary, fontWeight: '700', marginTop: 2 }]}>{uptime.toFixed(2)}% / 144HR</Text>
+              <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, opacity: 0.6 }]}>COMPLETION</Text>
+              <Text style={[typography.labelSm, { color: colors.onSecondary, fontWeight: '700', marginTop: 2 }]}>{progress}%</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, opacity: 0.6 }]}>LOAD</Text>
-              <Text style={[typography.labelSm, { color: colors.onSecondary, fontWeight: '700', marginTop: 2 }]}>0.42 OPS/SEC</Text>
+              <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, opacity: 0.6 }]}>SPRINT PACE</Text>
+              <Text style={[typography.labelSm, { color: colors.onSecondary, fontWeight: '700', marginTop: 2 }]}>NORMAL</Text>
             </View>
           </View>
         </View>
@@ -96,7 +95,7 @@ const ProjectDetailScreen = ({ route, navigation }) => {
             <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainer }]}>
               <View style={[styles.progressBarFill, { backgroundColor: colors.primary, width: `${progress}%` }]} />
             </View>
-            <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 12 }]}>Estimated completion: Q4 FY24</Text>
+            <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 12 }]}>Estimated completion: End of Month</Text>
           </View>
 
           {/* Efficiency Card */}
@@ -104,7 +103,7 @@ const ProjectDetailScreen = ({ route, navigation }) => {
             <View style={styles.metricHeader}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <MaterialIcons name="bolt" size={18} color={colors.primary} style={{ marginRight: 8 }} />
-                <Text style={[typography.labelCaps, { color: colors.secondary }]}>EFFICIENCY</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary }]}>VELOCITY</Text>
               </View>
               <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>A+</Text>
             </View>
@@ -115,15 +114,15 @@ const ProjectDetailScreen = ({ route, navigation }) => {
               <View style={[styles.effBar, { backgroundColor: colors.primary }]} />
               <View style={[styles.effBar, { backgroundColor: colors.surfaceContainer }]} />
             </View>
-            <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, fontWeight: '700', marginTop: 12 }]}>OPTIMIZED PATHWAY DETECTED</Text>
+            <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, fontWeight: '700', marginTop: 12 }]}>ON TRACK FOR RELEASE</Text>
           </View>
 
-          {/* Active Mandates Card */}
+          {/* Active Tasks Card */}
           <View style={[styles.metricCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.metricHeader}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <MaterialIcons name="shield" size={18} color={colors.primary} style={{ marginRight: 8 }} />
-                <Text style={[typography.labelCaps, { color: colors.secondary }]}>ACTIVE MANDATES</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary }]}>ACTIVE TASKS</Text>
               </View>
               <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>12</Text>
             </View>
@@ -135,7 +134,7 @@ const ProjectDetailScreen = ({ route, navigation }) => {
               </View>
             </View>
             <TouchableOpacity style={{ marginTop: 12 }}>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>VIEW ALL PROTOCOLS -{">"}</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>VIEW ALL TASKS -{">"}</Text>
             </TouchableOpacity>
           </View>
         </View>

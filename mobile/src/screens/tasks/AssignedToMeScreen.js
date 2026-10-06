@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -38,8 +39,8 @@ const AssignedToMeScreen = ({ navigation }) => {
         <View style={[styles.mainContent, { paddingHorizontal: spacing.md, paddingTop: 24 }]}>
           {/* Page Headline */}
           <View style={{ marginBottom: spacing.lg }}>
-            <Text style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase', letterSpacing: -0.5 }]}>Assigned Directives</Text>
-            <Text style={[typography.labelSm, { color: colors.secondary, marginTop: spacing.xs }]}>SYSTEM STATUS: ALL OPERATIONAL // 4 PENDING ACTION</Text>
+            <Text style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase', letterSpacing: -0.5 }]}>Assigned Tasks</Text>
+            <Text style={[typography.labelSm, { color: colors.secondary, marginTop: spacing.xs }]}>WORKSPACE OVERVIEW // 4 PENDING TASKS</Text>
           </View>
 
           {/* Urgency Stack */}
@@ -55,8 +56,8 @@ const AssignedToMeScreen = ({ navigation }) => {
               <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.error, borderRadius: borderRadius.DEFAULT, padding: spacing.md }]}>
                 <View style={styles.cardTop}>
                   <View>
-                    <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: spacing.xs }]}>TASK_ID: X-9042</Text>
-                    <Text style={[typography.headlineLgMobile, { fontSize: 20, color: colors.primary, lineHeight: 24 }]}>Core Stabilizer Calibration</Text>
+                    <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: spacing.xs }]}>TASK: TSK-9042</Text>
+                    <Text style={[typography.headlineLgMobile, { fontSize: 20, color: colors.primary, lineHeight: 24 }]}>Production Database Migration</Text>
                   </View>
                   <View style={[styles.timerBadge, { backgroundColor: colors.error }]}>
                     <MaterialIcons name="timer" size={14} color={colors.onError} />
@@ -72,7 +73,7 @@ const AssignedToMeScreen = ({ navigation }) => {
                 </View>
 
                 <TouchableOpacity style={[styles.primaryButton, { backgroundColor: colors.primary, borderRadius: borderRadius.full, paddingVertical: spacing.md }]}>
-                  <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>View Protocol</Text>
+                  <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>View Task</Text>
                   <MaterialIcons name="chevron-right" size={16} color={colors.onPrimary} style={{ marginLeft: spacing.sm }} />
                 </TouchableOpacity>
               </View>
@@ -88,14 +89,14 @@ const AssignedToMeScreen = ({ navigation }) => {
               <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT, padding: spacing.md }]}>
                 <View style={styles.cardTop}>
                   <View>
-                    <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: spacing.xs }]}>TASK_ID: L-2281</Text>
+                    <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: spacing.xs }]}>TASK: TSK-2281</Text>
                     <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary, lineHeight: 22 }]}>Security Patch Deployment</Text>
                   </View>
                   <Text style={[typography.labelSm, { color: colors.secondary }]}>ACTIVE</Text>
                 </View>
 
                 <TouchableOpacity style={[styles.secondaryButton, { borderColor: colors.outlineVariant, borderRadius: borderRadius.full, paddingVertical: spacing.md, marginTop: spacing.md }]}>
-                  <Text style={[typography.labelCaps, { color: colors.primary }]}>View Protocol</Text>
+                  <Text style={[typography.labelCaps, { color: colors.primary }]}>View Task</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -110,14 +111,14 @@ const AssignedToMeScreen = ({ navigation }) => {
               <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT, padding: spacing.md }]}>
                 <View style={styles.cardTop}>
                   <View>
-                    <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: spacing.xs }]}>TASK_ID: M-4432</Text>
-                    <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary, lineHeight: 22 }]}>Network Latency Audit</Text>
+                    <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: spacing.xs }]}>TASK: TSK-4432</Text>
+                    <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary, lineHeight: 22 }]}>API Response Time Audit</Text>
                   </View>
                   <Text style={[typography.labelSm, { color: colors.secondary }]}>PENDING</Text>
                 </View>
 
                 <TouchableOpacity style={[styles.secondaryButton, { borderColor: colors.outlineVariant, borderRadius: borderRadius.full, paddingVertical: spacing.md, marginTop: spacing.md }]}>
-                  <Text style={[typography.labelCaps, { color: colors.primary }]}>View Protocol</Text>
+                  <Text style={[typography.labelCaps, { color: colors.primary }]}>View Task</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -132,14 +133,14 @@ const AssignedToMeScreen = ({ navigation }) => {
               <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, borderRadius: borderRadius.DEFAULT, padding: spacing.md, opacity: 0.8 }]}>
                 <View style={styles.cardTop}>
                   <View>
-                    <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: spacing.xs }]}>TASK_ID: Q-1109</Text>
-                    <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary, lineHeight: 22 }]}>Archive Data Cleanse</Text>
+                    <Text style={[typography.labelSm, { color: colors.secondary, marginBottom: spacing.xs }]}>TASK: TSK-1109</Text>
+                    <Text style={[typography.headlineLgMobile, { fontSize: 18, color: colors.primary, lineHeight: 22 }]}>Archive Old Project Data</Text>
                   </View>
                   <Text style={[typography.labelSm, { color: colors.secondary }]}>QUEUED</Text>
                 </View>
 
                 <TouchableOpacity style={[styles.secondaryButton, { borderColor: colors.outlineVariant, borderRadius: borderRadius.full, paddingVertical: spacing.md, marginTop: spacing.md }]}>
-                  <Text style={[typography.labelCaps, { color: colors.primary }]}>View Protocol</Text>
+                  <Text style={[typography.labelCaps, { color: colors.primary }]}>View Task</Text>
                 </TouchableOpacity>
               </View>
             </View>

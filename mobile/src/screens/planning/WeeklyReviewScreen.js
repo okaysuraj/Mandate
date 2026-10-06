@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -35,7 +36,7 @@ const WeeklyReviewScreen = () => {
         {/* Commitment Score & Velocity Trend Bento Row */}
         <View style={styles.bentoRow}>
           {/* Commitment */}
-          <View style={[styles.bentoCard, styles.bentoFlex, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+          <View style={[styles.bentoCard, styles.bentoFlex, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.secondary }]}>COMMITMENT</Text>
             <View>
               <Text style={[typography.displayLg, { color: colors.primary, fontSize: 48, lineHeight: 48, fontWeight: '900' }]}>
@@ -46,7 +47,7 @@ const WeeklyReviewScreen = () => {
           </View>
 
           {/* Velocity Trend */}
-          <View style={[styles.bentoCard, styles.bentoFlex, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim, position: 'relative', overflow: 'hidden' }]}>
+          <View style={[styles.bentoCard, styles.bentoFlex, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, position: 'relative', overflow: 'hidden' }]}>
             <Text style={[typography.labelCaps, { color: colors.secondary }]}>VELOCITY 7D</Text>
             <View style={styles.sparklineContainer}>
               <View style={[styles.sparklineBar, { backgroundColor: colors.primary, height: '45%' }]} />
@@ -61,7 +62,7 @@ const WeeklyReviewScreen = () => {
         </View>
 
         {/* Focus Efficiency Distribution */}
-        <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim, marginBottom: 16 }]}>
+        <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, marginBottom: 16 }]}>
           <View style={styles.cardHeaderFlex}>
             <Text style={[typography.labelCaps, { color: colors.secondary }]}>FOCUS EFFICIENCY DISTRIBUTION</Text>
             <MaterialIcons name="info" size={16} color={colors.secondary} />
@@ -85,7 +86,7 @@ const WeeklyReviewScreen = () => {
         </View>
 
         {/* Resource Utilization Summary */}
-        <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim, marginBottom: 16 }]}>
+        <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, marginBottom: 16 }]}>
           <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 32 }]}>RESOURCE UTILIZATION</Text>
           
           {/* Compute Capacity */}
@@ -122,7 +123,7 @@ const WeeklyReviewScreen = () => {
         {/* Top Performing Project Clusters Ledger */}
         <View style={styles.ledgerSection}>
           <Text style={[typography.labelCaps, { color: colors.secondary, paddingHorizontal: 8, marginBottom: 8 }]}>TOP PERFORMANCE LEDGER</Text>
-          <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim, padding: 0, overflow: 'hidden' }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: 0, overflow: 'hidden' }]}>
             
             {/* Project 1 */}
             <View style={[styles.ledgerRow, { borderBottomColor: colors.surfaceContainer }]}>

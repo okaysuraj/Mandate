@@ -6,7 +6,7 @@ const DEFAULT_TASKS = [
   { _id: "650a11111111111111111101", title: "API Gateway Protocol Setup", status: "pending", priority: "urgent", description: "Configure OAuth2 token verification and rate limiting rules for endpoints.", tags: ["backend", "security"] },
   { _id: "650a11111111111111111102", title: "Database Index Optimization", status: "in-progress", priority: "high", description: "Add compound index on workspaceId and createdAt for high-throughput queries.", tags: ["database", "perf"] },
   { _id: "650a11111111111111111103", title: "Global Search Suggestions UI", status: "validation", priority: "medium", description: "Realtime dynamic search debounce tuning and command palette shortcut bindings.", tags: ["frontend", "ui"] },
-  { _id: "650a11111111111111111104", title: "User Profile Avatar Sync", status: "completed", priority: "high", description: "Cloudinary pipeline sync for high-res operative badges.", tags: ["profile", "media"] },
+  { _id: "650a11111111111111111104", title: "User Profile Avatar Sync", status: "completed", priority: "high", description: "Cloudinary pipeline sync for high-res user profile photos.", tags: ["profile", "media"] },
   { _id: "650a11111111111111111105", title: "System Notification Bell Dropdown", status: "completed", priority: "medium", description: "Unread count and clear all actions via real-time WebSocket sync.", tags: ["socket", "notifications"] },
 ];
 
@@ -34,7 +34,7 @@ const COLUMNS = [
   },
   { 
     id: "completed", 
-    title: "Deployed", 
+    title: "Completed", 
     status: "completed", 
     dotColor: "bg-tertiary", 
     badgeClass: "bg-surface-container-highest text-on-surface-variant border-outline-variant",

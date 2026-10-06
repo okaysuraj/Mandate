@@ -16,7 +16,7 @@ const navItems = [
   { path: "/focus-summary", icon: "filter_center_focus", label: "Focus Stats" },
   { path: "/automation-rules", icon: "bolt", label: "Automation" },
   { path: "/billing", icon: "credit_card", label: "Billing" },
-  { path: "/command-palette", icon: "terminal", label: "Commands" },
+  { path: "/command-palette", icon: "keyboard_command_key", label: "Shortcuts" },
   { path: "/global-search", icon: "search", label: "Search" },
   { path: "/keyboard-shortcuts", icon: "keyboard", label: "Shortcuts" },
   { path: "/saved-views", icon: "collections_bookmark", label: "Views" },
@@ -81,13 +81,13 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
             {user?.avatar ? (
               <img src={user.avatar} alt={user?.name || "User Avatar"} className="w-full h-full object-cover" />
             ) : (
-              <span>{(user?.name || "OP").slice(0, 2).toUpperCase()}</span>
+              <span>{(user?.name || "U").slice(0, 2).toUpperCase()}</span>
             )}
           </div>
           {(!isCollapsed || isMobileView) && (
             <div className="min-w-0">
-              <p className="font-label-caps text-xs text-on-surface font-bold uppercase truncate">{user?.name || "OPERATIVE"}</p>
-              <p className="font-mono text-[9px] text-outline uppercase tracking-wider truncate">{user?.email || "OP-942"}</p>
+              <p className="font-label-caps text-xs text-on-surface font-bold uppercase truncate">{user?.name || "Workspace Member"}</p>
+              <p className="font-mono text-[9px] text-outline uppercase tracking-wider truncate">{user?.email || "Active Member"}</p>
             </div>
           )}
         </div>
@@ -108,7 +108,7 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
         {isCollapsed && !isMobileView ? (
           <button
             onClick={onNewTask}
-            title="New Directive"
+            title="New Task"
             className="w-full h-10 rounded-md bg-primary text-on-primary flex items-center justify-center hover:opacity-90 transition-all cursor-pointer active:scale-95 border border-primary"
           >
             <span className="material-symbols-outlined text-[20px]">add</span>
@@ -119,7 +119,7 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
             className="w-full py-2.5 bg-primary text-on-primary rounded-md font-label-caps text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-all cursor-pointer active:scale-98 flex items-center justify-center gap-1.5 border border-primary shadow-sm"
           >
             <span className="material-symbols-outlined text-[16px]">add</span>
-            <span>New Directive</span>
+            <span>New Task</span>
           </button>
         )}
       </div>

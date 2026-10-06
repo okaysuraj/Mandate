@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -183,8 +184,8 @@ const DigestPreviewScreen = ({ navigation }) => {
                 style={styles.graphicImg}
               />
               <View style={[styles.graphicOverlay, { backgroundColor: 'rgba(0,0,0,0.05)' }]} />
-              <View style={[styles.graphicBadge, { backgroundColor: '#fff', borderColor: '#000' }]}>
-                <Text style={[typography.labelCaps, { color: '#000' }]}>SCHEMATIC: SEC_CORE_v4.2</Text>
+              <View style={[styles.graphicBadge, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+                <Text style={[typography.labelCaps, { color: colors.primary }]}>SCHEMATIC: SEC_CORE_v4.2</Text>
               </View>
             </View>
           </View>
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
   statusChip: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   progressBar: {
     height: 4,
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   metricValueRow: {
     flexDirection: 'row',
@@ -310,7 +311,7 @@ const styles = StyleSheet.create({
   bentoCard: {
     padding: 32,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
   },
   ledgerCard: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   ledgerList: {
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
   },
   graphicContainer: {
     aspectRatio: 16 / 9,
-    borderRadius: 4,
+    borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
     position: 'relative',
@@ -401,6 +402,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderWidth: 1,
+    borderRadius: 8,
   },
   bottomNav: {
     position: 'absolute',

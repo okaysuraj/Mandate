@@ -98,7 +98,7 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
             {/* Name */}
             <View>
               <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>
-                01 // MANDATE_NAME
+                01 // TASK TITLE
               </Text>
               <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
                 <TextInput
@@ -106,19 +106,19 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
                     typography.headlineLgMobile,
                     { color: colors.primary, textTransform: 'uppercase' }
                   ]}
-                  placeholder="ENTER IDENTIFIER..."
+                  placeholder="ENTER TASK TITLE..."
                   placeholderTextColor={colors.outlineVariant}
                   value={title}
                   onChangeText={setTitle}
-                  autoCapitalize="characters"
+                  autoCapitalize="words"
                 />
               </View>
             </View>
 
-            {/* Description (Mapped to Temporal Parameters conceptually in layout, but is description) */}
+            {/* Description */}
             <View>
               <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>
-                02 // PARAMETERS
+                02 // DESCRIPTION
               </Text>
               <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
                 <TextInput
@@ -126,7 +126,7 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
                     typography.bodyMd,
                     { color: colors.primary, minHeight: 80 }
                   ]}
-                  placeholder="OPERATIONAL PARAMS..."
+                  placeholder="Add details, notes, or specifications..."
                   placeholderTextColor={colors.outlineVariant}
                   value={description}
                   onChangeText={setDescription}
@@ -139,39 +139,40 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
             {/* Priority Level */}
             <View>
               <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>
-                03 // PRIORITY_LEVEL
+                03 // PRIORITY LEVEL
               </Text>
               <View style={[styles.segmentedControl, { borderColor: colors.outlineVariant }]}>
-                {renderSegmentBtn("high", "ALPHA", true, false)}
-                {renderSegmentBtn("medium", "BETA", false, false)}
-                {renderSegmentBtn("low", "GAMMA", false, true)}
+                {renderSegmentBtn("urgent", "URGENT", true, false)}
+                {renderSegmentBtn("high", "HIGH", false, false)}
+                {renderSegmentBtn("medium", "MEDIUM", false, false)}
+                {renderSegmentBtn("low", "LOW", false, true)}
               </View>
             </View>
 
-            {/* Resource Allocation */}
+            {/* Effort Estimate */}
             <View>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 8 }}>
                 <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>
-                  04 // RESOURCE_ALLOCATION
+                  04 // ESTIMATED EFFORT
                 </Text>
                 <Text style={[typography.labelCaps, { color: colors.primary }]}>{allocation}%</Text>
               </View>
               <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, paddingVertical: 24 }]}>
-                {/* Visual Fake Slider */}
+                {/* Visual Slider */}
                 <View style={{ height: 4, backgroundColor: colors.surfaceDim, width: '100%', position: 'relative', justifyContent: 'center' }}>
                   <View style={{ position: 'absolute', left: `${allocation}%`, width: 24, height: 24, backgroundColor: colors.primary, marginLeft: -12, borderWidth: 2, borderColor: colors.primary }} />
                 </View>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 24 }}>
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>MINIMAL</Text>
-                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>CRITICAL_LOAD</Text>
+                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>LOW</Text>
+                  <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>HIGH</Text>
                 </View>
               </View>
             </View>
 
-            {/* Decorative Visual Token */}
-            <View style={[styles.decorativeBox, { borderColor: colors.outlineVariant }]}>
+            {/* Workspace Sync Note */}
+            <View style={[styles.decorativeBox, { borderColor: colors.outlineVariant, height: 80 }]}>
               <View style={[styles.statusToken, { backgroundColor: colors.surface, borderColor: colors.outlineVariant }]}>
-                <Text style={[typography.labelCaps, { color: colors.primary }]}>SYSTEM_STABLE</Text>
+                <Text style={[typography.labelCaps, { color: colors.primary }]}>WORKSPACE SYNC ACTIVE</Text>
               </View>
             </View>
 
@@ -187,9 +188,9 @@ const TaskModal = ({ visible, onClose, onSave, task = null }) => {
               ) : (
                 <>
                   <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>
-                    {task ? "UPDATE_MANDATE" : "INITIALIZE_MANDATE"}
+                    {task ? "SAVE CHANGES" : "CREATE TASK"}
                   </Text>
-                  <MaterialIcons name="bolt" size={20} color={colors.onPrimary} style={{ marginLeft: 8 }} />
+                  <MaterialIcons name="check" size={20} color={colors.onPrimary} style={{ marginLeft: 8 }} />
                 </>
               )}
             </TouchableOpacity>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -55,15 +56,15 @@ const NotificationPreferencesScreen = ({ navigation }) => {
         
         {/* Header Section */}
         <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 }]}>System Configuration</Text>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 8 }]}>Global Notifications</Text>
-          <Text style={[typography.bodyMd, { color: colors.secondary }]}>Calibrate notification density and delivery protocols across all operational channels.</Text>
+          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 }]}>Settings</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: 8 }]}>Notification Preferences</Text>
+          <Text style={[typography.bodyMd, { color: colors.secondary }]}>Customize notification frequency and alert delivery across your workspace.</Text>
         </View>
 
         {/* Mandate Transitions (Notification Level) */}
         <View style={styles.section}>
           <View style={styles.sectionHeaderBetween}>
-            <Text style={[typography.labelCaps, { color: colors.primary }]}>VERBOSITY LEVEL</Text>
+            <Text style={[typography.labelCaps, { color: colors.primary }]}>ALERT FREQUENCY</Text>
             {isSaving && (
               <ActivityIndicator size="small" color={colors.primary} />
             )}
@@ -75,20 +76,20 @@ const NotificationPreferencesScreen = ({ navigation }) => {
               
               let title, desc, tag1, tag2;
               if (level === 'strict') {
-                title = 'Critical Priority (Strict)';
-                desc = 'Direct bypass for all quiet hours. High verbosity.';
-                tag1 = 'HAPTIC: HIGH';
-                tag2 = 'AUDIO: OVERRIDE';
+                title = 'All Notifications (High)';
+                desc = 'Immediate delivery for all task changes and comments.';
+                tag1 = 'HAPTIC: ON';
+                tag2 = 'SOUND: ON';
               } else if (level === 'normal') {
-                title = 'Standard Sync (Normal)';
-                desc = 'Batch delivery based on standard operating logic.';
+                title = 'Standard (Normal)';
+                desc = 'Regular updates for direct assignments and mentions.';
                 tag1 = 'HAPTIC: NORMAL';
-                tag2 = 'AUDIO: STANDARD';
+                tag2 = 'SOUND: STANDARD';
               } else {
-                title = 'Minimal Alerts (Light)';
-                desc = 'Only urgent notifications are pushed. Low verbosity.';
+                title = 'Important Only (Low)';
+                desc = 'Only urgent tasks and direct @mentions are pushed.';
                 tag1 = 'HAPTIC: OFF';
-                tag2 = 'AUDIO: OFF';
+                tag2 = 'SOUND: OFF';
               }
 
               return (
@@ -102,7 +103,7 @@ const NotificationPreferencesScreen = ({ navigation }) => {
                       style={[styles.toggleTrack, isActive ? { backgroundColor: colors.primary } : { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outlineVariant, borderWidth: 1 }]}
                       onPress={() => savePreferences(level, workStart, workEnd)}
                     >
-                      <View style={[styles.toggleThumb, isActive ? { backgroundColor: '#ffffff', alignSelf: 'flex-end' } : { backgroundColor: colors.outline, alignSelf: 'flex-start' }]} />
+                      <View style={[styles.toggleThumb, isActive ? { backgroundColor: colors.onPrimary, alignSelf: 'flex-end' } : { backgroundColor: colors.outline, alignSelf: 'flex-start' }]} />
                     </TouchableOpacity>
                   </View>
                   
@@ -145,7 +146,7 @@ const NotificationPreferencesScreen = ({ navigation }) => {
           </View>
 
           <View style={[styles.quietFooter, { borderTopColor: colors.outlineVariant }]}>
-            <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary }]}>Push notifications are suppressed outside these hours unless priority is Strict.</Text>
+            <Text style={[typography.bodyMd, { fontSize: 14, color: colors.secondary }]}>Push notifications are silenced outside work hours unless marked Urgent.</Text>
           </View>
         </View>
 
@@ -153,8 +154,8 @@ const NotificationPreferencesScreen = ({ navigation }) => {
         <View style={styles.dangerSection}>
           <TouchableOpacity style={[styles.dangerBtn, { backgroundColor: 'rgba(186, 26, 26, 0.05)', borderColor: 'rgba(186, 26, 26, 0.2)' }]}>
             <View style={styles.dangerLeft}>
-              <MaterialIcons name="warning" size={20} color={colors.error} />
-              <Text style={[typography.labelCaps, { color: colors.error, marginLeft: 8 }]}>Purge Notification History</Text>
+              <MaterialIcons name="delete-outline" size={20} color={colors.error} />
+              <Text style={[typography.labelCaps, { color: colors.error, marginLeft: 8 }]}>Clear Notification History</Text>
             </View>
             <MaterialIcons name="chevron-right" size={20} color={colors.error} />
           </TouchableOpacity>
@@ -207,7 +208,7 @@ const styles = StyleSheet.create({
   },
   bentoCard: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 24, 
   },
   cardHeaderRow: {
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   quietHeaderRow: {
     flexDirection: 'row',
@@ -250,7 +251,7 @@ const styles = StyleSheet.create({
   },
   timeInputBox: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
     alignItems: 'center',
   },
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16, 
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   dangerLeft: {
     flexDirection: 'row',

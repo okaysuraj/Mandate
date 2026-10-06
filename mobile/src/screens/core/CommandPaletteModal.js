@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput, ScrollView, Modal 
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Modal } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -49,8 +48,8 @@ const CommandPaletteModal = ({ visible, onClose, navigation }) => {
               <View style={[styles.searchContainer, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLowest }]}>
                 <MaterialIcons name="search" size={24} color={colors.outline} style={styles.searchIcon} />
                 <TextInput 
-                  style={[styles.searchInput, typography.labelCaps, { color: colors.primary }]}
-                  placeholder="SEARCH SYSTEM COMMANDS"
+                  style={[styles.searchInput, typography.bodyMd, { color: colors.primary }]}
+                  placeholder="Search actions, tasks, and pages..."
                   placeholderTextColor={colors.outlineVariant}
                   autoFocus
                   value={searchQuery}
@@ -60,7 +59,7 @@ const CommandPaletteModal = ({ visible, onClose, navigation }) => {
 
               {/* Shortcuts List */}
               <View style={styles.listSection}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8, paddingHorizontal: 4 }]}>GLOBAL COMMANDS</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8, paddingHorizontal: 4 }]}>QUICK SHORTCUTS</Text>
                 
                 {commands.map((cmd) => (
                   <TouchableOpacity 
@@ -95,9 +94,9 @@ const CommandPaletteModal = ({ visible, onClose, navigation }) => {
               {/* Dynamic Search Suggestion */}
               <View style={[styles.suggestionBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
                 <MaterialIcons name="keyboard-command-key" size={36} color={colors.outline} />
-                <Text style={[typography.labelCaps, { color: colors.primary, marginTop: 16 }]}>PRECISION NAVIGATION</Text>
+                <Text style={[typography.labelCaps, { color: colors.primary, marginTop: 16 }]}>QUICK NAVIGATION</Text>
                 <Text style={[typography.labelSm, { color: colors.secondary, textAlign: 'center', marginTop: 4 }]}>
-                  Start typing to filter industrial commands or access machine-specific controls.
+                  Type to quickly jump to any page or run common actions.
                 </Text>
               </View>
 

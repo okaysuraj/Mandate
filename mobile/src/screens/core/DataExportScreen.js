@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -21,13 +22,13 @@ const DataExportScreen = ({ navigation }) => {
         onPress={() => setEnabled(!enabled)}
         activeOpacity={0.8}
       >
-        <View style={[styles.toggleKnob, { left: enabled ? 24 : 4 }]} />
+        <View style={[styles.toggleKnob, { backgroundColor: colors.surfaceContainerLowest, left: enabled ? 24 : 4 }]} />
       </TouchableOpacity>
     </View>
   );
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.surface }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
         <View style={styles.headerLeft}>
@@ -48,30 +49,30 @@ const DataExportScreen = ({ navigation }) => {
           <View style={{ marginBottom: spacing.md }}>
             <View style={styles.syncStatusRow}>
               <View style={[styles.statusChip, { backgroundColor: colors.tertiaryContainer }]}>
-                <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, fontSize: 10, textTransform: 'uppercase' }]}>Live Sync</Text>
+                <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, fontSize: 10, textTransform: 'uppercase' }]}>Ready</Text>
               </View>
-              <Text style={[typography.labelSm, { color: colors.secondary, marginLeft: spacing.xs }]}>ID: 247-ALPHA</Text>
+              <Text style={[typography.labelSm, { color: colors.secondary, marginLeft: spacing.xs }]}>WORKSPACE EXPORT</Text>
             </View>
-            <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: spacing.xs, marginBottom: spacing.xs }]}>Data Export Workspace</Text>
-            <Text style={[typography.bodyMd, { color: colors.secondary }]}>Configure immutable serialization parameters and monitor real-time packaging queues.</Text>
+            <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: spacing.xs, marginBottom: spacing.xs }]}>Data Export</Text>
+            <Text style={[typography.bodyMd, { color: colors.secondary }]}>Export tasks, projects, and workspace data in CSV or JSON format.</Text>
           </View>
 
           {/* Export Configuration */}
           <View style={styles.section}>
             <View style={styles.sectionHeaderRow}>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>EXPORT PARAMETERS</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>EXPORT FORMATS</Text>
               <Text style={[typography.labelSm, { color: colors.primary, textDecorationLine: 'underline' }]}>Defaults</Text>
             </View>
-            <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
-              {renderToggle('SQL Serialization', 'Immutable schema-locked export', sqlEnabled, setSqlEnabled)}
-              <View style={[styles.divider, { backgroundColor: colors.surfaceContainer }]} />
-              {renderToggle('JSON Payload', 'Nested object hierarchy', jsonEnabled, setJsonEnabled)}
-              <View style={[styles.divider, { backgroundColor: colors.surfaceContainer }]} />
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+              {renderToggle('CSV / Spreadsheet', 'Export tasks as formatted CSV table', sqlEnabled, setSqlEnabled)}
+              <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
+              {renderToggle('JSON Archive', 'Full nested workspace data and metadata', jsonEnabled, setJsonEnabled)}
+              <View style={[styles.divider, { backgroundColor: colors.outlineVariant }]} />
               
               <View style={{ marginTop: spacing.sm }}>
-                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>COMPRESSION LEVEL</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>COMPRESSION</Text>
                 <View style={styles.compressionRow}>
-                  {['RAW', 'GZIP', 'LZ4'].map((level) => {
+                  {['RAW', 'ZIP', 'GZIP'].map((level) => {
                     const isActive = compression === level;
                     return (
                       <TouchableOpacity 
@@ -79,8 +80,9 @@ const DataExportScreen = ({ navigation }) => {
                         style={[
                           styles.compressionBtn, 
                           { 
+                            backgroundColor: isActive ? colors.surfaceContainerHigh : colors.surfaceContainerLowest,
                             borderColor: isActive ? colors.primary : colors.outlineVariant,
-                            borderWidth: isActive ? 2 : 1 
+                            borderWidth: 1 
                           }
                         ]}
                         onPress={() => setCompression(level)}
@@ -96,34 +98,34 @@ const DataExportScreen = ({ navigation }) => {
 
           {/* Packaging Queues */}
           <View style={styles.section}>
-            <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: spacing.sm }]}>PACKAGING QUEUES</Text>
+            <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: spacing.sm }]}>RECENT EXPORTS</Text>
             
             {/* Queue Item 1 */}
-            <View style={[styles.queueCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.queueCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={[styles.queueIcon, { backgroundColor: colors.surfaceContainer }]}>
                 <MaterialIcons name="data-object" size={20} color={colors.primary} />
               </View>
               <View style={styles.queueInfo}>
                 <View style={styles.queueHeader}>
-                  <Text style={[typography.labelSm, { color: colors.primary, fontWeight: 'bold' }]}>TRANSACTION_LOGS_MAY</Text>
+                  <Text style={[typography.labelSm, { color: colors.primary, fontWeight: 'bold' }]}>TASKS_AND_PROJECTS</Text>
                   <View style={[styles.statusChip, { backgroundColor: colors.tertiaryContainer }]}>
-                    <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, fontSize: 10 }]}>82%</Text>
+                    <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, fontSize: 10 }]}>100%</Text>
                   </View>
                 </View>
                 <View style={[styles.progressBar, { backgroundColor: colors.surfaceContainer }]}>
-                  <View style={[styles.progressFill, { backgroundColor: colors.primary, width: '82%' }]} />
+                  <View style={[styles.progressFill, { backgroundColor: colors.primary, width: '100%' }]} />
                 </View>
               </View>
             </View>
 
             {/* Queue Item 2 */}
-            <View style={[styles.queueCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.queueCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={[styles.queueIcon, { backgroundColor: colors.surfaceContainer }]}>
                 <MaterialIcons name="table-rows" size={20} color={colors.primary} />
               </View>
               <View style={styles.queueInfo}>
                 <View style={styles.queueHeader}>
-                  <Text style={[typography.labelSm, { color: colors.primary, fontWeight: 'bold' }]}>USER_METRICS_V4</Text>
+                  <Text style={[typography.labelSm, { color: colors.primary, fontWeight: 'bold' }]}>WORKSPACE_ANALYTICS</Text>
                   <View style={[styles.statusChip, { backgroundColor: colors.surfaceContainerHigh }]}>
                     <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>PENDING</Text>
                   </View>
@@ -135,13 +137,13 @@ const DataExportScreen = ({ navigation }) => {
             </View>
 
             {/* Queue Item 3 */}
-            <View style={[styles.queueCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.queueCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={[styles.queueIcon, { backgroundColor: colors.surfaceContainer }]}>
                 <MaterialIcons name="cloud-done" size={20} color={colors.primary} />
               </View>
               <View style={styles.queueInfo}>
                 <View style={styles.queueHeader}>
-                  <Text style={[typography.labelSm, { color: colors.primary, fontWeight: 'bold' }]}>SYSTEM_ARCHIVE_FINAL</Text>
+                  <Text style={[typography.labelSm, { color: colors.primary, fontWeight: 'bold' }]}>FULL_WORKSPACE_BACKUP</Text>
                   <View style={[styles.statusChip, { backgroundColor: colors.primaryContainer }]}>
                     <Text style={[typography.labelSm, { color: colors.onSecondary, fontSize: 10 }]}>DONE</Text>
                   </View>
@@ -157,18 +159,18 @@ const DataExportScreen = ({ navigation }) => {
           {/* System Logs */}
           <View style={styles.section}>
             <View style={styles.sectionHeaderRow}>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>SYSTEM LOGS</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>EXPORT STATUS LOGS</Text>
               <MaterialIcons name="filter-list" size={16} color={colors.secondary} />
             </View>
             <View style={[styles.logsCard, { backgroundColor: colors.primaryContainer }]}>
-              <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.5, marginBottom: 4 }]}>08:22:11 | INIT_EXPORT_DAEMON...</Text>
-              <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.7, marginBottom: 4 }]}>08:22:14 | VERIFY_SQL_SCHEMA [PASSED]</Text>
-              <Text style={[typography.labelSm, { color: '#fff', marginBottom: 4 }]}>08:22:18 | SERIALIZING_CHUNK_02... [RUNNING]</Text>
-              <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.7, marginBottom: 4 }]}>08:22:25 | ALLOCATING_BUFF_SIZE: 512MB</Text>
-              <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.5, marginBottom: 4 }]}>08:22:30 | WAITING_FOR_QUEUE_ACK...</Text>
+              <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.5, marginBottom: 4 }]}>08:22:11 | Export job initialized...</Text>
+              <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.7, marginBottom: 4 }]}>08:22:14 | Task records verified [PASSED]</Text>
+              <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, fontWeight: '600', marginBottom: 4 }]}>08:22:18 | Packaging files and attachments... [RUNNING]</Text>
+              <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.7, marginBottom: 4 }]}>08:22:25 | Archive size: 14.2 MB</Text>
+              <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.5, marginBottom: 4 }]}>08:22:30 | Generating secure download link...</Text>
               <View style={styles.logStreamActive}>
                 <View style={[styles.pulseDot, { backgroundColor: colors.tertiaryFixedDim }]} />
-                <Text style={[typography.labelSm, { color: colors.tertiaryFixedDim }]}>STREAM_ACTIVE_SOCKET: 44.02.1</Text>
+                <Text style={[typography.labelSm, { color: colors.tertiaryFixedDim }]}>STATUS: READY FOR DOWNLOAD</Text>
               </View>
             </View>
           </View>
@@ -176,8 +178,8 @@ const DataExportScreen = ({ navigation }) => {
           {/* Final Action CTA */}
           <View style={styles.actionSection}>
             <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: colors.primary }]}>
-              <MaterialIcons name="rocket-launch" size={20} color={colors.onPrimary} style={{ marginRight: 8 }} />
-              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>INITIALIZE BATCH EXPORT</Text>
+              <MaterialIcons name="file-download" size={20} color={colors.onPrimary} style={{ marginRight: 8 }} />
+              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>EXPORT DATA</Text>
             </TouchableOpacity>
           </View>
 
@@ -185,7 +187,7 @@ const DataExportScreen = ({ navigation }) => {
 
         {/* Footer */}
         <View style={[styles.footer, { backgroundColor: colors.surfaceContainer }]}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, opacity: 0.8, marginBottom: 16 }]}>© 2024 MANDATE INDUSTRIAL</Text>
+          <Text style={[typography.labelCaps, { color: colors.secondary, opacity: 0.8, marginBottom: 16 }]}>© 2024 MANDATE</Text>
           <View style={styles.footerLinks}>
             <Text style={[typography.labelSm, { color: colors.secondary }]}>Privacy</Text>
             <Text style={[typography.labelSm, { color: colors.secondary }]}>Terms</Text>
@@ -201,16 +203,16 @@ const DataExportScreen = ({ navigation }) => {
           <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4 }]}>DASHBOARD</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.navItemActive, { borderTopColor: colors.primary }]}>
-          <MaterialIcons name="precision-manufacturing" size={24} color={colors.primary} />
-          <Text style={[typography.labelSm, { color: colors.primary, marginTop: 4 }]}>ASSETS</Text>
+          <MaterialIcons name="folder-open" size={24} color={colors.primary} />
+          <Text style={[typography.labelSm, { color: colors.primary, marginTop: 4 }]}>PROJECTS</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="warning" size={24} color={colors.secondary} />
+          <MaterialIcons name="notifications-none" size={24} color={colors.secondary} />
           <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4 }]}>ALERTS</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
           <MaterialIcons name="settings" size={24} color={colors.secondary} />
-          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4 }]}>SYSTEM</Text>
+          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4 }]}>SETTINGS</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -259,9 +261,8 @@ const styles = StyleSheet.create({
   },
   bentoCard: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
-    backgroundColor: '#fff',
   },
   toggleRow: {
     flexDirection: 'row',
@@ -281,7 +282,6 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#fff',
     position: 'absolute',
   },
   divider: {
@@ -298,22 +298,20 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 4,
-    backgroundColor: '#fff',
+    borderRadius: 8,
   },
   queueCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    borderRadius: 12,
     marginBottom: 8,
   },
   queueIcon: {
     width: 40,
     height: 40,
-    borderRadius: 4,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -338,7 +336,7 @@ const styles = StyleSheet.create({
   },
   logsCard: {
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     minHeight: 160,
   },
   logStreamActive: {
@@ -360,7 +358,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
   },
   footer: {
     paddingVertical: 32,

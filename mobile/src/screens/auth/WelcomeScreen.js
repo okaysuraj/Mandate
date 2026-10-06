@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, ImageBackground, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ImageBackground, Animated } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -46,17 +47,17 @@ const WelcomeScreen = () => {
             style={styles.heroBgImage}
           >
             <View style={styles.gradientOverlay} />
-            <Animated.View style={[styles.scannerLine, { transform: [{ translateY: scanTranslateY }] }]} />
+            <Animated.View style={[styles.scannerLine, { backgroundColor: colors.primary, transform: [{ translateY: scanTranslateY }] }]} />
             
             <View style={styles.heroContent}>
-              <View style={[styles.activeBadge, { backgroundColor: colors.primary }]}>
-                <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>SYSTEM: ACTIVE</Text>
+              <View style={[styles.activeBadge, { backgroundColor: colors.primary, borderRadius: 8 }]}>
+                <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>MANDATE WORKSPACE</Text>
               </View>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 40, lineHeight: 40, fontWeight: '900', letterSpacing: -1, marginBottom: 16 }]}>
-                COMMAND THE{"\n"}INDUSTRIAL FRONT
+              <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 36, lineHeight: 40, fontWeight: '900', letterSpacing: -1, marginBottom: 16 }]}>
+                FOCUS ON WHAT{"\n"}MATTERS TODAY
               </Text>
-              <Text style={[typography.bodyMd, { color: colors.secondary, maxWidth: 280 }]}>
-                Integrated operational intelligence for the modern factory floor. Precision-engineered for absolute control.
+              <Text style={[typography.bodyMd, { color: colors.secondary, maxWidth: 300 }]}>
+                The high-velocity task management platform. Streamline your commitments, coordinate team workflows, and achieve daily clarity.
               </Text>
             </View>
           </ImageBackground>
@@ -64,11 +65,17 @@ const WelcomeScreen = () => {
 
         {/* Primary CTA Area */}
         <View style={styles.ctaSection}>
-          <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: colors.primary }]}>
-            <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2 }]}>INITIALIZE ACCESS</Text>
+          <TouchableOpacity 
+            onPress={() => navigation?.navigate?.("Login")} 
+            style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+          >
+            <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 1.5, fontWeight: '700' }]}>GET STARTED</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.secondaryBtn, { borderColor: colors.outlineVariant }]}>
-            <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2 }]}>VIEW PROTOCOLS</Text>
+          <TouchableOpacity 
+            onPress={() => navigation?.navigate?.("Register")} 
+            style={[styles.secondaryBtn, { borderColor: colors.outlineVariant }]}
+          >
+            <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 1.5, fontWeight: '700' }]}>CREATE ACCOUNT</Text>
           </TouchableOpacity>
         </View>
 
@@ -203,7 +210,7 @@ const styles = StyleSheet.create({
   },
   gradientOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(249, 249, 251, 0.4)', // Approx background gradient fade
+    backgroundColor: 'rgba(0,0,0,0.2)',
   },
   scannerLine: {
     position: 'absolute',
@@ -211,8 +218,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 2,
-    backgroundColor: '#000000',
-    opacity: 0.3,
+    opacity: 0.6,
     zIndex: 10,
   },
   heroContent: {
@@ -224,6 +230,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 4,
+    borderRadius: 8,
     marginBottom: 8,
   },
   ctaSection: {
@@ -234,7 +241,7 @@ const styles = StyleSheet.create({
   primaryBtn: {
     width: '100%',
     paddingVertical: 16,
-    borderRadius: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,
@@ -246,7 +253,7 @@ const styles = StyleSheet.create({
   secondaryBtn: {
     width: '100%',
     paddingVertical: 16,
-    borderRadius: 24,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -271,6 +278,7 @@ const styles = StyleSheet.create({
     width: '48%',
     aspectRatio: 1,
     borderWidth: 1,
+    borderRadius: 12,
     padding: 16,
     justifyContent: 'space-between',
   },
@@ -285,7 +293,7 @@ const styles = StyleSheet.create({
   trustIconWrapper: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

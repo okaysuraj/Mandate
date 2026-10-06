@@ -22,6 +22,20 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Eagerly restore cached user session from AsyncStorage so logged-in users go directly to Dashboard
+    AsyncStorage.getItem("userInfo").then((cached) => {
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed._id) {
+            setUser(parsed);
+          }
+        } catch (e) {
+          // Ignore JSON parse error
+        }
+      }
+    }).catch(() => {});
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         if (!firebaseUser.emailVerified) {

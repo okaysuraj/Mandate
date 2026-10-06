@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import Svg, { Circle } from 'react-native-svg';
@@ -45,10 +46,10 @@ const DailyReviewScreen = ({ navigation }) => {
           {/* Title Section */}
           <View style={styles.titleSection}>
             <View style={[styles.cycleBadge, { backgroundColor: colors.secondaryContainer }]}>
-              <Text style={[typography.labelCaps, { color: colors.onSecondaryContainer }]}>CYCLE 224-B COMPLETE</Text>
+              <Text style={[typography.labelCaps, { color: colors.onSecondaryContainer }]}>DAILY SPRINT COMPLETE</Text>
             </View>
             <Text style={[typography.headlineLgMobile, { color: colors.primary, marginVertical: spacing.xs }]}>Daily Review</Text>
-            <Text style={[typography.labelSm, { color: colors.secondary }]}>Mandate Reconciliation Protocol Active</Text>
+            <Text style={[typography.labelSm, { color: colors.secondary }]}>All Tasks & Deliverables Logged</Text>
           </View>
 
           {/* Success Score */}
@@ -64,16 +65,16 @@ const DailyReviewScreen = ({ navigation }) => {
               </View>
             </View>
             <View style={styles.scoreTextContainer}>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>Cycle Success Score</Text>
-              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginTop: 4 }]}>OPTIMAL PERFORMANCE</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>Daily Completion Rate</Text>
+              <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginTop: 4 }]}>EXCELLENT PROGRESS</Text>
             </View>
           </View>
 
-          {/* Mandate Matrix */}
+          {/* Task Matrix */}
           <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.matrixHeader}>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>Mandate Matrix</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary }]}>8x8 Cluster</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>Task Distribution</Text>
+              <Text style={[typography.labelSm, { color: colors.secondary }]}>Team Activity</Text>
             </View>
             <View style={styles.matrixGrid}>
               {renderMatrix()}
@@ -89,7 +90,7 @@ const DailyReviewScreen = ({ navigation }) => {
               </View>
               <View style={styles.legendItem}>
                 <View style={[styles.legendDot, { backgroundColor: colors.error }]} />
-                <Text style={[typography.labelSm, { color: colors.onSecondaryFixedVariant, fontSize: 10 }]}>Deviation</Text>
+                <Text style={[typography.labelSm, { color: colors.onSecondaryFixedVariant, fontSize: 10 }]}>Blocked</Text>
               </View>
             </View>
           </View>
@@ -98,29 +99,29 @@ const DailyReviewScreen = ({ navigation }) => {
           <View style={styles.summarySection}>
             <View style={styles.sectionHeaderRow}>
               <MaterialIcons name="analytics" size={20} color={colors.primary} />
-              <Text style={[typography.labelCaps, { color: colors.primary, marginLeft: spacing.sm }]}>Summary Log</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary, marginLeft: spacing.sm }]}>Activity Log</Text>
             </View>
             <View style={styles.logList}>
-              <View style={[styles.logItem, { backgroundColor: colors.surfaceContainerLow, borderLeftColor: colors.primary }]}>
+              <View style={[styles.logItem, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
                 <View>
-                  <Text style={[typography.labelSm, { color: colors.primary }]}>Mandate Reconciled</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 12 }]}>Batch 4409-Z successful</Text>
+                  <Text style={[typography.labelSm, { color: colors.primary }]}>Tasks Completed</Text>
+                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 12 }]}>All assigned sprint items finished</Text>
                 </View>
                 <MaterialIcons name="check-circle" size={20} color={colors.onTertiaryContainer} />
               </View>
-              <View style={[styles.logItem, { backgroundColor: colors.surfaceContainerLow, borderLeftColor: colors.error }]}>
+              <View style={[styles.logItem, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
                 <View>
-                  <Text style={[typography.labelSm, { color: colors.primary }]}>Deviation Detection</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 12 }]}>Heat variance in Zone 4</Text>
+                  <Text style={[typography.labelSm, { color: colors.primary }]}>Blocker Resolved</Text>
+                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 12 }]}>Deployment dependency unblocked</Text>
                 </View>
-                <MaterialIcons name="warning" size={20} color={colors.error} />
+                <MaterialIcons name="check-circle" size={20} color={colors.primary} />
               </View>
-              <View style={[styles.logItem, { backgroundColor: colors.surfaceContainerLow, borderLeftColor: colors.secondary }]}>
+              <View style={[styles.logItem, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
                 <View>
-                  <Text style={[typography.labelSm, { color: colors.primary }]}>Neural Synchronization</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 12 }]}>Completed in 14.2ms</Text>
+                  <Text style={[typography.labelSm, { color: colors.primary }]}>Workspace Cloud Sync</Text>
+                  <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 12 }]}>All changes synced to cloud</Text>
                 </View>
-                <MaterialIcons name="sync" size={20} color={colors.primary} />
+                <MaterialIcons name="cloud-done" size={20} color={colors.primary} />
               </View>
             </View>
           </View>
@@ -128,7 +129,7 @@ const DailyReviewScreen = ({ navigation }) => {
           {/* Status Metrics Grid */}
           <View style={styles.metricsGrid}>
             <View style={[styles.metricCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>POWER EFFICIENCY</Text>
+              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>TASK VELOCITY</Text>
               <View style={styles.metricValueRow}>
                 <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>94.2</Text>
                 <Text style={[typography.labelSm, { color: colors.secondary, marginLeft: 2 }]}>%</Text>
@@ -138,20 +139,20 @@ const DailyReviewScreen = ({ navigation }) => {
               </View>
             </View>
             <View style={[styles.metricCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>NEURAL LOAD</Text>
+              <Text style={[typography.labelCaps, { color: colors.secondary, fontSize: 10 }]}>FOCUS TIME</Text>
               <View style={styles.metricValueRow}>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>12.8</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary, marginLeft: 2 }]}>TFLOPS</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>6.5</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary, marginLeft: 2 }]}>hrs</Text>
               </View>
               <View style={[styles.metricBar, { backgroundColor: colors.surfaceContainerHigh }]}>
-                <View style={[styles.metricBarFill, { backgroundColor: colors.primary, width: '45%' }]} />
+                <View style={[styles.metricBarFill, { backgroundColor: colors.primary, width: '80%' }]} />
               </View>
             </View>
           </View>
 
           {/* Submit Action */}
           <TouchableOpacity style={[styles.submitBtn, { backgroundColor: colors.primary }]}>
-            <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2 }]}>ARCHIVE CYCLE DATA</Text>
+            <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2 }]}>COMPLETE DAILY REVIEW</Text>
           </TouchableOpacity>
 
         </View>
@@ -167,11 +168,11 @@ const DailyReviewScreen = ({ navigation }) => {
             </View>
             <View style={[styles.statusDivider, { backgroundColor: colors.onPrimaryContainer }]} />
             <View>
-              <Text style={[typography.labelCaps, { color: colors.onPrimary, opacity: 0.6, fontSize: 8 }]}>LOAD</Text>
-              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>OPTIMAL</Text>
+              <Text style={[typography.labelCaps, { color: colors.onPrimary, opacity: 0.6, fontSize: 8 }]}>STATUS</Text>
+              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>ON TRACK</Text>
             </View>
           </View>
-          <MaterialIcons name="sensors" size={20} color={colors.onPrimary} />
+          <MaterialIcons name="done-all" size={20} color={colors.onPrimary} />
         </View>
       </View>
     </SafeAreaView>
@@ -200,12 +201,12 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 16,
+    borderRadius: 8,
     marginBottom: 8,
   },
   bentoCard: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 32,
     alignItems: 'center',
   },
@@ -274,8 +275,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    borderRadius: 6,
-    borderLeftWidth: 4,
+    borderRadius: 12,
+    borderWidth: 1,
   },
   metricsGrid: {
     flexDirection: 'row',
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   metricValueRow: {
     flexDirection: 'row',
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
   submitBtn: {
     width: '100%',
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 16,
@@ -323,7 +324,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },

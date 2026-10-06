@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
@@ -70,7 +69,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
         {/* System Credentials Module */}
         <View style={styles.section}>
           <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>SYSTEM CREDENTIALS</Text>
-          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             
             <View style={styles.fieldGroup}>
               <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', marginBottom: 4 }]}>Access Key</Text>
@@ -98,7 +97,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
         {/* Duty Station Module */}
         <View style={styles.section}>
           <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>DUTY STATION</Text>
-          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant, padding: 0, overflow: 'hidden' }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: 0, overflow: 'hidden' }]}>
             <View style={{ padding: 24, paddingBottom: 16 }}>
               <View style={styles.activeBadgeContainer}>
                 <View style={[styles.activeBadge, { backgroundColor: colors.tertiaryFixed }]}>
@@ -137,7 +136,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
         {/* Security Matrix Module */}
         <View style={styles.section}>
           <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 8 }]}>SECURITY MATRIX</Text>
-          <View style={[styles.bentoCard, { borderColor: colors.outlineVariant, padding: 0, overflow: 'hidden' }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: 0, overflow: 'hidden' }]}>
             <View style={[styles.matrixHeader, { backgroundColor: colors.primaryContainer }]}>
               <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer }]}>AUTH LEVEL 4</Text>
               <MaterialIcons name="lock" size={20} color={colors.onPrimaryContainer} />
@@ -238,9 +237,8 @@ const styles = StyleSheet.create({
   },
   bentoCard: {
     borderWidth: 1,
-    borderRadius: 16, // using slightly rounded instead of sharp corners
+    borderRadius: 16,
     padding: 24,
-    backgroundColor: '#fff',
   },
   fieldGroup: {
     marginBottom: 16,
@@ -251,11 +249,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
+    borderRadius: 8,
   },
   actionBtn: {
     width: '100%',
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,

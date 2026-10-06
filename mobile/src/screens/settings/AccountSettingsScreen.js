@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Switch
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Switch } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -80,55 +79,55 @@ const AccountSettingsScreen = ({ navigation }) => {
               />
             </View>
             <View style={styles.identityHeaderText}>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>Operative 7412</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2, marginTop: 4 }]}>Level 4 Administrator</Text>
+              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>Workspace Admin</Text>
+              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2, marginTop: 4 }]}>Workspace Owner</Text>
             </View>
           </View>
           
           <View style={styles.identityDetails}>
             <View style={[styles.identityRow, { borderBottomColor: colors.surfaceContainer }]}>
               <Text style={[typography.labelCaps, { color: colors.secondary }]}>ORGANIZATION</Text>
-              <Text style={[typography.bodyMd, { color: colors.primary }]}>MANDATE INDUSTRIAL</Text>
+              <Text style={[typography.bodyMd, { color: colors.primary }]}>MANDATE WORKSPACE</Text>
             </View>
             <View style={[styles.identityRow, { borderBottomColor: colors.surfaceContainer, borderBottomWidth: 0, paddingBottom: 0 }]}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>UPLINK STATUS</Text>
+              <Text style={[typography.labelCaps, { color: colors.secondary }]}>STATUS</Text>
               <View style={styles.uplinkStatus}>
                 <View style={[styles.pulseDot, { backgroundColor: colors.onTertiaryContainer }]} />
-                <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer }]}>ENCRYPTED</Text>
+                <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer }]}>ACTIVE</Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* Governance Controls Stack */}
+        {/* Account Security Stack */}
         <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, paddingHorizontal: 8, marginBottom: 8 }]}>CREDENTIAL GOVERNANCE</Text>
+          <Text style={[typography.labelCaps, { color: colors.secondary, paddingHorizontal: 8, marginBottom: 8 }]}>ACCOUNT SECURITY</Text>
           <View style={[styles.stackContainer, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <CustomToggleRow 
-              icon="fingerprint" title="Biometric Bypass" subtitle="Primary terminal access" 
+              icon="fingerprint" title="Biometric Login" subtitle="Face ID or Fingerprint" 
               isEnabled={biometric} onToggle={setBiometric} 
             />
             <CustomActionRow 
-              icon="key" title="Hardware Key" subtitle="Physical mandate token" 
-              onPress={() => {}}
+              icon="key" title="Security Key" subtitle="FIDO2 / WebAuthn token" 
+              onPress={() => {}} 
             />
             <CustomToggleRow 
-              icon="timer-off" title="Auto-Termination" subtitle="Timeout after 120s" 
+              icon="timer-off" title="Auto-Lock" subtitle="Lock after inactivity" 
               isEnabled={autoTerm} onToggle={setAutoTerm} 
             />
           </View>
         </View>
 
-        {/* Communication Uplinks */}
+        {/* Notifications & Sync */}
         <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.secondary, paddingHorizontal: 8, marginBottom: 8 }]}>COMMUNICATION UPLINKS</Text>
+          <Text style={[typography.labelCaps, { color: colors.secondary, paddingHorizontal: 8, marginBottom: 8 }]}>NOTIFICATIONS & SYNC</Text>
           <View style={[styles.stackContainer, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <CustomToggleRow 
-              icon="satellite-alt" title="Satellite Telemetry" subtitle="Critical system alerts" 
+              icon="notifications" title="Push Notifications" subtitle="Realtime task alerts" 
               isEnabled={satellite} onToggle={setSatellite} 
             />
             <CustomToggleRow 
-              icon="lan" title="Grid Sync" subtitle="Mesh network propagation" 
+              icon="sync" title="Background Sync" subtitle="Keep workspace up to date" 
               isEnabled={gridSync} onToggle={setGridSync} 
             />
           </View>
@@ -136,21 +135,21 @@ const AccountSettingsScreen = ({ navigation }) => {
 
         {/* Danger Zone */}
         <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.error, paddingHorizontal: 8, marginBottom: 8 }]}>SYSTEM TERMINAL</Text>
+          <Text style={[typography.labelCaps, { color: colors.error, paddingHorizontal: 8, marginBottom: 8 }]}>DANGER ZONE</Text>
           <View style={[styles.stackContainer, { backgroundColor: colors.surfaceContainerLowest, borderColor: 'rgba(186, 26, 26, 0.2)' }]}>
             <TouchableOpacity style={styles.dangerRow} activeOpacity={0.7}>
               <MaterialIcons name="dangerous" size={24} color={colors.error} />
               <View style={styles.toggleRowText}>
-                <Text style={[typography.bodyMd, { color: colors.error, fontWeight: '700' }]}>WIPE DATA CORE</Text>
-                <Text style={[typography.labelSm, { color: colors.error, opacity: 0.8 }]}>Irreversible identity erasure</Text>
+                <Text style={[typography.bodyMd, { color: colors.error, fontWeight: '700' }]}>DELETE ACCOUNT</Text>
+                <Text style={[typography.labelSm, { color: colors.error, opacity: 0.8 }]}>Irreversible account deletion</Text>
               </View>
             </TouchableOpacity>
             <View style={{ height: 1, backgroundColor: 'rgba(186, 26, 26, 0.1)' }} />
             <TouchableOpacity style={styles.dangerRow} activeOpacity={0.7}>
               <MaterialIcons name="logout" size={24} color={colors.secondary} />
               <View style={styles.toggleRowText}>
-                <Text style={[typography.bodyMd, { color: colors.secondary }]}>Close Secure Session</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>Terminate current uplink</Text>
+                <Text style={[typography.bodyMd, { color: colors.secondary }]}>Log Out</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary }]}>Sign out from this device</Text>
               </View>
             </TouchableOpacity>
           </View>

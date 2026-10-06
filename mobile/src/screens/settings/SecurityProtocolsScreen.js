@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -45,10 +44,10 @@ const SecurityProtocolsScreen = ({ navigation }) => {
         {/* Header Section */}
         <View style={styles.pageHeader}>
           <View style={[styles.badge, { backgroundColor: colors.tertiaryFixedDim }]}>
-            <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer }]}>LEVEL 4 CLEARANCE</Text>
+            <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer }]}>TWO-FACTOR AUTHENTICATION</Text>
           </View>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 8 }]}>Security Protocol 2FA</Text>
-          <Text style={[typography.bodyMd, { color: colors.secondary, marginTop: 4, maxWidth: 300 }]}>Initialization flow for multi-layered identity verification. Ensure your terminal is isolated before proceeding.</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 8 }]}>Two-Factor Authentication (2FA)</Text>
+          <Text style={[typography.bodyMd, { color: colors.secondary, marginTop: 4, maxWidth: 300 }]}>Enhance your account security with multi-factor authentication.</Text>
         </View>
 
         {/* Step Indicator */}
@@ -69,8 +68,8 @@ const SecurityProtocolsScreen = ({ navigation }) => {
           <View style={[styles.stepCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.stepHeaderRow}>
               <View>
-                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>INITIALIZE</Text>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 18 }]}>Authenticator Sync</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>SETUP</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 18 }]}>Authenticator App</Text>
               </View>
               <MaterialIcons name="qr-code-2" size={32} color={colors.primary} />
             </View>
@@ -84,7 +83,7 @@ const SecurityProtocolsScreen = ({ navigation }) => {
                 {/* Fake scanning line */}
                 <View style={[styles.scanLine, { backgroundColor: colors.primary }]} />
               </View>
-              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2, marginTop: 16 }]}>Scan with Auth App</Text>
+              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2, marginTop: 16 }]}>Scan with Authenticator App</Text>
             </View>
 
             <View style={[styles.secretBox, { backgroundColor: colors.surfaceContainer }]}>
@@ -103,7 +102,7 @@ const SecurityProtocolsScreen = ({ navigation }) => {
               ) : isVerified ? (
                 <MaterialIcons name="check-circle" size={20} color={colors.onPrimary} />
               ) : (
-                <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2 }]}>CONFIRM SYNC</Text>
+                <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2 }]}>CONFIRM SETUP</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -115,8 +114,8 @@ const SecurityProtocolsScreen = ({ navigation }) => {
           ]}>
             <View style={styles.stepHeaderRow}>
               <View>
-                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>SAFEGUARD</Text>
-                <Text style={[typography.headlineLgMobile, { color: isVerified ? colors.primary : colors.secondary, fontSize: 18 }]}>Recovery Protocol</Text>
+                <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>BACKUP CODES</Text>
+                <Text style={[typography.headlineLgMobile, { color: isVerified ? colors.primary : colors.secondary, fontSize: 18 }]}>Recovery Codes</Text>
               </View>
               <MaterialIcons name={isVerified ? "lock-reset" : "lock-open"} size={32} color={isVerified ? colors.primary : colors.secondary} />
             </View>
@@ -143,10 +142,10 @@ const SecurityProtocolsScreen = ({ navigation }) => {
           <View style={[styles.warningCard, { backgroundColor: colors.primaryContainer }]}>
             <View style={styles.warningHeader}>
               <MaterialIcons name="warning" size={20} color={colors.onPrimaryContainer} />
-              <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, marginLeft: 8 }]}>MANDATORY PROTOCOL</Text>
+              <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, marginLeft: 8 }]}>SECURITY NOTICE</Text>
             </View>
             <Text style={[typography.labelSm, { color: colors.onPrimaryContainer, opacity: 0.8, lineHeight: 20 }]}>
-              NEVER SHARE THE QR CODE OR SECRET KEY WITH UNAUTHORIZED ENTITIES. MANDATE PERSONNEL WILL NEVER REQUEST THESE CREDENTIALS.
+              Never share your QR code or recovery keys with anyone. Mandate support will never request these credentials.
             </Text>
           </View>
 
@@ -190,7 +189,7 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 16,
+    borderRadius: 8,
   },
   progressContainer: {
     flexDirection: 'row',
@@ -233,6 +232,7 @@ const styles = StyleSheet.create({
     height: 192,
     backgroundColor: '#fff',
     borderWidth: 1,
+    borderRadius: 12,
     padding: 16,
     position: 'relative',
     overflow: 'hidden',
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   },
   confirmBtn: {
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     height: 56,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     minWidth: '40%',
     padding: 8,
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 8,
     alignItems: 'center',
   },
   actionsRow: {
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderWidth: 1,
-    borderRadius: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -98,10 +98,10 @@ const TaskDetailPage = () => {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to terminate this mandate?")) return;
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
     try {
       await deleteTask(id);
-      toast.success("Mandate deleted");
+      toast.success("Task deleted");
       navigate("/tasks");
     } catch (err) {
       toast.error("Failed to delete mandate");
@@ -157,7 +157,7 @@ const TaskDetailPage = () => {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-full font-mono text-sm tracking-widest text-on-surface-variant animate-pulse">
-          INITIALIZING MANDATE TELEMETRY...
+          LOADING TASK DETAILS...
         </div>
       </AppLayout>
     );
@@ -167,9 +167,9 @@ const TaskDetailPage = () => {
     return (
       <AppLayout>
         <div className="flex flex-col items-center justify-center h-full gap-4">
-          <span className="font-mono text-xs font-bold text-red-500 uppercase tracking-widest">CRITICAL: DIRECTIVE NOT FOUND</span>
+          <span className="font-mono text-xs font-bold text-red-500 uppercase tracking-widest">TASK NOT FOUND</span>
           <button onClick={() => navigate(-1)} className="px-6 py-2 border border-outline text-primary text-xs font-bold tracking-widest uppercase rounded hover:bg-surface-container-low transition-colors">
-            RETURN TO COMMAND
+            BACK TO DASHBOARD
           </button>
         </div>
       </AppLayout>
@@ -234,12 +234,12 @@ const TaskDetailPage = () => {
           {/* Left Column (7 cols): Parameters & Directives */}
           <div className="lg:col-span-7 flex flex-col gap-6">
             
-            {/* Directive Details Card */}
+            {/* Task Details Card */}
             <div className="bg-surface-container-lowest border border-outline-variant p-5 sm:p-6 rounded-xl shadow-sm space-y-4">
-              <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-on-surface-variant">DIRECTIVE PARAMETERS</h2>
+              <h2 className="text-xs font-mono font-bold uppercase tracking-widest text-on-surface-variant">TASK DETAILS</h2>
               
               <div>
-                <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">MANDATE TITLE</label>
+                <label className="text-[10px] font-mono font-bold text-on-surface-variant uppercase tracking-wider block mb-1.5">TASK TITLE</label>
                 <input 
                   type="text" 
                   value={title} 
@@ -418,19 +418,19 @@ const TaskDetailPage = () => {
                     disabled={postingComment || !newComment.trim()}
                     className="px-4 py-2 bg-primary text-on-primary text-xs font-mono font-bold uppercase tracking-wider rounded-lg hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 cursor-pointer shadow-sm"
                   >
-                    {postingComment ? "TRANSMITTING..." : "POST LOG"}
+                    {postingComment ? "POSTING..." : "POST COMMENT"}
                   </button>
                 </div>
               </form>
 
               <div className="space-y-3 max-h-80 overflow-y-auto pr-1 custom-scrollbar">
                 {comments.length === 0 ? (
-                  <p className="text-xs text-on-surface-variant font-mono italic">No log communications recorded yet.</p>
+                  <p className="text-xs text-on-surface-variant font-mono italic">No comments recorded yet.</p>
                 ) : (
                   comments.map((c) => (
                     <div key={c._id} className="bg-surface-container-low border border-outline-variant p-3.5 rounded-lg space-y-1">
                       <div className="flex justify-between items-center text-[10px] text-on-surface-variant font-mono">
-                        <span className="font-bold text-on-surface">{c.user?.name || "OPERATIVE"}</span>
+                        <span className="font-bold text-on-surface">{c.user?.name || "Team Member"}</span>
                         <span>{new Date(c.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                       <p className="text-xs text-on-surface font-sans leading-relaxed">{c.content}</p>

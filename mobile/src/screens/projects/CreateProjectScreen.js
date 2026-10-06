@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { createProject } from '../../services/projectService';
+import AppHeader from '../../components/layout/AppHeader';
 const CreateProjectScreen = ({ navigation }) => {
   const { colors, typography, spacing, borderRadius } = useTheme();
   const { user } = useAuth();
@@ -27,7 +29,7 @@ const CreateProjectScreen = ({ navigation }) => {
       navigation.goBack();
     } catch (err) {
       console.error(err);
-      alert('Failed to initialize project');
+      alert('Failed to create project');
     } finally {
       setLoading(false);
     }
@@ -47,21 +49,7 @@ const CreateProjectScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      {/* Top Navigation Bar */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.background }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: spacing.sm }]}>PROMETHEUS</Text>
-        </View>
-        <View style={[styles.avatarContainer, { borderColor: colors.outlineVariant }]}>
-          <Image 
-            source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAuGy9A8Hf09UB4MvhErbPmlHjf3uqK81MPCEMitUij7sQ776ZqpwzHpalF4qMWBrbGKXL9dI53bSWTe6PItGn6FAqqp-0UqsIuzM7ysoix-0ODyyDLTXv8lqm2j7HZ-Udow28eue7KsjsEBJaJr271QyzPrANArXG7f9SZSSkyF0oSxaJQVFuFuXxb3eHM04rQR2nyG-GiCim_mY6ddtGOBUXWfmIy7C8Q2NT0psB45WksEG6y4utJEg' }} 
-            style={styles.avatarImage} 
-          />
-        </View>
-      </View>
+      <AppHeader title="CREATE PROJECT" showBack={true} navigation={navigation} />
 
       <ScrollView contentContainerStyle={styles.container}>
         <View style={[styles.mainContent, { paddingHorizontal: spacing.md, paddingTop: spacing.lg }]}>
@@ -87,15 +75,15 @@ const CreateProjectScreen = ({ navigation }) => {
               <View>
                 <View style={{ marginBottom: spacing.lg }}>
                   <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: spacing.xs }]}>Identity</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2 }]}>Protocol Phase 01</Text>
+                  <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2 }]}>Phase 01: Setup</Text>
                 </View>
 
                 <View style={{ gap: spacing.lg }}>
                   <View>
-                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Project Nomenclature</Text>
+                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Project Name</Text>
                     <TextInput 
-                      style={[styles.textInput, typography.labelSm, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant, color: colors.primary, fontSize: 18, textTransform: 'uppercase' }]}
-                      placeholder="e.g. PROJECT_AETHER"
+                      style={[styles.textInput, typography.labelSm, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant, color: colors.primary, fontSize: 18 }]}
+                      placeholder="e.g. Mobile App Redesign"
                       placeholderTextColor={colors.outlineVariant}
                       value={projectName}
                       onChangeText={setProjectName}
@@ -103,22 +91,22 @@ const CreateProjectScreen = ({ navigation }) => {
                   </View>
 
                   <View>
-                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Executive Lead</Text>
+                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Project Lead</Text>
                     <TouchableOpacity style={[styles.selectInput, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant }]}>
-                      <Text style={[typography.bodyMd, { color: colors.primary }]}>Select Personnel</Text>
+                      <Text style={[typography.bodyMd, { color: colors.primary }]}>Select Team Member</Text>
                       <MaterialIcons name="expand-more" size={24} color={colors.secondary} />
                     </TouchableOpacity>
                   </View>
 
                   <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, padding: spacing.md }]}>
-                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Aesthetic Anchor</Text>
+                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Project Theme</Text>
                     <View style={[styles.imageContainer, { backgroundColor: colors.surfaceContainerHigh }]}>
                       <Image 
                         source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAfSncSDlI4cwiKFrDBoH0lFNBau8M1k0FWwkfFH4xlMe9npZ4kvdYEIQyTOyB_ZMS8amVQ2r42zX5EpegCLR_v7AjvziVVCQkVovDy3xG4t2ba8cc0hUX0gIr6ElIffMRtBigQoyH1BgtC-CdlKIQzvK6uC1FB6rvJjbKkPXEAILJbiyZkuVadTcBCUtI_pBWG3aAqi9ojbZWDBU55XLPkTN5c_fhNvBfbDzr3zjh6114YSJKocbLxIw' }} 
                         style={styles.aestheticImage} 
                       />
                     </View>
-                    <Text style={[typography.labelSm, { color: colors.secondaryFixedVariant, fontSize: 10, fontStyle: 'italic', marginTop: spacing.sm }]}>Current style preset: "INDUSTRIAL_MINIMAL"</Text>
+                    <Text style={[typography.labelSm, { color: colors.secondaryFixedVariant, fontSize: 10, fontStyle: 'italic', marginTop: spacing.sm }]}>Style preset: "Clean Modern"</Text>
                   </View>
                 </View>
               </View>
@@ -129,20 +117,20 @@ const CreateProjectScreen = ({ navigation }) => {
               <View>
                 <View style={{ marginBottom: spacing.lg }}>
                   <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: spacing.xs }]}>Operational</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2 }]}>Protocol Phase 02</Text>
+                  <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2 }]}>Phase 02: Timeline</Text>
                 </View>
 
                 <View style={{ gap: spacing.lg }}>
                   <View style={styles.row}>
                     <View style={{ flex: 1, marginRight: spacing.md }}>
-                      <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Inception</Text>
+                      <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Start Date</Text>
                       <TouchableOpacity style={[styles.selectInput, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant, paddingVertical: spacing.sm }]}>
                         <MaterialIcons name="calendar-today" size={16} color={colors.secondary} />
                         <Text style={[typography.labelSm, { color: colors.secondary, flex: 1, marginLeft: spacing.sm }]}>YYYY-MM-DD</Text>
                       </TouchableOpacity>
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Deployment</Text>
+                      <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Target Due Date</Text>
                       <TouchableOpacity style={[styles.selectInput, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant, paddingVertical: spacing.sm }]}>
                         <MaterialIcons name="event" size={16} color={colors.secondary} />
                         <Text style={[typography.labelSm, { color: colors.secondary, flex: 1, marginLeft: spacing.sm }]}>YYYY-MM-DD</Text>
@@ -151,7 +139,7 @@ const CreateProjectScreen = ({ navigation }) => {
                   </View>
 
                   <View>
-                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Mission Priority</Text>
+                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Priority Level</Text>
                     <View style={styles.priorityRow}>
                       <TouchableOpacity 
                         style={[styles.priorityBtn, priority === 'LOW' ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.outlineVariant }]}
@@ -160,29 +148,29 @@ const CreateProjectScreen = ({ navigation }) => {
                         <Text style={[typography.labelCaps, { color: priority === 'LOW' ? colors.onPrimary : colors.primary }]}>LOW</Text>
                       </TouchableOpacity>
                       <TouchableOpacity 
-                        style={[styles.priorityBtn, priority === 'CRITICAL' ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.outlineVariant }]}
-                        onPress={() => setPriority('CRITICAL')}
+                        style={[styles.priorityBtn, priority === 'MEDIUM' ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.outlineVariant }]}
+                        onPress={() => setPriority('MEDIUM')}
                       >
-                        <Text style={[typography.labelCaps, { color: priority === 'CRITICAL' ? colors.onPrimary : colors.primary }]}>CRITICAL</Text>
+                        <Text style={[typography.labelCaps, { color: priority === 'MEDIUM' ? colors.onPrimary : colors.primary }]}>MEDIUM</Text>
                       </TouchableOpacity>
                       <TouchableOpacity 
-                        style={[styles.priorityBtn, priority === 'EVO' ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.outlineVariant }]}
-                        onPress={() => setPriority('EVO')}
+                        style={[styles.priorityBtn, priority === 'HIGH' ? { backgroundColor: colors.primary, borderColor: colors.primary } : { borderColor: colors.outlineVariant }]}
+                        onPress={() => setPriority('HIGH')}
                       >
-                        <Text style={[typography.labelCaps, { color: priority === 'EVO' ? colors.onPrimary : colors.primary }]}>EVO</Text>
+                        <Text style={[typography.labelCaps, { color: priority === 'HIGH' ? colors.onPrimary : colors.primary }]}>HIGH</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
 
                   <View style={[styles.card, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outlineVariant, padding: spacing.md }]}>
                     <View style={styles.toggleRow}>
-                      <Text style={[typography.labelSm, { color: colors.primary, fontWeight: 'bold' }]}>STRICT_VALIDATION</Text>
+                      <Text style={[typography.labelSm, { color: colors.primary, fontWeight: 'bold' }]}>STRICT REVIEW</Text>
                       <View style={[styles.toggle, { backgroundColor: colors.primary }]}>
-                        <View style={styles.toggleKnobActive} />
+                        <View style={[styles.toggleKnobActive, { backgroundColor: colors.onPrimary }]} />
                       </View>
                     </View>
                     <Text style={[typography.bodyMd, { color: colors.secondary, fontSize: 12, fontStyle: 'italic', marginTop: spacing.sm }]}>
-                      Enabling strict validation requires cryptographic sign-off for all repository commits and architectural changes.
+                      Enabling strict review requires team lead approval for key milestones and final deliverables.
                     </Text>
                   </View>
                 </View>
@@ -193,45 +181,45 @@ const CreateProjectScreen = ({ navigation }) => {
             {currentStep === 3 && (
               <View>
                 <View style={{ marginBottom: spacing.lg }}>
-                  <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: spacing.xs }]}>Resource</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2 }]}>Protocol Phase 03</Text>
+                  <Text style={[typography.headlineLgMobile, { color: colors.primary, marginBottom: spacing.xs }]}>Team & Resources</Text>
+                  <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2 }]}>Phase 03: Allocation</Text>
                 </View>
 
                 <View style={{ gap: spacing.lg }}>
                   <View>
-                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Resource Multiplier</Text>
+                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Team Allocation</Text>
                     <View style={[styles.sliderTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
                       <View style={[styles.sliderFill, { backgroundColor: colors.primary, width: '50%' }]} />
                     </View>
                     <View style={styles.sliderLabels}>
-                      <Text style={[typography.labelCaps, { color: colors.secondary }]}>MIN</Text>
-                      <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: 'bold' }]}>1.5x ACTIVE</Text>
-                      <Text style={[typography.labelCaps, { color: colors.secondary }]}>MAX</Text>
+                      <Text style={[typography.labelCaps, { color: colors.secondary }]}>STANDARD</Text>
+                      <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: 'bold' }]}>1.5x DEDICATED</Text>
+                      <Text style={[typography.labelCaps, { color: colors.secondary }]}>EXPANDED</Text>
                     </View>
                   </View>
 
                   <View>
-                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Assigned Units</Text>
+                    <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: spacing.sm }]}>Assigned Teams</Text>
                     <View style={styles.row}>
                       <View style={[styles.unitCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, marginRight: spacing.sm }]}>
                         <View style={[styles.unitIcon, { backgroundColor: colors.surfaceContainerHigh }]}>
-                          <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: 'bold' }]}>A</Text>
+                          <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: 'bold' }]}>E</Text>
                         </View>
-                        <Text style={[typography.labelSm, { color: colors.primary, marginLeft: spacing.sm }]}>Alpha Squad</Text>
+                        <Text style={[typography.labelSm, { color: colors.primary, marginLeft: spacing.sm }]}>Core Engineering</Text>
                       </View>
                       <View style={[styles.unitCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
                         <View style={[styles.unitIcon, { backgroundColor: colors.surfaceContainerHigh }]}>
-                          <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: 'bold' }]}>V</Text>
+                          <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: 'bold' }]}>D</Text>
                         </View>
-                        <Text style={[typography.labelSm, { color: colors.primary, marginLeft: spacing.sm }]}>Vector Lab</Text>
+                        <Text style={[typography.labelSm, { color: colors.primary, marginLeft: spacing.sm }]}>Product Design</Text>
                       </View>
                     </View>
                   </View>
 
                   <View style={[styles.card, { backgroundColor: colors.primary, overflow: 'hidden', height: 192 }]}>
                     <View style={styles.confirmationOverlay}>
-                      <Text style={[typography.labelCaps, { color: colors.onPrimary, marginBottom: spacing.xs }]}>READY FOR INITIALIZATION</Text>
-                      <Text style={[typography.labelSm, { color: 'rgba(255,255,255,0.6)', fontSize: 10, textTransform: 'uppercase' }]}>All parameters verified across local nodes</Text>
+                      <Text style={[typography.labelCaps, { color: colors.onPrimary, marginBottom: spacing.xs }]}>READY TO CREATE PROJECT</Text>
+                      <Text style={[typography.labelSm, { color: 'rgba(255,255,255,0.6)', fontSize: 10, textTransform: 'uppercase' }]}>All project parameters verified and ready</Text>
                     </View>
                   </View>
 
@@ -252,7 +240,7 @@ const CreateProjectScreen = ({ navigation }) => {
         
         {currentStep < totalSteps ? (
           <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: colors.primary, flex: 2 }]} onPress={handleNext}>
-            <Text style={[typography.labelCaps, { color: colors.onPrimary, marginRight: spacing.sm }]}>PHASE 0{currentStep + 1}</Text>
+            <Text style={[typography.labelCaps, { color: colors.onPrimary, marginRight: spacing.sm }]}>NEXT STEP</Text>
             <MaterialIcons name="arrow-forward" size={16} color={colors.onPrimary} />
           </TouchableOpacity>
         ) : (
@@ -262,9 +250,9 @@ const CreateProjectScreen = ({ navigation }) => {
             disabled={loading}
           >
             <Text style={[typography.labelCaps, { color: colors.onPrimary, marginRight: spacing.sm }]}>
-              {loading ? 'INITIALIZING...' : 'INITIALIZE PROJECT'}
+              {loading ? 'CREATING...' : 'CREATE PROJECT'}
             </Text>
-            <MaterialIcons name="rocket-launch" size={16} color={colors.onPrimary} />
+            <MaterialIcons name="check" size={16} color={colors.onPrimary} />
           </TouchableOpacity>
         )}
       </View>
@@ -334,12 +322,12 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   imageContainer: {
     width: '100%',
     aspectRatio: 16/9,
-    borderRadius: 6,
+    borderRadius: 8,
     overflow: 'hidden',
   },
   aestheticImage: {
@@ -356,7 +344,7 @@ const styles = StyleSheet.create({
   priorityBtn: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 32,
+    borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -376,7 +364,6 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#fff',
     position: 'absolute',
     right: 4,
     top: 4,
@@ -401,12 +388,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 8,
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   unitIcon: {
     width: 32,
     height: 32,
-    borderRadius: 4,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -427,7 +414,7 @@ const styles = StyleSheet.create({
   },
   navBtn: {
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -435,7 +422,7 @@ const styles = StyleSheet.create({
   primaryBtn: {
     flexDirection: 'row',
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   }

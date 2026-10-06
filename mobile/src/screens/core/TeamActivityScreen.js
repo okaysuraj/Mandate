@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -40,7 +41,7 @@ const TeamActivityScreen = () => {
         {/* 24H Metrics */}
         <View style={styles.metricsGrid}>
           {/* Operations */}
-          <View style={[styles.bentoCard, styles.metricCardWide, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+          <View style={[styles.bentoCard, styles.metricCardWide, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View>
               <Text style={[typography.labelCaps, { color: colors.secondary }]}>24H OPERATIONS</Text>
               <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>4,812</Text>
@@ -55,13 +56,13 @@ const TeamActivityScreen = () => {
           </View>
           
           {/* Mandates */}
-          <View style={[styles.bentoCard, styles.metricCardSmall, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+          <View style={[styles.bentoCard, styles.metricCardSmall, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.secondary }]}>ACTIVE MANDATES</Text>
             <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>128</Text>
           </View>
 
           {/* Val Rate */}
-          <View style={[styles.bentoCard, styles.metricCardSmall, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+          <View style={[styles.bentoCard, styles.metricCardSmall, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.secondary }]}>VAL. RATE</Text>
             <Text style={[typography.headlineLgMobile, { color: colors.tertiaryFixedDim }]}>99.8%</Text>
           </View>
@@ -78,7 +79,7 @@ const TeamActivityScreen = () => {
                 <Image source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAZqRgNhY8IVoIK7gwM0mpyjprpgH5UdeEkJ32x8ITjgefdTqyQQ1ldGfKpR6sSUD3rPVHfGUbhI6J_VkylbtRMW-jrjRj1_FMGv3tfVqd2bMuOvnFehcT6c3v8U_cwOqDyUbQjbO9QyrVXKaUTad-t9QzeNek05Bfk0hlBQcoIGYcQMfcfmEb_ktdTT6ENtIhkuu6hIA4SkssdbmBBBFleuy_njpAkUV8NDYpKg_aBzgsotpCmJxKHEA' }} style={styles.avatarImg} />
               </View>
             </View>
-            <View style={[styles.bentoCard, styles.timelineCard, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+            <View style={[styles.bentoCard, styles.timelineCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.timelineCardHeader}>
                 <Text style={[typography.labelCaps, { color: colors.primary }]}>OPERATOR_08</Text>
                 <View style={[styles.statusBadge, { backgroundColor: 'rgba(0, 152, 61, 0.1)' }]}>
@@ -100,7 +101,7 @@ const TeamActivityScreen = () => {
                 <Image source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA61e5g9479DAD690vvglFQkiqsponpBIU0AydR5gn4WVYaoWAwMAfBp8uvsibQQl-pjyuWr850eZfW35CGv_E0srt1wUgaCfKHukubvL03Q7J5hVCOHcKuQVlGPrqcolfdna8Wkw3OMncGGPYNKi-my6ZqNK7NLUD05iKi840U3NPg53X_u6ZzuixlgVQcHmqP8hYOQW4CwaaG6JBGBYhmNgfYrw4N2xbgQ8PolamARMA15bciTOxUGQ' }} style={styles.avatarImg} />
               </View>
             </View>
-            <View style={[styles.bentoCard, styles.timelineCard, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+            <View style={[styles.bentoCard, styles.timelineCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.timelineCardHeader}>
                 <Text style={[typography.labelCaps, { color: colors.primary }]}>SYSTEM_AUTO</Text>
                 <View style={[styles.statusBadge, { backgroundColor: colors.secondaryContainer }]}>
@@ -122,7 +123,7 @@ const TeamActivityScreen = () => {
                 <Image source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD3-3LORFcUutNXWfY3vRwtKQ4RHSL8-mN-4lJXyfcQio9BUaKdQBFsl53xF20VycIaVM-p9D4I_9wYLqOykAcE3S1mshy8-EVD7YFSMYiZeSrcB2Pfrfy4w6apHzBmRXX4vzPQ6ajwz2vTMXXxUE4Gwov8UaH3JkJ1e4x_cJgNQDOSbsMf67R-4fRafB4M-H4oA5vpAayWgnDFgmpmyjFK6PiapJkCU8m6wNtt3SNimuk_F8c9FkrHXw' }} style={styles.avatarImg} />
               </View>
             </View>
-            <View style={[styles.bentoCard, styles.timelineCard, { backgroundColor: '#ffffff', borderColor: 'rgba(186, 26, 26, 0.5)' }]}>
+            <View style={[styles.bentoCard, styles.timelineCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: 'rgba(186, 26, 26, 0.5)' }]}>
               <View style={styles.timelineCardHeader}>
                 <Text style={[typography.labelCaps, { color: colors.primary }]}>OPERATOR_14</Text>
                 <View style={[styles.statusBadge, { backgroundColor: colors.errorContainer }]}>
@@ -144,7 +145,7 @@ const TeamActivityScreen = () => {
                 <Image source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfwdKw5OK-YYj-lOAI12VSPMTojn6YppEBYgXfZZK1a2B53mqW6O3eXiSMsPRak-bjmcwYDZjRvXQQs3PfevVVFbfTrYFP6G__oSoHmD8d0aflXDIsGFnby6oklyxG-ulLmqteKJ99zLVCwREyhUmp0OAH0zTPkiiHq2OpIV3K4k8QsmAriYThTpSOGXai35iEgdaiFanUp6qX2uROpy3fpNOMwa-ZXhd45y6xt8_p0FkT6mdk0DhUwg' }} style={styles.avatarImg} />
               </View>
             </View>
-            <View style={[styles.bentoCard, styles.timelineCard, { backgroundColor: '#ffffff', borderColor: colors.surfaceDim }]}>
+            <View style={[styles.bentoCard, styles.timelineCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.timelineCardHeader}>
                 <Text style={[typography.labelCaps, { color: colors.primary }]}>OPERATOR_22</Text>
                 <View style={[styles.statusBadge, { backgroundColor: 'rgba(0, 152, 61, 0.1)' }]}>
@@ -244,6 +245,7 @@ const styles = StyleSheet.create({
   bentoCard: {
     borderWidth: 1,
     padding: 16,
+    borderRadius: 12,
   },
   metricCardWide: {
     width: '100%',

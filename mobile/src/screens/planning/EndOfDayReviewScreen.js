@@ -1,7 +1,6 @@
 import React from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import Svg, { Path } from "react-native-svg";
 import { useTheme } from "../../context/ThemeContext";
@@ -18,7 +17,7 @@ const EndOfDayReviewScreen = ({ navigation }) => {
             <MaterialIcons name="account-circle" size={18} color={colors.onPrimary} />
           </View>
           <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '900', letterSpacing: 2, marginLeft: 12 }]}>
-            CORE_OS_v1.0
+            DAILY SUMMARY
           </Text>
         </View>
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
@@ -31,19 +30,19 @@ const EndOfDayReviewScreen = ({ navigation }) => {
         {/* Header Section */}
         <View style={styles.pageHeader}>
           <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '800', textTransform: 'uppercase' }]}>
-            Review: Cycle_249
+            End of Day Review
           </Text>
           <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginTop: 4 }]}>
-            TIMESTAMP: 2023.10.27 // 23:59:59
+            TODAY'S ACTIVITY // DAILY DIGEST
           </Text>
         </View>
 
-        {/* Primary Success Rate Bento */}
+        {/* Primary Completion Rate Bento */}
         <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           <View style={styles.bentoHeaderRow}>
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>SUCCESS_RATE</Text>
+            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>COMPLETION RATE</Text>
             <View style={[styles.optimizedBadge, { backgroundColor: colors.tertiaryFixedDim }]}>
-              <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, fontSize: 10 }]}>OPTIMIZED</Text>
+              <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, fontSize: 10 }]}>EXCELLENT</Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
@@ -56,14 +55,14 @@ const EndOfDayReviewScreen = ({ navigation }) => {
             <View style={[styles.progressBarFill, { backgroundColor: colors.primary, width: '98.4%' }]} />
           </View>
           <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, marginTop: 16 }]}>
-            System resilience exceeding baseline targets by 4.2%.
+            Task completion rate is 4.2% higher than your daily target.
           </Text>
         </View>
 
-        {/* System Pulse Throughput Graph */}
+        {/* Hourly Activity Graph */}
         <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
           <View style={styles.bentoHeaderRow}>
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>PULSE_THROUGHPUT</Text>
+            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>HOURLY ACTIVITY</Text>
             <MaterialIcons name="monitoring" size={20} color={colors.primary} />
           </View>
           
@@ -84,64 +83,64 @@ const EndOfDayReviewScreen = ({ navigation }) => {
           </View>
 
           <View style={styles.chartLabels}>
-            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>00:00</Text>
-            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>12:00</Text>
-            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>23:59</Text>
+            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>09:00</Text>
+            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>13:00</Text>
+            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>18:00</Text>
           </View>
         </View>
 
-        {/* Mandate Execution Log Table */}
+        {/* Task Completion Log Table */}
         <View style={[styles.bentoCard, { padding: 0, backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, overflow: 'hidden' }]}>
           <View style={[styles.tableHeader, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outlineVariant }]}>
-            <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700' }]}>MANDATE_EXECUTION_LOG</Text>
+            <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700' }]}>TASK COMPLETION LOG</Text>
           </View>
           
           <View style={[styles.tableRow, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, flex: 1 }]}>TASK_ID</Text>
+            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, flex: 1 }]}>TASK</Text>
             <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, width: 80, textAlign: 'right' }]}>STATUS</Text>
           </View>
 
           <View style={[styles.tableRow, { borderBottomColor: colors.outlineVariant }]}>
-            <Text style={[typography.labelSm, { color: colors.primary, flex: 1, fontFamily: 'monospace' }]}>MN_042_ALPHA</Text>
+            <Text style={[typography.labelSm, { color: colors.primary, flex: 1 }]}>API Gateway Security Polish</Text>
             <View style={[styles.statusBadge, { backgroundColor: colors.tertiaryFixedDim }]}>
-              <Text style={[typography.labelCaps, { color: colors.onTertiaryFixed, fontSize: 10 }]}>COMMIT</Text>
+              <Text style={[typography.labelCaps, { color: colors.onTertiaryFixed, fontSize: 10 }]}>DONE</Text>
             </View>
           </View>
           <View style={[styles.tableRow, { borderBottomColor: colors.outlineVariant }]}>
-            <Text style={[typography.labelSm, { color: colors.primary, flex: 1, fontFamily: 'monospace' }]}>MN_089_SIGMA</Text>
+            <Text style={[typography.labelSm, { color: colors.primary, flex: 1 }]}>Mobile Layout Polish</Text>
             <View style={[styles.statusBadge, { backgroundColor: colors.tertiaryFixedDim }]}>
-              <Text style={[typography.labelCaps, { color: colors.onTertiaryFixed, fontSize: 10 }]}>COMMIT</Text>
+              <Text style={[typography.labelCaps, { color: colors.onTertiaryFixed, fontSize: 10 }]}>DONE</Text>
             </View>
           </View>
           <View style={styles.tableRow}>
-            <Text style={[typography.labelSm, { color: colors.primary, flex: 1, fontFamily: 'monospace' }]}>MN_112_DELTA</Text>
+            <Text style={[typography.labelSm, { color: colors.primary, flex: 1 }]}>Database Migration Verification</Text>
             <View style={[styles.statusBadge, { backgroundColor: colors.errorContainer }]}>
-              <Text style={[typography.labelCaps, { color: colors.onErrorContainer, fontSize: 10 }]}>RETRY</Text>
+              <Text style={[typography.labelCaps, { color: colors.onErrorContainer, fontSize: 10 }]}>PENDING</Text>
             </View>
           </View>
         </View>
 
-        {/* Environmental & Resource Drain Bottom Cards */}
+        {/* Productivity Summary Bottom Cards */}
         <View style={styles.bottomCardsRow}>
           <View style={[styles.miniBento, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.bentoHeaderRow}>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontSize: 10, letterSpacing: 2 }]}>ENV_BIAS</Text>
-              <MaterialIcons name="thermostat" size={16} color={colors.primary} />
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontSize: 10, letterSpacing: 2 }]}>FOCUS TIME</Text>
+              <MaterialIcons name="timer" size={16} color={colors.primary} />
             </View>
             <View>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '700' }]}>+1.2°</Text>
-              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, fontSize: 10, marginTop: 4 }]}>THERMAL_DRIFT</Text>
+              <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '700' }]}>5.4h</Text>
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, fontSize: 10, marginTop: 4 }]}>DEEP WORK</Text>
             </View>
           </View>
 
           <View style={[styles.miniBento, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.bentoHeaderRow}>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontSize: 10, letterSpacing: 2 }]}>RES_DRAIN</Text>
-              <MaterialIcons name="battery-charging-full" size={16} color={colors.primary} />
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, fontSize: 10, letterSpacing: 2 }]}>REMAINING</Text>
+              <MaterialIcons name="assignment-late" size={16} color={colors.primary} />
             </View>
             <View>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '700' }]}>14.2%</Text>
-              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, fontSize: 10, marginTop: 4 }]}>TOTAL_EXHAUST</Text>
+              <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '700' }]}>2</Text>
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, fontSize: 10, marginTop: 4 }]}>MOVED TO TOMORROW</Text>
             </View>
           </View>
         </View>

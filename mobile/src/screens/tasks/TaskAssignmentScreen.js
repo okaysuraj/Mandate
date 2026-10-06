@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -72,7 +73,7 @@ const TaskAssignmentScreen = () => {
 
         {/* Required Capacity Summary */}
         <View style={styles.capacitySection}>
-          <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.capHeader}>
               <View>
                 <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>REQUIRED CAPACITY</Text>
@@ -132,14 +133,14 @@ const TaskAssignmentScreen = () => {
 
           <View style={styles.operatorList}>
             {operators.map((op) => (
-              <View key={op.id} style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }, op.isBusy && { opacity: 0.6 }]}>
+              <View key={op.id} style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }, op.isBusy && { opacity: 0.6 }]}>
                 
                 <View style={styles.opHeaderRow}>
                   <View style={styles.opAvatarWrapper}>
                     <View style={[styles.opAvatar, { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}>
                       <Image source={{ uri: op.image }} style={styles.avatarImg} />
                     </View>
-                    <View style={[styles.statusDot, { backgroundColor: colors[op.dotColor], borderColor: '#ffffff' }]} />
+                    <View style={[styles.statusDot, { backgroundColor: colors[op.dotColor], borderColor: colors.surfaceContainerLowest }]} />
                   </View>
 
                   <View style={styles.opInfoCol}>
@@ -252,6 +253,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 24,
     gap: 16,
+    borderRadius: 12,
   },
   capHeader: {
     flexDirection: 'row',
@@ -374,7 +376,7 @@ const styles = StyleSheet.create({
   actionBtn: {
     width: '100%',
     paddingVertical: 12,
-    borderRadius: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,

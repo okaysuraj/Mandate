@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -62,8 +63,8 @@ const TableViewScreen = () => {
         {/* Dashboard Header */}
         <View style={styles.dashboardHeader}>
           <View style={styles.headerTitleCol}>
-            <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>SYSTEM STATUS</Text>
-            <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>LOGS & TELEMETRY</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>WORKSPACE ACTIVITY</Text>
+            <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>ACTIVITY & METRICS</Text>
           </View>
           <View style={[styles.liveBadge, { backgroundColor: 'rgba(60, 227, 106, 0.2)' }]}>
             <View style={[styles.pulseDot, { backgroundColor: colors.onTertiaryContainer }]} />
@@ -74,7 +75,7 @@ const TableViewScreen = () => {
         {/* Metric Blocks */}
         <View style={styles.metricsGrid}>
           {/* Throughput Trend */}
-          <View style={[styles.metricCard, styles.colSpan2, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <View style={[styles.metricCard, styles.colSpan2, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.secondary }]}>THROUGHPUT TREND</Text>
             <View style={styles.chartContainer}>
               {[40, 60, 55, 80, 70, 90, 45, 50, 65, 85, 100].map((h, i) => (
@@ -84,7 +85,7 @@ const TableViewScreen = () => {
           </View>
 
           {/* Nodes */}
-          <View style={[styles.metricCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <View style={[styles.metricCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.secondary }]}>NODES</Text>
             <View style={styles.metricValRow}>
               <Text style={[typography.displayLg, { color: colors.primary, fontSize: 48, lineHeight: 48 }]}>128</Text>
@@ -93,7 +94,7 @@ const TableViewScreen = () => {
           </View>
 
           {/* Latency */}
-          <View style={[styles.metricCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <View style={[styles.metricCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.secondary }]}>LATENCY</Text>
             <View style={styles.metricValRow}>
               <Text style={[typography.displayLg, { color: colors.primary, fontSize: 48, lineHeight: 48 }]}>42</Text>
@@ -102,7 +103,7 @@ const TableViewScreen = () => {
           </View>
 
           {/* Failures */}
-          <View style={[styles.metricCard, styles.colSpan2, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant, borderLeftWidth: 4, borderLeftColor: colors.error }]}>
+          <View style={[styles.metricCard, styles.colSpan2, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.failuresHeader}>
               <Text style={[typography.labelCaps, { color: colors.error }]}>FAILURES</Text>
               <MaterialIcons name="warning" size={24} color={colors.error} />
@@ -126,7 +127,7 @@ const TableViewScreen = () => {
 
           <View style={styles.nodeList}>
             {nodesData.map((node) => (
-              <TouchableOpacity key={node.id} style={[styles.nodeCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+              <TouchableOpacity key={node.id} style={[styles.nodeCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
                 <View style={styles.nodeBadge}>
                   <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>{node.nodeName}</Text>
                 </View>

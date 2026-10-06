@@ -1,7 +1,6 @@
 import React from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -58,9 +57,9 @@ const AccountabilityMatrixScreen = ({ navigation }) => {
       {/* TopAppBar */}
       <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
         <View style={styles.headerLeft}>
-          <MaterialIcons name="terminal" size={20} color={colors.primary} />
+          <MaterialIcons name="hub" size={20} color={colors.primary} />
           <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2, marginLeft: 8 }]}>
-            MANDATE OS
+            MANDATE
           </Text>
         </View>
         <TouchableOpacity style={styles.iconButton}>
@@ -73,15 +72,14 @@ const AccountabilityMatrixScreen = ({ navigation }) => {
         {/* Page Title */}
         <View style={styles.pageHeader}>
           <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>Accountability Matrix</Text>
-          <Text style={[typography.labelCaps, { color: colors.secondary, opacity: 0.6 }]}>VER 2.0.4</Text>
+          <Text style={[typography.labelCaps, { color: colors.secondary, opacity: 0.6 }]}>TEAM ROLES</Text>
         </View>
 
-        {/* Live Handshake Status */}
+        {/* Live Sync Status */}
         <View style={[styles.handshakeCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-          {/* Fake scanline could be an animated View */}
           <View style={styles.handshakeHeader}>
             <View style={styles.handshakeHeaderText}>
-              <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, letterSpacing: 2 }]}>LIVE HANDSHAKE STATUS</Text>
+              <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, letterSpacing: 2 }]}>WORKSPACE SYNC STATUS</Text>
               <View style={styles.statusRow}>
                 <View style={[styles.pulseDot, { backgroundColor: colors.tertiaryFixedDim }]} />
                 <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>SYNCHRONIZED</Text>
@@ -92,7 +90,7 @@ const AccountabilityMatrixScreen = ({ navigation }) => {
           
           <View style={styles.handshakeStats}>
             <View style={styles.statBox}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>ACTIVE PROTOCOLS</Text>
+              <Text style={[typography.labelCaps, { color: colors.secondary }]}>ACTIVE WORKFLOWS</Text>
               <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700' }]}>12/12</Text>
             </View>
             <View style={styles.statBox}>
@@ -105,7 +103,7 @@ const AccountabilityMatrixScreen = ({ navigation }) => {
         {/* RACI Task Cards */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[typography.labelCaps, { color: colors.secondary }]}>ACTIVE MANDATES</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary }]}>ACTIVE TASKS & ROLES</Text>
             <MaterialIcons name="filter-list" size={20} color={colors.secondary} />
           </View>
 
@@ -122,7 +120,7 @@ const AccountabilityMatrixScreen = ({ navigation }) => {
               <View style={styles.taskCardBody}>
                 <RaciRow roleCode="AD" roleName="Admin" raciType="A" roleBg={colors.secondaryContainer} roleText={colors.onSecondaryContainer} />
                 <RaciRow roleCode="LE" roleName="Lead" raciType="R" roleBg={colors.primaryContainer} roleText={colors.onPrimary} />
-                <RaciRow roleCode="OP" roleName="Operator" raciType="C" roleBg={colors.surfaceContainerHigh} roleText={colors.secondary} />
+                <RaciRow roleCode="CT" roleName="Contributor" raciType="C" roleBg={colors.surfaceContainerHigh} roleText={colors.secondary} />
               </View>
             </View>
 
@@ -138,7 +136,7 @@ const AccountabilityMatrixScreen = ({ navigation }) => {
               <View style={styles.taskCardBody}>
                 <RaciRow roleCode="AD" roleName="Admin" raciType="I" roleBg={colors.secondaryContainer} roleText={colors.onSecondaryContainer} />
                 <RaciRow roleCode="LE" roleName="Lead" raciType="A" roleBg={colors.primaryContainer} roleText={colors.onPrimary} />
-                <RaciRow roleCode="OP" roleName="Operator" raciType="R" roleBg={colors.surfaceContainerHigh} roleText={colors.secondary} />
+                <RaciRow roleCode="CT" roleName="Contributor" raciType="R" roleBg={colors.surfaceContainerHigh} roleText={colors.secondary} />
               </View>
             </View>
 
@@ -147,14 +145,14 @@ const AccountabilityMatrixScreen = ({ navigation }) => {
               <View style={[styles.taskCardHeader, { borderBottomColor: colors.surfaceContainer }]}>
                 <View>
                   <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>TASK FLOW</Text>
-                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Security Protocol Audit</Text>
+                  <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700' }]}>Security & Compliance Audit</Text>
                 </View>
                 <MaterialIcons name="more-vert" size={20} color={colors.secondary} />
               </View>
               <View style={styles.taskCardBody}>
                 <RaciRow roleCode="AD" roleName="Admin" raciType="R" roleBg={colors.secondaryContainer} roleText={colors.onSecondaryContainer} />
                 <RaciRow roleCode="LE" roleName="Lead" raciType="C" roleBg={colors.primaryContainer} roleText={colors.onPrimary} />
-                <RaciRow roleCode="OP" roleName="Operator" raciType="I" roleBg={colors.surfaceContainerHigh} roleText={colors.secondary} />
+                <RaciRow roleCode="CT" roleName="Contributor" raciType="I" roleBg={colors.surfaceContainerHigh} roleText={colors.secondary} />
               </View>
             </View>
           </View>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -163,7 +162,7 @@ const AutomationLogsScreen = ({ navigation }) => {
                 </View>
 
                 {log.error && (
-                  <View style={[styles.errorBox, { backgroundColor: colors.surfaceContainerLow, borderLeftColor: colors.error }]}>
+                  <View style={[styles.errorBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.error }]}>
                     <Text style={[typography.labelSm, { color: colors.error }]}>{log.error}</Text>
                   </View>
                 )}
@@ -229,7 +228,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 12,
     height: 48,
   },
   searchInput: {
@@ -240,7 +239,7 @@ const styles = StyleSheet.create({
   filterBtn: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 4,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     height: 48,
@@ -261,7 +260,7 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 6,
   },
   logBody: {
     gap: 2,
@@ -269,7 +268,8 @@ const styles = StyleSheet.create({
   errorBox: {
     marginTop: 8,
     padding: 8,
-    borderLeftWidth: 2,
+    borderWidth: 1,
+    borderRadius: 8,
   },
   endIndicator: {
     alignItems: 'center',

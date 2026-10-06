@@ -31,26 +31,26 @@ const CommandPalettePage = () => {
           <div className="flex items-center gap-2 mb-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block"></span>
             <span className="font-mono text-xs uppercase font-bold text-on-surface-variant tracking-widest">
-              QUICK COMMANDS
+              SHORTCUTS & ACTIONS
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-on-surface uppercase tracking-tight">
-            Command Center
+            Quick Navigation
           </h1>
           <p className="text-sm text-on-surface-variant max-w-xl mt-1">
-            Rapidly jump across workspaces, initialize workflows, and trigger autonomous procedures.
+            Rapidly jump across workspaces, navigate pages, and trigger common actions.
           </p>
         </div>
 
         <div className="bg-surface-container-lowest border border-outline-variant/60 p-6 sm:p-8 rounded-2xl shadow-sm space-y-6">
           <div className="relative">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary text-xl">
-              terminal
+              search
             </span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search commands, destinations, protocols..."
+              placeholder="Search actions, pages, and tools..."
               className="w-full bg-surface-container-low border border-outline-variant pl-12 pr-4 py-3.5 rounded-xl text-sm font-medium text-on-surface outline-none focus:border-primary transition-colors placeholder:text-on-surface-variant/50"
               autoFocus
             />

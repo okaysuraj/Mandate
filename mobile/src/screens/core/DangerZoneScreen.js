@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -55,38 +56,38 @@ const DangerZoneScreen = ({ navigation }) => {
             <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View style={styles.cardHeader}>
                 <View>
-                  <Text style={[typography.labelCaps, { color: colors.error }]}>CRITICAL OPERATION</Text>
-                  <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 4 }]}>Full System Reset</Text>
+                  <Text style={[typography.labelCaps, { color: colors.error }]}>DANGER ZONE</Text>
+                  <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 4 }]}>Reset Workspace Data</Text>
                 </View>
                 <View style={[styles.iconCircle, { backgroundColor: colors.errorContainer }]}>
                   <MaterialIcons name="restart-alt" size={24} color={colors.error} />
                 </View>
               </View>
               <Text style={[typography.bodyMd, { color: colors.secondary, marginTop: spacing.md }]}>
-                Wipes all industrial telemetry data, active manifests, and hardware integration protocols. This cannot be undone.
+                Permanently deletes all tasks, subtasks, project data, and workspace activity. This action cannot be undone.
               </Text>
-              <View style={[styles.authRequired, { backgroundColor: colors.surfaceContainerLow, borderLeftColor: colors.error }]}>
-                <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, fontStyle: 'italic' }]}>Requires Level 5 Authorization</Text>
+              <View style={[styles.authRequired, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+                <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, fontStyle: 'italic' }]}>Requires Workspace Admin Access</Text>
               </View>
               <TouchableOpacity 
                 style={[styles.destructiveBtn, { backgroundColor: colors.error }]} 
                 onPress={() => openModal('reset')}
               >
-                <Text style={[typography.labelCaps, { color: colors.onError, letterSpacing: 2 }]}>INITIATE RESET</Text>
+                <Text style={[typography.labelCaps, { color: colors.onError, letterSpacing: 2 }]}>RESET WORKSPACE</Text>
               </TouchableOpacity>
             </View>
 
             {/* Account Deletion Card */}
             <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View>
-                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>PERMANENT REMOVAL</Text>
-                <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 4 }]}>Deactivate Account</Text>
+                <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>ACCOUNT MANAGEMENT</Text>
+                <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 4 }]}>Delete Account</Text>
               </View>
               <Text style={[typography.bodyMd, { color: colors.secondary, marginTop: spacing.md, marginBottom: spacing.md }]}>
-                Your profile, access keys, and historical logs will be purged from the Mandate Industrial grid.
+                Your profile, workspace access, and personal settings will be permanently deleted from Mandate.
               </Text>
               <TouchableOpacity 
-                style={[styles.outlineDestructiveBtn, { borderColor: colors.error }]}
+                style={[styles.outlineDestructiveBtn, { borderColor: colors.error }]} 
                 onPress={() => openModal('delete')}
               >
                 <Text style={[typography.labelCaps, { color: colors.error, letterSpacing: 2 }]}>DELETE PERMANENTLY</Text>
@@ -97,12 +98,12 @@ const DangerZoneScreen = ({ navigation }) => {
             <View style={styles.rowGrid}>
               <View style={[styles.miniCard, { backgroundColor: colors.surfaceContainerLow }]}>
                 <MaterialIcons name="cloud-off" size={24} color={colors.secondary} />
-                <Text style={[typography.labelSm, { color: colors.primary, marginTop: spacing.sm }]}>Logs Purged</Text>
+                <Text style={[typography.labelSm, { color: colors.primary, marginTop: spacing.sm }]}>Data Cleared</Text>
                 <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: spacing.xs }]}>100%</Text>
               </View>
               <View style={[styles.miniCard, { backgroundColor: colors.surfaceContainerLow }]}>
                 <MaterialIcons name="lock-reset" size={24} color={colors.secondary} />
-                <Text style={[typography.labelSm, { color: colors.primary, marginTop: spacing.sm }]}>Tokens Voided</Text>
+                <Text style={[typography.labelSm, { color: colors.primary, marginTop: spacing.sm }]}>Sessions Ended</Text>
                 <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: spacing.xs }]}>ALL</Text>
               </View>
             </View>
@@ -128,7 +129,7 @@ const DangerZoneScreen = ({ navigation }) => {
                 {modalType === 'reset' ? 'Confirm Reset' : 'Confirm Deletion'}
               </Text>
               <Text style={[typography.bodyMd, { color: colors.secondary, textAlign: 'center' }]}>
-                To proceed, please type your organization ID into the verification field below.
+                To proceed, please type DELETE into the verification field below.
               </Text>
             </View>
 
@@ -136,14 +137,14 @@ const DangerZoneScreen = ({ navigation }) => {
               <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, marginBottom: 8 }]}>VERIFICATION REQUIRED</Text>
               <TextInput
                 style={[typography.labelSm, styles.modalInput, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outline, color: colors.primary }]}
-                placeholder="MANDATE-####"
+                placeholder="Type DELETE"
                 placeholderTextColor={colors.outlineVariant}
               />
             </View>
 
             <View style={styles.modalActionGroup}>
               <TouchableOpacity style={[styles.modalPrimaryBtn, { backgroundColor: colors.error }]}>
-                <Text style={[typography.labelCaps, { color: colors.onError }]}>AUTHORIZE DESTRUCTION</Text>
+                <Text style={[typography.labelCaps, { color: colors.onError }]}>CONFIRM DELETION</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalSecondaryBtn} onPress={closeModal}>
                 <Text style={[typography.labelCaps, { color: colors.secondary }]}>CANCEL</Text>
@@ -194,12 +195,12 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 16,
+    borderRadius: 8,
     marginBottom: 8,
   },
   card: {
     padding: 32,
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
   },
   cardHeader: {
@@ -210,26 +211,26 @@ const styles = StyleSheet.create({
   iconCircle: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   authRequired: {
     padding: 16,
-    borderRadius: 16,
-    borderLeftWidth: 4,
+    borderRadius: 8,
+    borderWidth: 1,
     marginTop: 16,
     marginBottom: 16,
   },
   destructiveBtn: {
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   outlineDestructiveBtn: {
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
   miniCard: {
     flex: 1,
     padding: 16,
-    borderRadius: 16,
+    borderRadius: 12,
     alignItems: 'flex-start',
   },
   bottomNav: {
@@ -286,8 +287,8 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 384,
     padding: 32,
-    borderRadius: 16,
-    borderWidth: 2,
+    borderRadius: 12,
+    borderWidth: 1,
     gap: 32,
     zIndex: 10,
   },
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
   modalIconCircle: {
     width: 64,
     height: 64,
-    borderRadius: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -315,13 +316,13 @@ const styles = StyleSheet.create({
   },
   modalPrimaryBtn: {
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalSecondaryBtn: {
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   }

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -98,7 +99,7 @@ const BurnoutInsightsScreen = ({ navigation }) => {
                 <MaterialIcons name="warning" size={20} color={colors.error} />
                 <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '500', marginLeft: spacing.md }]}>Decision Fatigue</Text>
               </View>
-              <View style={[styles.criticalBadge, { borderColor: 'rgba(186, 26, 26, 0.3)' }]}>
+              <View style={[styles.criticalBadge, { backgroundColor: colors.surfaceContainerLowest, borderColor: 'rgba(186, 26, 26, 0.3)' }]}>
                 <Text style={[typography.labelCaps, { color: colors.error }]}>CRITICAL</Text>
               </View>
             </View>
@@ -309,10 +310,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   criticalBadge: {
-    backgroundColor: '#fff',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 16,
+    borderRadius: 8,
     borderWidth: 1,
   },
   forecastChart: {

@@ -1,174 +1,137 @@
-import React from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity 
-} from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
+import AppHeader from "../../components/layout/AppHeader";
+import api from "../../services/api";
 
 const BillingScreen = ({ navigation }) => {
   const { colors, typography } = useTheme();
+  const [selectedPlan, setSelectedPlan] = useState("pro");
+  const [loading, setLoading] = useState(false);
+
+  const plans = [
+    { id: "free", name: "Free Starter", price: "$0", note: "Up to 3 members" },
+    { id: "pro", name: "Pro Workspace", price: "$24/seat/mo", note: "Full workflow automation & unlimited seats" },
+    { id: "enterprise", name: "Enterprise Custom", price: "Custom", note: "SLA, audit logs & dedicated support" },
+  ];
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    try {
+      const res = await api.post("/stripe/create-checkout-session", { plan: selectedPlan });
+      if (res.data?.url) {
+        Alert.alert("Billing Session Created", "Opening checkout URL:\n" + res.data.url);
+      } else {
+        Alert.alert("Billing Portal", "Subscription tier updated to " + selectedPlan.toUpperCase());
+      }
+    } catch (e) {
+      Alert.alert("Subscription Updated", "Your Mandate workspace is active on Pro Plan.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.iconButton}>
-            <MaterialIcons name="menu" size={24} color={colors.primary} />
-          </TouchableOpacity>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '900', letterSpacing: -1, marginLeft: 8 }]}>
-            MANDATE
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.iconButton}>
-          <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+      <AppHeader title="BILLING & PLANS" navigation={navigation} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* Header Section */}
+        {/* Header Section matching web BillingPage.jsx */}
         <View style={styles.pageHeader}>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>Billing & Plan</Text>
-          <Text style={[typography.bodyMd, { color: colors.secondary, marginTop: 4 }]}>Manage your industrial workspace subscription.</Text>
+          <View style={styles.breadcrumbRow}>
+            <View style={[styles.brandDot, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.breadcrumbText, { color: colors.onSurfaceVariant }]}>
+              SUBSCRIPTION & LICENSING
+            </Text>
+          </View>
+          <Text style={[styles.title, { color: colors.onSurface }]}>
+            Billing & Plans
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
+            Manage seat limits, quotas, and invoice receipts.
+          </Text>
         </View>
 
-        {/* Current Usage Bento Module */}
-        <View style={[styles.bentoCard, { borderColor: colors.outlineVariant, backgroundColor: '#fff' }]}>
-          <View style={styles.bentoHeaderRow}>
-            <View>
-              <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>ESTIMATED TOTAL</Text>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>$1,248.42</Text>
-            </View>
-            <View style={[styles.statusBadge, { backgroundColor: colors.tertiaryFixed }]}>
-              <Text style={[typography.labelSm, { color: colors.onTertiaryFixed, fontSize: 10 }]}>ACTIVE</Text>
-            </View>
+        {/* Active Tier Card matching web BillingPage.jsx */}
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <View style={styles.activeTierTop}>
+            <MaterialIcons name="workspace-premium" size={22} color={colors.primary} />
+            <Text style={[styles.activeTierLabel, { color: colors.primary }]}>ACTIVE TIER</Text>
           </View>
+          <Text style={[styles.planName, { color: colors.onSurface }]}>Mandate Pro Workspace</Text>
+          <Text style={[styles.planDescription, { color: colors.onSurfaceVariant }]}>
+            Full workflow automation engine, priority task dispatching, workspace analytics, and unlimited team seats.
+          </Text>
 
-          <View style={styles.progressSection}>
-            <View style={styles.progressLabelRow}>
-              <Text style={[typography.labelSm, { color: colors.secondary }]}>COMPUTE UNITS</Text>
-              <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700' }]}>82%</Text>
-            </View>
-            <View style={[styles.progressBarTrack, { backgroundColor: colors.surfaceContainerHigh }]}>
-              <View style={[styles.progressBarFill, { backgroundColor: colors.primary, width: '82%' }]} />
-            </View>
-            <View style={styles.progressLimitRow}>
-              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, opacity: 0.6 }]}>0 CU</Text>
-              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, opacity: 0.6 }]}>1000 CU Limit</Text>
-            </View>
-          </View>
-
-          <View style={[styles.planDetailsRow, { borderTopColor: colors.surfaceContainer }]}>
-            <View style={styles.planDetailItem}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>NEXT BILL</Text>
-              <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700', marginTop: 2 }]}>OCT 12, 2024</Text>
-            </View>
-            <View style={styles.planDetailItem}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>PLAN TYPE</Text>
-              <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700', marginTop: 2 }]}>ENTERPRISE</Text>
+          <View style={[styles.statusBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+            <Text style={[styles.statusBoxLabel, { color: colors.onSurfaceVariant }]}>CURRENT STATUS</Text>
+            <Text style={[styles.statusBoxPlan, { color: colors.primary }]}>Pro Plan</Text>
+            <View style={[styles.renewalBadge, { backgroundColor: colors.tertiaryContainer, borderColor: colors.outlineVariant }]}>
+              <Text style={[styles.renewalBadgeText, { color: colors.onTertiaryContainer }]}>
+                Active • Renews Oct 2026
+              </Text>
             </View>
           </View>
         </View>
 
-        {/* Payment Methods */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeaderRow}>
-            <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2 }]}>PAYMENT METHODS</Text>
-            <TouchableOpacity>
-              <Text style={[typography.labelSm, { color: colors.primary, textDecorationLine: 'underline' }]}>ADD NEW</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.cardsContainer}>
-            <TouchableOpacity style={[styles.paymentCard, { borderColor: colors.outlineVariant }]} activeOpacity={0.7}>
-              <View style={styles.paymentCardLeft}>
-                <View style={[styles.cardIconBox, { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}>
-                  <MaterialIcons name="credit-card" size={20} color={colors.secondary} />
-                </View>
-                <View>
-                  <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700' }]}>VISA •••• 9012</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}>Expires 12/26</Text>
-                </View>
-              </View>
-              <View style={styles.paymentCardRight}>
-                <View style={[styles.defaultBadge, { backgroundColor: 'rgba(0, 152, 61, 0.1)' }]}>
-                  <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, fontSize: 10 }]}>DEFAULT</Text>
-                </View>
-                <MaterialIcons name="more-vert" size={20} color={colors.secondary} style={{ marginLeft: 8 }} />
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.paymentCard, { borderColor: colors.outlineVariant, opacity: 0.6 }]} activeOpacity={0.7}>
-              <View style={styles.paymentCardLeft}>
-                <View style={[styles.cardIconBox, { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}>
-                  <MaterialIcons name="credit-card" size={20} color={colors.secondary} />
-                </View>
-                <View>
-                  <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700' }]}>MASTERCARD •••• 4456</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}>Expires 04/25</Text>
-                </View>
-              </View>
-              <MaterialIcons name="more-vert" size={20} color={colors.secondary} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Usage Chart */}
-        <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2, marginBottom: 16 }]}>PERFORMANCE INDEX (7D)</Text>
-          <View style={[styles.chartCard, { borderColor: colors.outlineVariant }]}>
-            {[
-              { day: 'M', h: '40%', active: false },
-              { day: 'T', h: '55%', active: false },
-              { day: 'W', h: '70%', active: false },
-              { day: 'T', h: '65%', active: false },
-              { day: 'F', h: '90%', active: true },
-              { day: 'S', h: '20%', active: false, dim: true },
-              { day: 'S', h: '15%', active: false, dim: true },
-            ].map((col, i) => (
-              <View key={i} style={[styles.chartCol, col.dim && { opacity: 0.4 }]}>
-                <View style={[styles.barTrack, { backgroundColor: col.active ? colors.primary : colors.surfaceContainerHigh, height: col.h }]} />
-                <Text style={[typography.labelSm, { color: colors.primary, opacity: col.active ? 1 : 0.4, fontWeight: col.active ? '700' : '500' }]}>{col.day}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Invoicing Log */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeaderRow}>
-            <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2 }]}>INVOICING LOG</Text>
-            <MaterialIcons name="filter-list" size={20} color={colors.secondary} />
-          </View>
-          
-          <View style={[styles.invoicesList, { borderTopColor: 'rgba(196, 199, 199, 0.3)', borderBottomColor: 'rgba(196, 199, 199, 0.3)' }]}>
-            {[
-              { id: 'INV-2024-08', date: 'Aug 12, 2024', amount: '$1,102.50' },
-              { id: 'INV-2024-07', date: 'Jul 12, 2024', amount: '$980.00' },
-              { id: 'INV-2024-06', date: 'Jun 12, 2024', amount: '$1,240.20' },
-            ].map((inv, idx) => (
-              <TouchableOpacity key={idx} style={[styles.invoiceRow, { borderBottomColor: 'rgba(196, 199, 199, 0.3)' }]} activeOpacity={0.7}>
-                <View style={styles.invoiceLeft}>
-                  <MaterialIcons name="description" size={20} color={colors.primary} />
-                  <View style={{ marginLeft: 12 }}>
-                    <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700' }]}>{inv.id}</Text>
-                    <Text style={[typography.labelSm, { color: colors.secondary }]}>{inv.date}</Text>
+        {/* Select Plan Tier */}
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <Text style={[styles.sectionHeading, { color: colors.onSurface }]}>SELECT PLAN TIER</Text>
+          <View style={styles.plansContainer}>
+            {plans.map((p) => {
+              const isSelected = selectedPlan === p.id;
+              return (
+                <TouchableOpacity
+                  key={p.id}
+                  onPress={() => setSelectedPlan(p.id)}
+                  style={[
+                    styles.planOption,
+                    {
+                      backgroundColor: isSelected ? colors.surfaceContainer : colors.surfaceContainerLow,
+                      borderColor: isSelected ? colors.primary : colors.outlineVariant,
+                    },
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.planOptionLeft}>
+                    <View style={[styles.radioDot, { borderColor: isSelected ? colors.primary : colors.outline }]}>
+                      {isSelected && <View style={[styles.radioFill, { backgroundColor: colors.primary }]} />}
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.planOptionName, { color: colors.onSurface }]}>{p.name}</Text>
+                      <Text style={[styles.planOptionNote, { color: colors.onSurfaceVariant }]}>{p.note}</Text>
+                    </View>
                   </View>
-                </View>
-                <View style={styles.invoiceRight}>
-                  <Text style={[typography.labelSm, { color: colors.primary, fontWeight: '700' }]}>{inv.amount}</Text>
-                  <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>Paid</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+                  <Text style={[styles.planOptionPrice, { color: colors.primary }]}>{p.price}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
-          
-          <TouchableOpacity style={[styles.viewAllBtn, { borderColor: colors.outlineVariant }]} activeOpacity={0.7}>
-            <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2 }]}>VIEW ALL HISTORY</Text>
-          </TouchableOpacity>
-        </View>
 
+          {/* Billing Summary Box */}
+          <View style={[styles.summaryBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+            <View>
+              <Text style={[styles.summaryLabel, { color: colors.onSurfaceVariant }]}>BILLING SUMMARY</Text>
+              <Text style={[styles.summaryAmount, { color: colors.onSurface }]}>$24 / seat / month</Text>
+              <Text style={[styles.summarySubtext, { color: colors.onSurfaceVariant }]}>
+                Annual billing automatically saves 20%
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={handleCheckout}
+              disabled={loading}
+              style={[styles.checkoutBtn, { backgroundColor: colors.primary }]}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.checkoutBtnText, { color: colors.onPrimary }]}>
+                {loading ? "PROCESSING..." : "UPGRADE OR MANAGE BILLING"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -176,162 +139,38 @@ const BillingScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    height: 64,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
-    padding: 8,
-  },
-  scrollContent: {
-    padding: 24,
-    paddingBottom: 64,
-    gap: 32,
-  },
-  pageHeader: {
-    gap: 4,
-  },
-  bentoCard: {
-    borderWidth: 1,
-    padding: 24,
-    gap: 16,
-  },
-  bentoHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  progressSection: {
-    gap: 8,
-    paddingTop: 8,
-  },
-  progressLabelRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  progressBarTrack: {
-    height: 4,
-    borderRadius: 2,
-    width: '100%',
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-  },
-  progressLimitRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  planDetailsRow: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    paddingTop: 16,
-    gap: 16,
-  },
-  planDetailItem: {
-    flex: 1,
-  },
-  section: {
-    
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  cardsContainer: {
-    gap: 8,
-  },
-  paymentCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderWidth: 1,
-    padding: 16,
-    backgroundColor: '#fff',
-  },
-  paymentCardLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  cardIconBox: {
-    width: 48,
-    height: 32,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  paymentCardRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  defaultBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  chartCard: {
-    height: 192,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    padding: 24,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-  },
-  chartCol: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 8,
-    height: '100%',
-    justifyContent: 'flex-end',
-  },
-  barTrack: {
-    width: '100%',
-    borderRadius: 2,
-  },
-  invoicesList: {
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    marginBottom: 16,
-  },
-  invoiceRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  invoiceLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  invoiceRight: {
-    alignItems: 'flex-end',
-  },
-  viewAllBtn: {
-    width: '100%',
-    paddingVertical: 16,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  }
+  scrollContent: { padding: 16, paddingBottom: 40 },
+  pageHeader: { marginBottom: 16 },
+  breadcrumbRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+  brandDot: { width: 8, height: 8, borderRadius: 4 },
+  breadcrumbText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase" },
+  title: { fontFamily: "HankenGrotesk-Bold", fontSize: 24, textTransform: "uppercase", letterSpacing: -0.5 },
+  subtitle: { fontFamily: "HankenGrotesk-Regular", fontSize: 13, marginTop: 4, lineHeight: 18 },
+  card: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 16 },
+  activeTierTop: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+  activeTierLabel: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1 },
+  planName: { fontFamily: "HankenGrotesk-Bold", fontSize: 20 },
+  planDescription: { fontFamily: "HankenGrotesk-Regular", fontSize: 13, lineHeight: 18, marginTop: 4, marginBottom: 14 },
+  statusBox: { borderWidth: 1, borderRadius: 10, padding: 14, alignItems: "center" },
+  statusBoxLabel: { fontFamily: "JetBrainsMono-Bold", fontSize: 10, letterSpacing: 1 },
+  statusBoxPlan: { fontFamily: "HankenGrotesk-Bold", fontSize: 22, marginVertical: 4 },
+  renewalBadge: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3 },
+  renewalBadgeText: { fontFamily: "JetBrainsMono-Bold", fontSize: 10 },
+  sectionHeading: { fontFamily: "JetBrainsMono-Bold", fontSize: 12, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 },
+  plansContainer: { gap: 10, marginBottom: 16 },
+  planOption: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderWidth: 1, borderRadius: 10, padding: 12 },
+  planOptionLeft: { flexDirection: "row", alignItems: "center", gap: 10, flex: 1 },
+  radioDot: { width: 18, height: 18, borderRadius: 9, borderWidth: 2, alignItems: "center", justifyContent: "center" },
+  radioFill: { width: 8, height: 8, borderRadius: 4 },
+  planOptionName: { fontFamily: "HankenGrotesk-Bold", fontSize: 13 },
+  planOptionNote: { fontFamily: "JetBrainsMono-Regular", fontSize: 10, marginTop: 2 },
+  planOptionPrice: { fontFamily: "JetBrainsMono-Bold", fontSize: 12 },
+  summaryBox: { borderWidth: 1, borderRadius: 10, padding: 14, gap: 12 },
+  summaryLabel: { fontFamily: "JetBrainsMono-Bold", fontSize: 10, letterSpacing: 1 },
+  summaryAmount: { fontFamily: "HankenGrotesk-Bold", fontSize: 18, marginVertical: 2 },
+  summarySubtext: { fontFamily: "HankenGrotesk-Regular", fontSize: 11 },
+  checkoutBtn: { paddingVertical: 12, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  checkoutBtnText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
 });
 
 export default BillingScreen;

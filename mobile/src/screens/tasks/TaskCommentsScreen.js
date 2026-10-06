@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -26,13 +27,13 @@ const TaskCommentsScreen = () => {
 
       <ScrollView contentContainerStyle={styles.container}>
         
-        {/* System Protocol Status Banner */}
+        {/* Status Banner */}
         <View style={[styles.statusBanner, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
           <View style={styles.bannerLeft}>
-            <MaterialIcons name="verified-user" size={18} color={colors.onTertiaryContainer} />
-            <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, marginLeft: 8, textTransform: 'uppercase' }]}>System Protocol: Encryption Active</Text>
+            <MaterialIcons name="lock" size={18} color={colors.onTertiaryContainer} />
+            <Text style={[typography.labelCaps, { color: colors.onTertiaryContainer, marginLeft: 8 }]}>Encrypted Discussion</Text>
           </View>
-          <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, opacity: 0.7 }]}>L-7 AUTH</Text>
+          <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, opacity: 0.7 }]}>Task Activity</Text>
         </View>
 
         {/* Threaded Chat Interface */}
@@ -41,21 +42,21 @@ const TaskCommentsScreen = () => {
           {/* Message Block: System */}
           <View style={styles.msgBlock}>
             <View style={styles.msgMeta}>
-              <Text style={[typography.labelCaps, { color: colors.primary, textTransform: 'uppercase' }]}>SYSTEM_DAEMON</Text>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, opacity: 0.5, marginLeft: 8, fontSize: 10 }]}>14:20:01</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>SYSTEM ACTIVITY</Text>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, opacity: 0.5, marginLeft: 8, fontSize: 10 }]}>14:20</Text>
             </View>
-            <View style={[styles.msgContentSystem, { backgroundColor: 'rgba(225, 226, 228, 0.3)', borderLeftColor: colors.primary }]}>
+            <View style={[styles.msgContentSystem, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, borderWidth: 1 }]}>
               <Text style={[typography.bodyMd, { color: colors.onSurface }]}>
-                Task <Text style={{ fontWeight: 'bold', textDecorationLine: 'underline' }}>#TRX-992</Text> status changed to <Text style={{ color: colors.onTertiaryContainer, fontWeight: 'bold' }}>OPERATIONAL</Text>. All nodes synchronized.
+                Task status updated to <Text style={{ color: colors.onTertiaryContainer, fontWeight: 'bold' }}>In Progress</Text>.
               </Text>
             </View>
           </View>
 
-          {/* Message Block: Operator A */}
+          {/* Message Block: User A */}
           <View style={styles.msgBlock}>
             <View style={styles.msgMeta}>
-              <Text style={[typography.labelCaps, { color: colors.primary, textTransform: 'uppercase' }]}>OPERATOR_01</Text>
-              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, opacity: 0.5, marginLeft: 8, fontSize: 10 }]}>14:22:15</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary }]}>Sarah Chen</Text>
+              <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, opacity: 0.5, marginLeft: 8, fontSize: 10 }]}>14:22</Text>
             </View>
             <View style={[styles.msgContentUser, { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}>
               <Text style={[typography.bodyMd, { color: colors.onSurface }]}>
@@ -110,23 +111,21 @@ const TaskCommentsScreen = () => {
 
       {/* Input & Nav Container */}
       <View style={styles.fixedBottomBox}>
-        {/* Command Line Input */}
-        <View style={[styles.cmdInputSection, { backgroundColor: colors.primary, borderTopColor: colors.outline }]}>
-          <Text style={[typography.labelCaps, { color: colors.tertiaryFixed, fontWeight: 'bold' }]}>$</Text>
+        {/* Comment Input */}
+        <View style={[styles.cmdInputSection, { backgroundColor: colors.surfaceContainer, borderTopColor: colors.outlineVariant }]}>
           <View style={styles.cmdInputWrapper}>
-            <Text style={[typography.labelCaps, { color: colors.onPrimary }]}>EXECUTE:</Text>
             <TextInput 
-              style={[typography.labelCaps, styles.textInput, { color: colors.onPrimary }]}
-              placeholder="enter_command_or_comment"
-              placeholderTextColor="rgba(255,255,255,0.4)"
+              style={[typography.bodyMd, styles.textInput, { color: colors.onSurface }]}
+              placeholder="Write a comment..."
+              placeholderTextColor={colors.outline}
             />
           </View>
           <View style={styles.cmdActions}>
             <TouchableOpacity style={styles.cmdBtn}>
-              <MaterialIcons name="attach-file" size={20} color={colors.onPrimary} />
+              <MaterialIcons name="attach-file" size={20} color={colors.primary} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.cmdBtn}>
-              <MaterialIcons name="send" size={20} color={colors.onPrimary} />
+              <MaterialIcons name="send" size={20} color={colors.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -198,6 +197,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 32,
     borderWidth: 1,
+    borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -218,12 +218,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   msgContentSystem: {
-    borderLeftWidth: 2,
+    borderWidth: 1,
+    borderRadius: 12,
     padding: 16,
     maxWidth: '90%',
   },
   msgContentUser: {
     borderWidth: 1,
+    borderRadius: 12,
     padding: 16,
     maxWidth: '90%',
   },
@@ -236,6 +238,7 @@ const styles = StyleSheet.create({
   attachmentImgBox: {
     flex: 1,
     borderWidth: 1,
+    borderRadius: 8,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -250,6 +253,7 @@ const styles = StyleSheet.create({
   attachmentFileBox: {
     flex: 1,
     borderWidth: 1,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },

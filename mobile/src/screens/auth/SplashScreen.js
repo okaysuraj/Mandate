@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from '../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 const SplashScreen = ({ navigation }) => {
-  const { typography } = useTheme();
+  const { colors, typography } = useTheme();
 
   const [progress] = useState(new Animated.Value(0));
   const [taskIndex, setTaskIndex] = useState(0);
@@ -69,25 +70,25 @@ const SplashScreen = ({ navigation }) => {
   });
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={styles.container}>
         
         {/* Top Status Indicators */}
         <View style={styles.topStatusContainer}>
           <View style={styles.statusColLeft}>
-            <Text style={[typography.labelCaps, styles.fadedText, { letterSpacing: 2 }]}>SYS_ID: 8824-M</Text>
-            <Text style={[typography.labelSm, styles.fadedText]}>OS_V: 2.0.44_STABLE</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary, letterSpacing: 2 }]}>SYS_ID: 8824-M</Text>
+            <Text style={[typography.labelSm, { color: colors.secondary }]}>OS_V: 2.0.44_STABLE</Text>
           </View>
           <View style={styles.statusColRight}>
-            <Text style={[typography.labelCaps, styles.fadedText]}>{timerText}</Text>
-            <Text style={[typography.labelSm, styles.fadedText]}>NODE_STATUS: ACTIVE</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary }]}>{timerText}</Text>
+            <Text style={[typography.labelSm, { color: colors.secondary }]}>NODE_STATUS: ACTIVE</Text>
           </View>
         </View>
 
         {/* Center Brand Anchor */}
         <View style={styles.centerBrand}>
-          <Text style={[typography.headlineLgMobile, styles.brandText]}>MANDATE</Text>
-          <View style={styles.brandDivider} />
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: 'bold', letterSpacing: 8 }]}>MANDATE</Text>
+          <View style={[styles.brandDivider, { backgroundColor: colors.outlineVariant }]} />
         </View>
 
         {/* Bottom Loading Module */}
@@ -95,22 +96,22 @@ const SplashScreen = ({ navigation }) => {
           <View style={styles.progressFeedback}>
             <View style={styles.progressHeader}>
               <View style={styles.progressTextCol}>
-                <Text style={[typography.labelCaps, styles.progressLabel]}>INITIALIZING CORE</Text>
-                <Text style={[typography.labelSm, styles.progressTask]} numberOfLines={1}>
+                <Text style={[typography.labelCaps, { color: colors.primary }]}>INITIALIZING CORE</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary }]} numberOfLines={1}>
                   {tasks[taskIndex]}
                 </Text>
               </View>
-              <Text style={[typography.labelCaps, styles.percentText]}>{displayProgress}%</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary, fontSize: 14 }]}>{displayProgress}%</Text>
             </View>
 
-            <View style={styles.progressBarBg}>
-              <Animated.View style={[styles.progressBarFill, { width: progressWidth }]} />
+            <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceContainerHigh }]}>
+              <Animated.View style={[styles.progressBarFill, { backgroundColor: colors.primary, width: progressWidth }]} />
             </View>
           </View>
 
           <View style={styles.metaFooter}>
-            <Text style={[typography.labelSm, styles.metaTitle]}>© 2024 MANDATE INDUSTRIAL SYSTEMS</Text>
-            <Text style={[typography.labelSm, styles.metaSubtitle]}>ENCRYPTED_HANDSHAKE_REQUIRED</Text>
+            <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: 2, fontSize: 10 }]}>© 2024 MANDATE INDUSTRIAL SYSTEMS</Text>
+            <Text style={[typography.labelSm, { color: colors.secondary, fontSize: 10 }]}>ENCRYPTED_HANDSHAKE_REQUIRED</Text>
           </View>
         </View>
 
@@ -122,17 +123,16 @@ const SplashScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: { 
     flex: 1, 
-    backgroundColor: '#000000',
   },
   container: {
     flex: 1,
-    padding: 32, // p-lg roughly or xl
+    padding: 32,
     justifyContent: 'space-between',
   },
   topStatusContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    opacity: 0.4,
+    opacity: 0.6,
     marginTop: 24,
   },
   statusColLeft: {
@@ -142,23 +142,14 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: 4,
   },
-  fadedText: {
-    color: '#ffffff',
-  },
   centerBrand: {
     alignItems: 'center',
     gap: 16,
   },
-  brandText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-    letterSpacing: 8,
-  },
   brandDivider: {
     width: 48,
-    height: 1,
-    backgroundColor: '#ffffff',
-    opacity: 0.2,
+    height: 2,
+    borderRadius: 1,
   },
   bottomModule: {
     gap: 32,
@@ -177,44 +168,21 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: 16,
   },
-  progressLabel: {
-    color: '#ffffff',
-    opacity: 0.6,
-  },
-  progressTask: {
-    color: '#ffffff',
-    opacity: 0.4,
-    textTransform: 'uppercase',
-  },
-  percentText: {
-    color: '#ffffff',
-    fontSize: 14,
-  },
   progressBarBg: {
     width: '100%',
     height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 2,
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#ffffff',
+    borderRadius: 2,
   },
   metaFooter: {
     alignItems: 'center',
     gap: 4,
-    opacity: 0.3,
+    opacity: 0.6,
   },
-  metaTitle: {
-    color: '#ffffff',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    fontSize: 10,
-  },
-  metaSubtitle: {
-    color: '#ffffff',
-    fontSize: 10,
-  }
 });
 
 export default SplashScreen;

@@ -1,181 +1,121 @@
 import React, { useState } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput 
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
+import AppHeader from "../../components/layout/AppHeader";
 
 const AutomationRulesScreen = ({ navigation }) => {
   const { colors, typography } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const rules = [
-    {
-      id: "#AC-00912",
-      status: "Active",
-      title: "Sync Inventory to Global Ledger",
-      service: "PostgreSQL",
-      serviceIcon: "database",
-      time: "2m ago"
-    },
-    {
-      id: "#AC-00845",
-      status: "Failed",
-      title: "External API Webhook Handshake",
-      service: "API GW",
-      serviceIcon: "hub",
-      time: "14m ago"
-    },
-    {
-      id: "#AC-00712",
-      status: "Standby",
-      title: "Nightly Cache Invalidation",
-      service: "Redis Cluster",
-      serviceIcon: "memory",
-      time: "8h ago"
-    },
-    {
-      id: "#AC-00629",
-      status: "Active",
-      title: "Log Rotation & Archival",
-      service: "Syslog Engine",
-      serviceIcon: "list-alt",
-      time: "Now"
-    },
-    {
-      id: "#AC-00511",
-      status: "Active",
-      title: "Auto-Scale Node Provisioning",
-      service: "AWS Infra",
-      serviceIcon: "cloud",
-      time: "1h ago"
-    },
-    {
-      id: "#AC-00488",
-      status: "Failed",
-      title: "Security Token Rotation",
-      service: "IAM Vault",
-      serviceIcon: "lock",
-      time: "3m ago"
-    }
+  const webRules = [
+    { title: 'Auto-assign urgent tasks', desc: 'When priority changes to CRITICAL, dispatch to lead engineer', active: true, tag: 'TRIGGER: PRIORITY' },
+    { title: 'Escalate overdue items', desc: 'When due date passes by >24h, elevate priority to HIGH', active: true, tag: 'TRIGGER: TIME_DELTA' },
+    { title: 'Notify on blocker state', desc: 'Broadcast alert to workspace channel when status moves to BLOCKED', active: false, tag: 'TRIGGER: STATUS' }
   ];
 
-  const filteredRules = rules.filter(rule => 
+  const filteredRules = webRules.filter(rule => 
     rule.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    rule.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    rule.status.toLowerCase().includes(searchQuery.toLowerCase())
+    rule.tag.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    rule.desc.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'Active': return { bg: colors.tertiaryFixed, text: colors.onTertiaryFixed };
-      case 'Failed': return { bg: colors.errorContainer, text: colors.onErrorContainer };
-      case 'Standby': return { bg: colors.surfaceContainerHigh, text: colors.secondary };
-      default: return { bg: colors.surfaceContainer, text: colors.secondary };
-    }
-  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* TopAppBar */}
-      <View style={[styles.header, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
-        <View style={styles.headerLeft}>
-          <MaterialIcons name="terminal" size={20} color={colors.primary} />
-          <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2, marginLeft: 8 }]}>
-            MANDATE OS
-          </Text>
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.iconButton}>
-            <MaterialIcons name="notifications" size={24} color={colors.secondary} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <MaterialIcons name="account-circle" size={24} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <AppHeader title="AUTOMATION" navigation={navigation} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* Header Section */}
+        {/* Header Section matching web AutomationRulesPage.jsx */}
         <View style={styles.pageHeader}>
-          <View style={styles.titleRow}>
-            <Text style={[typography.headlineLgMobile, { color: colors.primary, fontWeight: '700' }]}>Automation Rules</Text>
-            <TouchableOpacity style={[styles.newRuleBtn, { backgroundColor: colors.primary }]} activeOpacity={0.9}>
-              <MaterialIcons name="add" size={16} color={colors.onPrimary} />
-              <Text style={[typography.labelCaps, { color: colors.onPrimary, marginLeft: 4 }]}>NEW RULE</Text>
-            </TouchableOpacity>
+          <View style={styles.breadcrumbRow}>
+            <View style={[styles.brandDot, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.breadcrumbText, { color: colors.onSurfaceVariant }]}>
+              AUTOMATION LAYER
+            </Text>
           </View>
-          <Text style={[typography.bodyMd, { color: colors.secondary, fontSize: 14, marginTop: 8 }]}>
-            Industrial ledger for process synchronization and trigger logic.
+          <Text style={[styles.title, { color: colors.onSurface }]}>
+            Automation Rules
           </Text>
+          <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
+            SYSTEM TRIGGER &amp; DISPATCH DIRECTORY
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => navigation?.navigate("RuleBuilder")}
+            style={[styles.manageBtn, { backgroundColor: colors.primary }]}
+            activeOpacity={0.85}
+          >
+            <MaterialIcons name="settings-suggest" size={18} color={colors.onPrimary} style={{ marginRight: 6 }} />
+            <Text style={[styles.manageBtnText, { color: colors.onPrimary }]}>
+              MANAGE PROTOCOLS
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Summary Metrics */}
-        <View style={styles.metricsGrid}>
-          <View style={[styles.metricCardBig, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-            <Text style={[typography.labelCaps, { color: colors.secondary }]}>ACTIVE INSTANCES</Text>
-            <View style={styles.metricValueRow}>
-              <Text style={[{ fontFamily: 'HankenGrotesk-ExtraBold', fontSize: 36, color: colors.primary }]}>1,284</Text>
-              <View style={styles.trendRow}>
-                <MaterialIcons name="trending-up" size={14} color={colors.onTertiaryContainer} />
-                <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, marginLeft: 2 }]}>12%</Text>
+        {/* Active Execution Rules Card matching web */}
+        <View style={[styles.card, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+          <Text style={[styles.cardTitle, { color: colors.onSurfaceVariant }]}>
+            ACTIVE EXECUTION RULES
+          </Text>
+
+          {/* Search/Filter */}
+          <View style={[styles.searchBox, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}>
+            <MaterialIcons name="search" size={18} color={colors.secondary} />
+            <TextInput 
+              style={[styles.searchInput, { color: colors.onSurface }]}
+              placeholder="FILTER RULES..."
+              placeholderTextColor={colors.onSurfaceVariant}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+
+          <View style={styles.rulesList}>
+            {filteredRules.map((rule) => (
+              <View 
+                key={rule.title} 
+                style={[styles.ruleItem, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant }]}
+              >
+                <View style={styles.ruleInfo}>
+                  <View style={styles.ruleTitleRow}>
+                    <Text style={[styles.ruleTitle, { color: colors.onSurface }]}>{rule.title}</Text>
+                    <View style={[styles.tagBadge, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outlineVariant }]}>
+                      <Text style={[styles.tagBadgeText, { color: colors.onSurfaceVariant }]}>{rule.tag}</Text>
+                    </View>
+                  </View>
+                  <Text style={[styles.ruleDesc, { color: colors.onSurfaceVariant }]}>{rule.desc}</Text>
+                </View>
+
+                <View style={styles.ruleStatusContainer}>
+                  {rule.active ? (
+                    <View style={[styles.activePill, { backgroundColor: colors.tertiaryContainer, borderColor: colors.outlineVariant }]}>
+                      <Text style={[styles.activePillText, { color: colors.onTertiaryContainer }]}>ACTIVE</Text>
+                    </View>
+                  ) : (
+                    <View style={[styles.inactivePill, { backgroundColor: colors.surfaceContainerHigh, borderColor: colors.outlineVariant }]}>
+                      <Text style={[styles.inactivePillText, { color: colors.onSurfaceVariant }]}>INACTIVE</Text>
+                    </View>
+                  )}
+                </View>
               </View>
-            </View>
-          </View>
-          <View style={styles.metricsRowSmall}>
-            <View style={[styles.metricCardSmall, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>VELOCITY</Text>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 20, marginTop: 12 }]}>42 op/m</Text>
-            </View>
-            <View style={[styles.metricCardSmall, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>SUCCESS RATE</Text>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary, fontSize: 20, marginTop: 12 }]}>99.8%</Text>
-            </View>
+            ))}
           </View>
         </View>
 
-        {/* Global Search/Filter */}
-        <View style={[styles.searchContainer, { backgroundColor: colors.surfaceContainer }]}>
-          <MaterialIcons name="search" size={20} color={colors.secondary} />
-          <TextInput 
-            style={[styles.searchInput, typography.labelSm, { color: colors.primary }]}
-            placeholder="FILTER BY ID, NAME, OR STATUS..."
-            placeholderTextColor={colors.secondary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
+        {/* Telemetry Summary Cards */}
+        <View style={styles.telemetryRow}>
+          <View style={[styles.metricCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <Text style={[styles.metricLabel, { color: colors.secondary }]}>ACTIVE INSTANCES</Text>
+            <Text style={[styles.metricValue, { color: colors.primary }]}>1,284</Text>
+            <Text style={[styles.metricSubtext, { color: colors.tertiary }]}>+12% Velocity</Text>
+          </View>
+          <View style={[styles.metricCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
+            <Text style={[styles.metricLabel, { color: colors.secondary }]}>SUCCESS RATE</Text>
+            <Text style={[styles.metricValue, { color: colors.primary }]}>99.8%</Text>
+            <Text style={[styles.metricSubtext, { color: colors.onSurfaceVariant }]}>42 op/min</Text>
+          </View>
         </View>
-
-        {/* Vertical Ledger (The Rules List) */}
-        <View style={styles.ledgerList}>
-          {filteredRules.map((rule, idx) => {
-            const statusColors = getStatusColor(rule.status);
-            return (
-              <TouchableOpacity key={idx} style={[styles.ledgerRow, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]} activeOpacity={0.7}>
-                <View style={styles.ledgerHeader}>
-                  <Text style={[typography.labelSm, { color: colors.secondary }]}>{rule.id}</Text>
-                  <View style={[styles.statusBadge, { backgroundColor: statusColors.bg }]}>
-                    <Text style={[typography.labelCaps, { color: statusColors.text, fontSize: 10 }]}>{rule.status}</Text>
-                  </View>
-                </View>
-                <Text style={[typography.bodyMd, { color: colors.primary, fontWeight: '700', marginBottom: 8 }]}>{rule.title}</Text>
-                
-                <View style={styles.ledgerFooter}>
-                  <View style={styles.serviceInfo}>
-                    <MaterialIcons name={rule.serviceIcon} size={14} color={colors.secondary} />
-                    <Text style={[typography.labelSm, { color: colors.secondary, marginLeft: 4 }]}>{rule.service}</Text>
-                  </View>
-                  <View style={styles.timeInfo}>
-                    <MaterialIcons name="schedule" size={14} color={colors.secondary} />
-                    <Text style={[typography.labelSm, { color: colors.secondary, marginLeft: 4 }]}>{rule.time}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            )
-          })}
-        </View>
-
       </ScrollView>
     </SafeAreaView>
   );
@@ -183,120 +123,37 @@ const AutomationRulesScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    height: 64,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  iconButton: {
-    padding: 8,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 64,
-  },
-  pageHeader: {
-    marginBottom: 24,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  newRuleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 24,
-  },
-  metricsGrid: {
-    marginBottom: 24,
-    gap: 12,
-  },
-  metricCardBig: {
-    padding: 16,
-    borderWidth: 1,
-    borderRadius: 8,
-  },
-  metricValueRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginTop: 12,
-  },
-  trendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 8,
-  },
-  metricsRowSmall: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  metricCardSmall: {
-    flex: 1,
-    padding: 16,
-    borderWidth: 1,
-    borderRadius: 8,
-    justifyContent: 'space-between',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  searchInput: {
-    flex: 1,
-    padding: 0,
-    marginHorizontal: 12,
-  },
-  ledgerList: {
-    gap: 8,
-  },
-  ledgerRow: {
-    borderWidth: 1,
-    borderRadius: 4,
-    padding: 16,
-  },
-  ledgerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  ledgerFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  serviceInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  timeInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  }
+  scrollContent: { padding: 16, paddingBottom: 40 },
+  pageHeader: { marginBottom: 16 },
+  breadcrumbRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+  brandDot: { width: 8, height: 8, borderRadius: 4 },
+  breadcrumbText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase" },
+  title: { fontFamily: "HankenGrotesk-Bold", fontSize: 24, textTransform: "uppercase", letterSpacing: -0.5 },
+  subtitle: { fontFamily: "JetBrainsMono-Regular", fontSize: 11, marginTop: 4, letterSpacing: 0.5 },
+  manageBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 12, borderRadius: 10, marginTop: 14 },
+  manageBtnText: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase" },
+  card: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 16 },
+  cardTitle: { fontFamily: "JetBrainsMono-Bold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 },
+  searchBox: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, height: 38, marginBottom: 14 },
+  searchInput: { flex: 1, marginLeft: 8, fontFamily: "JetBrainsMono-Regular", fontSize: 12 },
+  rulesList: { gap: 10 },
+  ruleItem: { borderWidth: 1, borderRadius: 10, padding: 14, gap: 10 },
+  ruleInfo: { flex: 1 },
+  ruleTitleRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 4 },
+  ruleTitle: { fontFamily: "JetBrainsMono-Bold", fontSize: 13 },
+  tagBadge: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 8, paddingVertical: 2 },
+  tagBadgeText: { fontFamily: "JetBrainsMono-Bold", fontSize: 9 },
+  ruleDesc: { fontFamily: "HankenGrotesk-Regular", fontSize: 12, lineHeight: 16 },
+  ruleStatusContainer: { alignSelf: "flex-start" },
+  activePill: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3 },
+  activePillText: { fontFamily: "JetBrainsMono-Bold", fontSize: 9, letterSpacing: 1 },
+  inactivePill: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 3 },
+  inactivePillText: { fontFamily: "JetBrainsMono-Bold", fontSize: 9, letterSpacing: 1 },
+  telemetryRow: { flexDirection: "row", gap: 12 },
+  metricCard: { flex: 1, borderWidth: 1, borderRadius: 14, padding: 14 },
+  metricLabel: { fontFamily: "JetBrainsMono-Bold", fontSize: 10, textTransform: "uppercase" },
+  metricValue: { fontFamily: "HankenGrotesk-Bold", fontSize: 26, marginVertical: 4 },
+  metricSubtext: { fontFamily: "JetBrainsMono-Regular", fontSize: 10 },
 });
 
 export default AutomationRulesScreen;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, TextInput, Image, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Switch } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -33,8 +34,8 @@ const InitialConfigurationScreen = ({ navigation }) => {
         <View style={styles.section}>
           <View style={styles.progressHeader}>
             <View>
-              <Text style={[typography.labelCaps, { color: colors.secondary }]}>INITIAL CONFIGURATION</Text>
-              <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 4 }]}>System Setup</Text>
+              <Text style={[typography.labelCaps, { color: colors.secondary }]}>INITIAL SETUP</Text>
+              <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 4 }]}>Workspace Setup</Text>
             </View>
             <Text style={[typography.labelSm, { color: colors.primary, fontWeight: 'bold' }]}>Step 01 / 03</Text>
           </View>
@@ -47,7 +48,7 @@ const InitialConfigurationScreen = ({ navigation }) => {
         <View style={styles.section}>
           <View style={styles.sectionTitle}>
             <MaterialIcons name="schedule" size={16} color={colors.secondary} />
-            <Text style={[typography.labelCaps, { color: colors.secondary }]}>OPERATIONAL WINDOW</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary }]}>WORK HOURS</Text>
           </View>
           <View style={[styles.bentoGroup, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.timeInputWrapper}>
@@ -70,7 +71,7 @@ const InitialConfigurationScreen = ({ navigation }) => {
         {/* Workspace Type Selection */}
         <View style={styles.section}>
           <View style={styles.sectionTitle}>
-            <MaterialIcons name="factory" size={16} color={colors.secondary} />
+            <MaterialIcons name="business" size={16} color={colors.secondary} />
             <Text style={[typography.labelCaps, { color: colors.secondary }]}>WORKSPACE TYPE</Text>
           </View>
           <View style={styles.workspaceGrid}>
@@ -84,10 +85,10 @@ const InitialConfigurationScreen = ({ navigation }) => {
               onPress={() => setWorkspaceType('manufacturing')}
             >
               <View style={styles.workspaceOptionLeft}>
-                <MaterialIcons name="precision-manufacturing" size={24} color={workspaceType === 'manufacturing' ? colors.primary : colors.secondary} />
+                <MaterialIcons name="code" size={24} color={workspaceType === 'manufacturing' ? colors.primary : colors.secondary} />
                 <View>
-                  <Text style={[typography.labelCaps, { color: workspaceType === 'manufacturing' ? colors.primary : colors.secondary }]}>MANUFACTURING</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>Heavy industry & automation</Text>
+                  <Text style={[typography.labelCaps, { color: workspaceType === 'manufacturing' ? colors.primary : colors.secondary }]}>ENGINEERING</Text>
+                  <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>Software, hardware & technical teams</Text>
                 </View>
               </View>
               {workspaceType === 'manufacturing' && (
@@ -104,10 +105,10 @@ const InitialConfigurationScreen = ({ navigation }) => {
               onPress={() => setWorkspaceType('logistics')}
             >
               <View style={styles.workspaceOptionLeft}>
-                <MaterialIcons name="inventory-2" size={24} color={workspaceType === 'logistics' ? colors.primary : colors.secondary} />
+                <MaterialIcons name="work-outline" size={24} color={workspaceType === 'logistics' ? colors.primary : colors.secondary} />
                 <View>
-                  <Text style={[typography.labelCaps, { color: workspaceType === 'logistics' ? colors.primary : colors.secondary }]}>LOGISTICS</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>Storage & distribution nodes</Text>
+                  <Text style={[typography.labelCaps, { color: workspaceType === 'logistics' ? colors.primary : colors.secondary }]}>OPERATIONS</Text>
+                  <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>Product management & operations</Text>
                 </View>
               </View>
               {workspaceType === 'logistics' && (
@@ -124,10 +125,10 @@ const InitialConfigurationScreen = ({ navigation }) => {
               onPress={() => setWorkspaceType('laboratory')}
             >
               <View style={styles.workspaceOptionLeft}>
-                <MaterialIcons name="biotech" size={24} color={workspaceType === 'laboratory' ? colors.primary : colors.secondary} />
+                <MaterialIcons name="palette" size={24} color={workspaceType === 'laboratory' ? colors.primary : colors.secondary} />
                 <View>
-                  <Text style={[typography.labelCaps, { color: workspaceType === 'laboratory' ? colors.primary : colors.secondary }]}>LABORATORY</Text>
-                  <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>Controlled environments</Text>
+                  <Text style={[typography.labelCaps, { color: workspaceType === 'laboratory' ? colors.primary : colors.secondary }]}>CREATIVE & DESIGN</Text>
+                  <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>Design studio & product strategy</Text>
                 </View>
               </View>
               {workspaceType === 'laboratory' && (
@@ -138,18 +139,18 @@ const InitialConfigurationScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Alert Protocols Group */}
+        {/* Alert Notifications Group */}
         <View style={styles.section}>
           <View style={styles.sectionTitle}>
             <MaterialIcons name="notifications-active" size={16} color={colors.secondary} />
-            <Text style={[typography.labelCaps, { color: colors.secondary }]}>ALERT PROTOCOLS</Text>
+            <Text style={[typography.labelCaps, { color: colors.secondary }]}>NOTIFICATIONS</Text>
           </View>
           <View style={[styles.protocolsContainer, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             
             <View style={[styles.protocolRow, { borderBottomColor: colors.outlineVariant, borderBottomWidth: 1 }]}>
               <View style={styles.protocolLeft}>
-                <Text style={[typography.labelCaps, { color: colors.primary }]}>CRITICAL ALERTS</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>Instant escalation for level 5 events</Text>
+                <Text style={[typography.labelCaps, { color: colors.primary }]}>URGENT ALERTS</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary }]}>Instant alerts for urgent and overdue tasks</Text>
               </View>
               <Switch
                 value={criticalAlerts}
@@ -161,8 +162,8 @@ const InitialConfigurationScreen = ({ navigation }) => {
 
             <View style={styles.protocolRow}>
               <View style={styles.protocolLeft}>
-                <Text style={[typography.labelCaps, { color: colors.primary }]}>DAILY REPORTS</Text>
-                <Text style={[typography.labelSm, { color: colors.secondary }]}>Automated summaries at window close</Text>
+                <Text style={[typography.labelCaps, { color: colors.primary }]}>DAILY SUMMARY</Text>
+                <Text style={[typography.labelSm, { color: colors.secondary }]}>Automated summary at end of day</Text>
               </View>
               <Switch
                 value={dailyReports}
@@ -181,7 +182,7 @@ const InitialConfigurationScreen = ({ navigation }) => {
             <Text style={[typography.labelCaps, { color: colors.onPrimary, letterSpacing: 2 }]}>SAVE CONFIGURATION</Text>
           </TouchableOpacity>
           <Text style={[typography.labelSm, { color: colors.secondary, textAlign: 'center', marginTop: 16 }]}>
-            You can modify these parameters later in System Settings.
+            You can modify these preferences later in Workspace Settings.
           </Text>
         </View>
 
@@ -194,7 +195,7 @@ const InitialConfigurationScreen = ({ navigation }) => {
           />
           <View style={styles.anchorBadgeContainer}>
             <View style={[styles.anchorBadge, { backgroundColor: colors.primary }]}>
-              <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 10 }]}>AUTH_ID: MDT-992</Text>
+              <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 10 }]}>WORKSPACE: GENERAL</Text>
             </View>
           </View>
         </View>
@@ -208,16 +209,16 @@ const InitialConfigurationScreen = ({ navigation }) => {
           <Text style={[typography.labelSm, { color: colors.primary, marginTop: 4, fontSize: 10 }]}>DASHBOARD</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="precision-manufacturing" size={24} color={colors.secondary} />
-          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>ASSETS</Text>
+          <MaterialIcons name="folder-open" size={24} color={colors.secondary} />
+          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>PROJECTS</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="error" size={24} color={colors.secondary} />
+          <MaterialIcons name="notifications-none" size={24} color={colors.secondary} />
           <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>ALERTS</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
           <MaterialIcons name="settings" size={24} color={colors.secondary} />
-          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>SYSTEM</Text>
+          <Text style={[typography.labelSm, { color: colors.secondary, marginTop: 4, fontSize: 10 }]}>SETTINGS</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

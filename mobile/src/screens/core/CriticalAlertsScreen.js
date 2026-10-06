@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
-import { 
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, 
-  SafeAreaView, ActivityIndicator, RefreshControl 
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useDataStore } from '../../store/useDataStore';
@@ -71,7 +69,7 @@ const CriticalAlertsScreen = ({ navigation }) => {
           {/* High-Impact Metrics */}
           <View style={styles.bentoGrid}>
             <View style={styles.row}>
-              <View style={[styles.bentoCardHalf, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderLeftWidth: 4, borderLeftColor: colors.error }]}>
+              <View style={[styles.bentoCardHalf, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
                 <Text style={[typography.labelCaps, { color: colors.secondary }]}>OVERDUE</Text>
                 <View>
                   <Text style={[typography.displayLg, { color: colors.error, fontSize: 36, lineHeight: 40 }]}>
@@ -81,7 +79,7 @@ const CriticalAlertsScreen = ({ navigation }) => {
                 </View>
               </View>
 
-              <View style={[styles.bentoCardHalf, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderLeftWidth: 4, borderLeftColor: colors.primary }]}>
+              <View style={[styles.bentoCardHalf, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
                 <Text style={[typography.labelCaps, { color: colors.secondary }]}>CRITICAL PRIORITY</Text>
                 <View>
                   <Text style={[typography.displayLg, { color: colors.primary, fontSize: 36, lineHeight: 40 }]}>
@@ -92,7 +90,7 @@ const CriticalAlertsScreen = ({ navigation }) => {
               </View>
             </View>
 
-            <View style={[styles.bentoCardFull, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderLeftWidth: 4, borderLeftColor: colors.secondary }]}>
+            <View style={[styles.bentoCardFull, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <View>
                 <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>ACTIVE WORKLOAD</Text>
                 <Text style={[typography.headlineLgMobile, { color: colors.primary }]}>{loadPercentage}% Active</Text>
@@ -199,7 +197,7 @@ const styles = StyleSheet.create({
   alertBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   bentoGrid: {
     gap: 12,
@@ -211,14 +209,14 @@ const styles = StyleSheet.create({
   bentoCardHalf: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
     justifyContent: 'space-between',
     minHeight: 110,
   },
   bentoCardFull: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
     gap: 12,
   },
@@ -242,7 +240,7 @@ const styles = StyleSheet.create({
   },
   alertCard: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 16,
     gap: 8,
   },
@@ -273,7 +271,7 @@ const styles = StyleSheet.create({
   },
   emptyBox: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 32,
     alignItems: 'center',
     justifyContent: 'center',

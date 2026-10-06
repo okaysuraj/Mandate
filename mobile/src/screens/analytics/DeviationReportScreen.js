@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -51,7 +52,7 @@ const DeviationReportScreen = ({ navigation }) => {
           <View style={{ gap: spacing.md }}>
             
             {/* Reference ID Module */}
-            <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.sm }]}>REFERENCE ID</Text>
               <View style={styles.refRow}>
                 <Text style={[typography.labelCaps, { color: colors.primary, fontSize: 20, fontWeight: 'bold', letterSpacing: -1 }]}>DR-992-KAPPA</Text>
@@ -60,7 +61,7 @@ const DeviationReportScreen = ({ navigation }) => {
             </View>
 
             {/* Cause Categorization Module */}
-            <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.md }]}>CAUSE CATEGORIZATION</Text>
               <View style={{ gap: spacing.sm }}>
                 {causes.map((cause) => {
@@ -85,7 +86,7 @@ const DeviationReportScreen = ({ navigation }) => {
             </View>
 
             {/* Technical Log Area */}
-            <View style={[styles.bentoCard, { borderColor: colors.outlineVariant }]}>
+            <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: spacing.sm }]}>TECHNICAL LOG ENTRY</Text>
               <TextInput
                 style={[typography.labelCaps, styles.textArea, { backgroundColor: colors.surfaceContainerLow, borderBottomColor: colors.outline, color: colors.primary }]}
@@ -105,7 +106,7 @@ const DeviationReportScreen = ({ navigation }) => {
             </View>
 
             {/* Auth Signature Block */}
-            <View style={[styles.bentoCard, { borderColor: colors.outlineVariant, backgroundColor: 'rgba(231, 232, 234, 0.5)', borderStyle: 'dashed' }]}>
+            <View style={[styles.bentoCard, { borderColor: colors.outlineVariant, backgroundColor: colors.surfaceContainerLow, borderStyle: 'dashed' }]}>
               <View style={styles.authHeader}>
                 <View style={[styles.authIconContainer, { backgroundColor: colors.primary }]}>
                   <MaterialIcons name="draw" size={20} color={colors.onPrimary} />
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
   bentoCard: {
     padding: 24,
     borderWidth: 1,
-    backgroundColor: '#fff',
+    borderRadius: 12,
   },
   refRow: {
     flexDirection: 'row',
@@ -228,6 +229,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderWidth: 1,
+    borderRadius: 8,
   },
   textArea: {
     width: '100%',

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -24,7 +25,7 @@ const TaskAttachmentsScreen = () => {
               style={styles.avatarImg}
             />
           </View>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase', marginLeft: 12 }]}>CORE_OS_v1.0</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, textTransform: 'uppercase', marginLeft: 12 }]}>MANDATE</Text>
         </View>
         <TouchableOpacity style={styles.iconBtn}>
           <MaterialIcons name="settings" size={24} color={colors.primary} />
@@ -35,8 +36,8 @@ const TaskAttachmentsScreen = () => {
         
         {/* Screen Title */}
         <View style={styles.titleSection}>
-          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 4 }]}>TASK_CONTEXT / ASSETS</Text>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, letterSpacing: -0.5 }]}>Attachment Protocol</Text>
+          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 4 }]}>TASK ATTACHMENTS</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, letterSpacing: -0.5 }]}>Task Attachments & Files</Text>
         </View>
 
         {/* Upload Drop Zone */}
@@ -45,21 +46,21 @@ const TaskAttachmentsScreen = () => {
             <View style={[styles.uploadIconBox, { backgroundColor: colors.surfaceContainer }]}>
               <MaterialIcons name="upload-file" size={24} color={colors.primary} />
             </View>
-            <Text style={[typography.labelCaps, { color: colors.primary, textAlign: 'center', marginTop: 16 }]}>UPLOAD TECHNICAL ASSETS</Text>
-            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, marginTop: 8 }]}>MAX FILE SIZE: 256MB / SECURE TUNNEL</Text>
+            <Text style={[typography.labelCaps, { color: colors.primary, textAlign: 'center', marginTop: 16 }]}>UPLOAD FILES & ATTACHMENTS</Text>
+            <Text style={[typography.labelSm, { color: colors.onSurfaceVariant, marginTop: 8 }]}>Max file size: 256MB</Text>
           </TouchableOpacity>
         </View>
 
         {/* Linked Documentation List */}
         <View style={styles.docSection}>
           <View style={styles.docHeader}>
-            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>LINKED DOCUMENTATION [04]</Text>
+            <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>ATTACHED FILES [04]</Text>
             <Text style={[typography.labelSm, { color: colors.onTertiaryContainer }]}>SORTED: RECENT</Text>
           </View>
 
           <View style={styles.docList}>
             {attachments.map((file) => (
-              <View key={file.id} style={[styles.fileCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+              <View key={file.id} style={[styles.fileCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
                 <View style={[styles.fileIconBox, { backgroundColor: colors.surfaceContainerHigh }]}>
                   <MaterialIcons name={file.icon} size={24} color={colors.primary} />
                 </View>
@@ -77,28 +78,28 @@ const TaskAttachmentsScreen = () => {
 
         {/* Access Logs */}
         <View style={styles.logsSection}>
-          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 12 }]}>ACCESS LOGS / SECURITY</Text>
-          <View style={[styles.logTerminal, { backgroundColor: colors.primary }]}>
+          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginBottom: 12 }]}>ACTIVITY & AUDIT LOG</Text>
+          <View style={[styles.logTerminal, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderWidth: 1 }]}>
             <View style={[styles.logRow, { opacity: 0.7 }]}>
-              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>AUTH_NODE_09: ACCESS GRANTED</Text>
-              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>NOW</Text>
+              <Text style={[typography.labelSm, { color: colors.onSurface }]}>New attachment added: system-specs.pdf</Text>
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>NOW</Text>
             </View>
-            <View style={[styles.logRow, { borderLeftWidth: 2, borderLeftColor: colors.surfaceVariant, paddingLeft: 12, marginTop: 12 }]}>
-              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>USER_01 DOWNLOADED 'architecture.pdf'</Text>
-              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>14:25</Text>
+            <View style={[styles.logRow, { paddingVertical: 8, marginTop: 8, borderTopWidth: 1, borderTopColor: colors.outlineVariant }]}>
+              <Text style={[typography.labelSm, { color: colors.onSurface }]}>Alex downloaded architecture.pdf</Text>
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>14:25</Text>
             </View>
-            <View style={[styles.logRow, { borderLeftWidth: 2, borderLeftColor: colors.surfaceVariant, paddingLeft: 12, marginTop: 12 }]}>
-              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>MD5 CHECKSUM VERIFIED: SUCCESS</Text>
-              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>14:20</Text>
+            <View style={[styles.logRow, { paddingVertical: 8, marginTop: 8, borderTopWidth: 1, borderTopColor: colors.outlineVariant }]}>
+              <Text style={[typography.labelSm, { color: colors.onSurface }]}>File preview generated</Text>
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>14:20</Text>
             </View>
-            <View style={[styles.logRow, { borderLeftWidth: 2, borderLeftColor: colors.surfaceVariant, paddingLeft: 12, marginTop: 12, opacity: 0.5 }]}>
-              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>REMOTE ATTACHMENT SYNC INITIALIZED</Text>
-              <Text style={[typography.labelSm, { color: colors.onPrimary }]}>14:15</Text>
+            <View style={[styles.logRow, { paddingVertical: 8, marginTop: 8, borderTopWidth: 1, borderTopColor: colors.outlineVariant, opacity: 0.5 }]}>
+              <Text style={[typography.labelSm, { color: colors.onSurface }]}>Storage synchronized with workspace</Text>
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>14:15</Text>
             </View>
             
-            <View style={[styles.logFooter, { borderTopColor: 'rgba(255,255,255,0.1)' }]}>
-              <TouchableOpacity style={[styles.auditBtn, { borderColor: 'rgba(255,255,255,0.2)' }]}>
-                <Text style={[typography.labelCaps, { color: colors.onPrimary, fontSize: 10 }]}>View Full Security Audit</Text>
+            <View style={[styles.logFooter, { borderTopColor: colors.outlineVariant }]}>
+              <TouchableOpacity style={[styles.auditBtn, { borderColor: colors.outlineVariant }]}>
+                <Text style={[typography.labelCaps, { color: colors.primary, fontSize: 10 }]}>View Full Activity History</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -207,12 +208,14 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     gap: 16,
+    borderRadius: 12,
   },
   fileIconBox: {
     width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 8,
   },
   fileInfo: {
     flex: 1,
@@ -226,6 +229,7 @@ const styles = StyleSheet.create({
   },
   logTerminal: {
     padding: 24,
+    borderRadius: 12,
   },
   logRow: {
     flexDirection: 'row',
@@ -241,6 +245,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 8,
   },
   bottomNav: {
     position: 'absolute',

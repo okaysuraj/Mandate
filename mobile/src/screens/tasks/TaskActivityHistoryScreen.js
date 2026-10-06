@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -67,7 +68,7 @@ const TaskActivityHistoryScreen = () => {
         
         {/* Summary Metrics */}
         <View style={styles.bentoGrid}>
-          <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>TOTAL INTERACTIONS</Text>
             <View style={styles.metricValGroup}>
               <Text style={[typography.headlineLg, { color: colors.primary, fontSize: 36, lineHeight: 40 }]}>1,284</Text>
@@ -75,7 +76,7 @@ const TaskActivityHistoryScreen = () => {
             </View>
           </View>
 
-          <View style={[styles.bentoCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant }]}>ACTIVE OPERATORS</Text>
             <View style={styles.metricValGroup}>
               <Text style={[typography.headlineLg, { color: colors.primary, fontSize: 36, lineHeight: 40 }]}>08</Text>
@@ -120,7 +121,7 @@ const TaskActivityHistoryScreen = () => {
                   <View style={[styles.timelineIconBox, { backgroundColor: badgeBg, borderColor: iconColor }]}>
                     <MaterialIcons name={item.icon} size={20} color={iconColor} />
                   </View>
-                  <View style={[styles.timelineCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+                  <View style={[styles.timelineCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
                     <View style={styles.cardTop}>
                       <View style={[styles.typeBadge, { backgroundColor: `${iconColor}1A`, borderColor: `${iconColor}33` }]}>
                         <Text style={[typography.labelCaps, { color: iconColor, fontSize: 10 }]}>{item.type}</Text>
@@ -221,6 +222,7 @@ const styles = StyleSheet.create({
     padding: 16,
     height: 128,
     justifyContent: 'space-between',
+    borderRadius: 12,
   },
   metricValGroup: {
     marginTop: 8,
@@ -287,6 +289,7 @@ const styles = StyleSheet.create({
   timelineCard: {
     borderWidth: 1,
     padding: 16,
+    borderRadius: 12,
   },
   cardTop: {
     flexDirection: 'row',

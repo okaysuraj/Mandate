@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -39,7 +40,7 @@ const PreferencesBehaviorScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.surface }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* TopAppBar */}
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
         <View style={styles.headerLeft}>
@@ -81,10 +82,10 @@ const PreferencesBehaviorScreen = ({ navigation }) => {
         </View>
 
         {/* Dense Vertical Stack */}
-        <View style={[styles.stackContainer, { borderTopColor: colors.outlineVariant }]}>
+        <View style={[styles.stackContainer, { borderTopColor: 'transparent' }]}>
           
           {/* Theme Views */}
-          <View style={[styles.bentoCard, { borderBottomColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.cardHeader}>
               <View style={styles.cardHeaderLeft}>
                 <MaterialIcons name="palette" size={20} color={colors.primary} />
@@ -101,7 +102,7 @@ const PreferencesBehaviorScreen = ({ navigation }) => {
                 >
                   <Text style={[typography.bodyMd, { color: theme === t ? colors.primary : colors.secondary, textTransform: 'capitalize' }]}>{t} Mode</Text>
                   <View style={[styles.toggleTrack, theme === t ? { backgroundColor: colors.primary } : { backgroundColor: colors.secondaryContainer }]}>
-                    <View style={[styles.toggleThumb, theme === t ? { alignSelf: 'flex-end' } : { alignSelf: 'flex-start' }]} />
+                    <View style={[styles.toggleThumb, { backgroundColor: theme === t ? colors.surface : colors.outline }, theme === t ? { alignSelf: 'flex-end' } : { alignSelf: 'flex-start' }]} />
                   </View>
                 </TouchableOpacity>
               ))}
@@ -109,7 +110,7 @@ const PreferencesBehaviorScreen = ({ navigation }) => {
           </View>
 
           {/* Timezone Polling */}
-          <View style={[styles.bentoCard, { borderBottomColor: colors.outlineVariant }]}>
+          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <View style={styles.cardHeader}>
               <View style={styles.cardHeaderLeft}>
                 <MaterialIcons name="language" size={20} color={colors.primary} />
@@ -124,7 +125,7 @@ const PreferencesBehaviorScreen = ({ navigation }) => {
           </View>
 
           {/* Visual Feedback Animation */}
-          <View style={[styles.feedbackSection, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
+          <View style={[styles.feedbackSection, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant, borderRadius: 12, marginHorizontal: 16, marginTop: 8 }]}>
             <MaterialIcons name="cloud-sync" size={64} color={colors.primaryFixedDim} style={{ marginBottom: 16 }} />
             <Text style={[typography.labelCaps, { color: colors.secondary, marginBottom: 4 }]}>REAL-TIME SYNC ENGINE</Text>
             <Text style={[typography.bodyMd, { color: colors.onSurfaceVariant, textAlign: 'center', maxWidth: 280 }]}>
@@ -164,7 +165,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 16,
+    borderRadius: 8,
   },
   iconBtn: {
     padding: 4,
@@ -194,9 +195,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   bentoCard: {
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    padding: 16, 
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 12,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -230,7 +233,6 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#ffffff',
   },
   sliderSection: {
     paddingVertical: 8,

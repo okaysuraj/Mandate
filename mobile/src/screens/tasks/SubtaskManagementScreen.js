@@ -1,54 +1,54 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
 const initialSubtasks = [
   {
     id: 's1',
-    title: 'DP-902-EXTERN',
-    status: 'VERIFIED',
+    title: 'Review navigation and drawer UX',
+    status: 'COMPLETED',
     statusType: 'success',
-    desc: 'External telemetry calibration and synchronization with orbital relay.',
-    operator: 'OP_ARIS_7',
+    desc: 'Verify smooth slide animation, full vertical expansion, and safe area insets on mobile.',
+    operator: 'Alex Rivera',
     avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC7ZOAnepui1JTfrtu1x7pGIj32Hzb_yv84XdLhGEx69HvyM2u58hW9A-LB3VosRwVNTdRh_raTl3_Tn6Rm8pwJsp1590H_e22mFnAcQZfXks2amZMRVdNBljqsO-Zmc-t-uJwSyKMALB31bVEf7H0aKYZNvqJkiHnUlkYUtZcBLBNxKf-1jgrDbww2plGLMoA1CgJPsmhxX85MvVvW0eOeLhyU6NDG0TI-zhHQzF4L_vRY_EmVYI_mIA',
     checked: true,
   },
   {
     id: 's2',
-    title: 'NX-44-LOGISTICS',
-    status: 'PENDING',
+    title: 'Harmonize color tokens and typography',
+    status: 'IN PROGRESS',
     statusType: 'neutral',
-    desc: 'Resource allocation for sector 7 containment field generators.',
-    operator: 'OP_HENDRIX',
+    desc: 'Ensure unified contrast ratio and clean font scales across mobile and web.',
+    operator: 'Sarah Chen',
     avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDf7LmIBcSLNVx_EEfu1TsDHNgrRISWiMljLdgKZmhFAO2OlSTKfqPgyg1WPvX_nEOaIX0ZdUOuy6uRzRXwbX5jmoc6FGq_THy6K4-8TmwpSpPtImpY6FUNT6c2xxYzpJvtB3IytBdToROWhKJS5Q3Nf8DALfySylhI_abM60jO83FPesjqPTFbghcOFR1s6UEuiyWjYM_2rKwnYwnxaeghyOok5NqlKUMQs3UREMToYkm-IgsbcmLmHw',
     checked: false,
   },
   {
     id: 's3',
-    title: 'SY-01-INTEGRITY',
-    status: 'FAILED',
+    title: 'Harden task creation schema validation',
+    status: 'NEEDS REVIEW',
     statusType: 'error',
-    desc: 'Integrity check on secondary core cooling manifold—leak detected.',
-    operator: 'OP_ELARA_9',
+    desc: 'Add pre-save data sanitization and friendly error feedback for required fields.',
+    operator: 'Marcus Vance',
     avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCti4_hzY9TUHCkLZ8kheaK06t28tw4oU1aZVjffJ2Eiw87gFo86MDpmjsUzvsvkpYnBgfsQD2FiLpqgwMk_ePjTL38RUgsbCmqMTplfOcU7U-JEEQicTbx4uAhpZlfIoUnseIsGMx5s1kZUKLkPleQLtiS0x3mHB5z2H6ZRbzyf84XREHkqi7mmGh3avpAfxuM93nPiJ7Jksdpc5i1LnaBII03K-jGb05m6MHsY6LkmCZz4M3Fg3CcpA',
     checked: false,
   },
   {
     id: 's4',
-    title: 'BT-001-BOOTSTRAP',
+    title: 'Deploy staging build & end-to-end check',
     status: 'PENDING',
     statusType: 'neutral',
-    desc: 'Manual override sequence for thermal shielding deployment.',
-    operator: 'OP_VANCE',
+    desc: 'Execute automated regression tests and verify production bundle readiness.',
+    operator: 'Elena Rostova',
     avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBBwZX9I9h7tjRkeOersG-SqpmsJ0P0SMlLoDbkhyf6ZE-MbX_KemYTVFltVIz6kJMqwLgUEtt8uiaebkJlTteAFrpS0hdgiX4UnaYreEuYBKowsgEROhFl40z_DqGutsAixEFrKULK9Y1UnFjnW-s1nXw2icVrs3t95CyVFrrzuOG33bE6IOMOp8hE2igIR-ROgY7xihrJO074wug6gEoTcWbwfLZIMjGZevbiedAoyYIPOmGPwqd8PA',
     checked: false,
   }
 ];
 
-const SubtaskManagementScreen = () => {
-  const { colors, typography, spacing, borderRadius } = useTheme();
-
+const SubtaskManagementScreen = ({ navigation }) => {
+  const { colors, typography, spacing } = useTheme();
   const [subtasks, setSubtasks] = useState(initialSubtasks);
 
   const toggleSubtask = (id) => {
@@ -60,50 +60,49 @@ const SubtaskManagementScreen = () => {
       {/* Top App Bar */}
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
         <View style={styles.headerLeft}>
-          <View style={[styles.avatarContainer, { borderColor: colors.outlineVariant }]}>
-            <Image 
-              source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC6yvKgNrlZiToivIWg_Bv62EkxtANmkK8lYe9noIG5SYgaOVM6hyVMzITLSMGCD80O80mAg9qWqyuJFPIxGQVTA2bmPJZbvqrc2PxIZmZV4nfYpW9dPoYyMvsZ9ck49Ae6T1mqyuPQYVV4s7cahSIWGFoUdttw3tKPdkADsu6Y_QfSHMCOjkoB_05sdJdC6IcCsjA3xP6o34MN_Cdn_5ueOIu9cSrn6PzUXXz-fUc8O-An0hEQQFIJLQ' }}
-              style={styles.avatarImg}
-            />
-          </View>
-          <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '900', letterSpacing: 2, marginLeft: 12 }]}>CORE_OS_v1.0</Text>
+          <TouchableOpacity onPress={() => navigation?.goBack?.()} style={{ marginRight: 8 }}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
+          </TouchableOpacity>
+          <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700', letterSpacing: 1 }]}>
+            TASK CHECKLIST
+          </Text>
         </View>
         <TouchableOpacity style={styles.iconBtn}>
-          <MaterialIcons name="settings" size={24} color={colors.primary} />
+          <MaterialIcons name="more-vert" size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
         
-        {/* Active Mandate Header */}
+        {/* Active Task Header */}
         <View style={[styles.mandateHeader, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
           <View style={styles.mandateStatusRow}>
-            <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, letterSpacing: 1 }]}>ACTIVE MANDATE</Text>
+            <Text style={[typography.labelCaps, { color: colors.onPrimaryContainer, letterSpacing: 1 }]}>CURRENT TASK</Text>
             <View style={[styles.pulseDot, { backgroundColor: colors.onTertiaryContainer }]} />
           </View>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginVertical: 16, textTransform: 'uppercase' }]}>
-            SUB-PROTOCOL_KRONOS_09
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginVertical: 12 }]}>
+            Design System Refactor & Polish
           </Text>
           <View style={styles.mandateMetaRow}>
             <View style={styles.metaCol}>
               <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>PRIORITY</Text>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>CRITICAL_A1</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700' }]}>HIGH</Text>
             </View>
             <View style={styles.metaCol}>
-              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>DEADLINE</Text>
-              <Text style={[typography.labelCaps, { color: colors.primary }]}>T-MINUS 04:22:10</Text>
+              <Text style={[typography.labelSm, { color: colors.onSurfaceVariant }]}>DUE DATE</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary, fontWeight: '700' }]}>Today, 5:00 PM</Text>
             </View>
           </View>
         </View>
 
-        {/* Sub-Protocol List */}
+        {/* Subtask Checklist */}
         <View style={styles.listContainer}>
           {subtasks.map((item) => (
             <TouchableOpacity 
               key={item.id}
               style={[
                 styles.bentoCard, 
-                { backgroundColor: '#ffffff', borderColor: colors.outlineVariant },
+                { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant },
                 item.statusType === 'error' && { backgroundColor: 'rgba(255, 218, 214, 0.1)', borderColor: 'rgba(186, 26, 26, 0.3)' }
               ]}
               onPress={() => toggleSubtask(item.id)}
@@ -159,31 +158,13 @@ const SubtaskManagementScreen = () => {
 
           <TouchableOpacity style={[styles.addBtn, { backgroundColor: colors.primary }]}>
             <MaterialIcons name="add" size={20} color={colors.onPrimary} />
-            <Text style={[typography.labelCaps, { color: colors.onPrimary, marginLeft: 16 }]}>ADD SUB-PROTOCOL</Text>
+            <Text style={[typography.labelCaps, { color: colors.onPrimary, marginLeft: 16, fontWeight: '700' }]}>
+              ADD SUBTASK
+            </Text>
           </TouchableOpacity>
         </View>
 
       </ScrollView>
-
-      {/* Bottom Nav */}
-      <View style={[styles.bottomNav, { backgroundColor: colors.surface, borderTopColor: colors.outlineVariant }]}>
-        <TouchableOpacity style={[styles.navItem, { borderRightColor: colors.outlineVariant }]}>
-          <MaterialIcons name="dashboard" size={24} color={colors.onSurfaceVariant} />
-          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginTop: 4, fontSize: 9 }]}>DASHBOARD</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItem, { borderRightColor: colors.outlineVariant }]}>
-          <MaterialIcons name="inventory-2" size={24} color={colors.onSurfaceVariant} />
-          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginTop: 4, fontSize: 9 }]}>ASSETS</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItem, { borderRightColor: colors.outlineVariant }]}>
-          <MaterialIcons name="notifications-active" size={24} color={colors.onSurfaceVariant} />
-          <Text style={[typography.labelCaps, { color: colors.onSurfaceVariant, marginTop: 4, fontSize: 9 }]}>ALERTS</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItem, { backgroundColor: colors.primary }]}>
-          <MaterialIcons name="settings-input-component" size={24} color={colors.onPrimary} />
-          <Text style={[typography.labelCaps, { color: colors.onPrimary, marginTop: 4, fontSize: 9 }]}>SYSTEM</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -194,82 +175,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    height: 64,
+    paddingHorizontal: 16,
+    height: 56,
     borderBottomWidth: 1,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-  },
-  avatarImg: {
-    width: '100%',
-    height: '100%',
-  },
   iconBtn: {
     padding: 8,
-    marginRight: -8,
   },
   container: {
-    paddingTop: 64, 
-    paddingBottom: 100, // to clear bottom nav
+    flexGrow: 1,
+    paddingBottom: 48,
   },
   mandateHeader: {
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 16,
+    padding: 20,
     borderBottomWidth: 1,
   },
   mandateStatusRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
   pulseDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
+    marginLeft: 8,
   },
   mandateMetaRow: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 32,
+    marginTop: 8,
   },
   metaCol: {
-    gap: 4,
+    gap: 2,
   },
   listContainer: {
-    padding: 24,
-    gap: 16,
+    padding: 16,
+    gap: 12,
   },
   bentoCard: {
     borderWidth: 1,
+    borderRadius: 8,
     padding: 16,
-    borderRadius: 16,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 16,
   },
   checkbox: {
-    width: 20,
-    height: 20,
+    width: 22,
+    height: 22,
     borderRadius: 4,
-    borderWidth: 1,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 12,
     marginTop: 2,
   },
   cardContent: {
@@ -277,18 +240,19 @@ const styles = StyleSheet.create({
   },
   titleRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   statusPill: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: 4,
   },
   operatorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     marginTop: 12,
   },
   operatorAvatar: {
@@ -297,6 +261,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',
+    marginRight: 8,
   },
   operatorImg: {
     width: '100%',
@@ -306,26 +271,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 56,
-    borderRadius: 28,
+    paddingVertical: 14,
+    borderRadius: 8,
     marginTop: 8,
   },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    height: 80,
-    borderTopWidth: 1,
-    zIndex: 50,
-  },
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRightWidth: 1,
-  }
 });
 
 export default SubtaskManagementScreen;

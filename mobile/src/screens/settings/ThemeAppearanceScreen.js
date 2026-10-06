@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { 
-  View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -85,15 +84,15 @@ const ThemeAppearanceScreen = ({ navigation }) => {
         
         {/* Header Section */}
         <View style={styles.pageHeader}>
-          <Text style={[typography.labelCaps, { color: colors.secondary }]}>SYSTEM CONFIGURATION</Text>
-          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 4 }]}>Appearance Protocols</Text>
-          <Text style={[typography.bodyMd, { color: colors.secondary, opacity: 0.8, marginTop: 4 }]}>Calibrate the visual parameters for high-density operational workflows.</Text>
+          <Text style={[typography.labelCaps, { color: colors.secondary }]}>APPEARANCE PREFERENCES</Text>
+          <Text style={[typography.headlineLgMobile, { color: colors.primary, marginTop: 4 }]}>Appearance & Theme</Text>
+          <Text style={[typography.bodyMd, { color: colors.secondary, opacity: 0.8, marginTop: 4 }]}>Customize contrast, display density, and visual theme.</Text>
         </View>
 
         {/* Operational Mode Selection */}
         <View style={styles.section}>
           <View style={styles.sectionTitleRow}>
-            <Text style={[typography.labelCaps, { color: colors.primary }]}>OPERATIONAL MODE</Text>
+            <Text style={[typography.labelCaps, { color: colors.primary }]}>THEME MODE</Text>
             <View style={[styles.badge, { backgroundColor: colors.tertiaryFixed }]}>
               <Text style={[typography.labelSm, { color: colors.onTertiaryContainer, fontSize: 10 }]}>RECOMMENDED</Text>
             </View>
@@ -102,7 +101,7 @@ const ThemeAppearanceScreen = ({ navigation }) => {
           <View style={styles.modesContainer}>
             <ModeCard 
               title="HIGH CONTRAST" 
-              subtitle="Maximum legibility for industrial environments with extreme lighting."
+              subtitle="Maximum legibility and contrast across high-light environments."
               icon="contrast"
               isSelected={mode === 'HIGH CONTRAST'}
               onPress={() => setMode('HIGH CONTRAST')}
@@ -115,8 +114,8 @@ const ThemeAppearanceScreen = ({ navigation }) => {
               onPress={() => setMode('MINIMALIST RAW')}
             />
             <ModeCard 
-              title="NIGHT SURVEILLANCE" 
-              subtitle="OLED-optimized dark protocol with suppressed luminance."
+              title="OLED DARK" 
+              subtitle="OLED-optimized dark theme with true black backgrounds."
               icon="bedtime"
               isSelected={mode === 'NIGHT SURVEILLANCE'}
               onPress={() => setMode('NIGHT SURVEILLANCE')}
@@ -126,7 +125,7 @@ const ThemeAppearanceScreen = ({ navigation }) => {
 
         {/* Density Protocols */}
         <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: 12 }]}>DENSITY PROTOCOLS</Text>
+          <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: 12 }]}>LAYOUT DENSITY</Text>
           <View style={styles.densityContainer}>
             <DensityCard 
               title="COMPACT" icon="view-comfy-alt" 
@@ -157,7 +156,7 @@ const ThemeAppearanceScreen = ({ navigation }) => {
             <View style={styles.fakeSliderContainer}>
               <View style={[styles.fakeSliderTrack, { backgroundColor: colors.surfaceDim }]} />
               <View style={[styles.fakeSliderFill, { backgroundColor: colors.primary, width: `${(fontScale - 80) / (140 - 80) * 100}%` }]} />
-              <View style={[styles.fakeSliderThumb, { backgroundColor: colors.primary, left: `${(fontScale - 80) / (140 - 80) * 100}%` }]} />
+              <View style={[styles.fakeSliderThumb, { backgroundColor: colors.primary, borderColor: colors.surface, left: `${(fontScale - 80) / (140 - 80) * 100}%` }]} />
               {/* Invisible touch area for fake slider would go here or use real Slider in actual RN */}
             </View>
             <View style={styles.sliderLabels}>
@@ -179,7 +178,7 @@ const ThemeAppearanceScreen = ({ navigation }) => {
             <View style={styles.fakeSliderContainer}>
               <View style={[styles.fakeSliderTrack, { backgroundColor: colors.surfaceDim }]} />
               <View style={[styles.fakeSliderFill, { backgroundColor: colors.primary, width: `${contrastModulation}%` }]} />
-              <View style={[styles.fakeSliderThumb, { backgroundColor: colors.primary, left: `${contrastModulation}%` }]} />
+              <View style={[styles.fakeSliderThumb, { backgroundColor: colors.primary, borderColor: colors.surface, left: `${contrastModulation}%` }]} />
             </View>
             <View style={styles.sliderLabels}>
               <Text style={[typography.labelSm, { color: colors.secondary, opacity: 0.5, fontSize: 10 }]}>SOFT</Text>
@@ -189,18 +188,18 @@ const ThemeAppearanceScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Live Protocol Preview */}
+        {/* Live Theme Preview */}
         <View style={styles.section}>
-          <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: 12 }]}>LIVE PROTOCOL PREVIEW</Text>
-          <View style={[styles.previewContainer, { backgroundColor: '#fff', borderColor: colors.outlineVariant }]}>
+          <Text style={[typography.labelCaps, { color: colors.primary, marginBottom: 12 }]}>THEME PREVIEW</Text>
+          <View style={[styles.previewContainer, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
             <Image 
               source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBXiU4fJvBI50KwbRqeYXMQXrveE5Tpa0r-HNF9lnHoVO048e6cLRK6IqU7vxs3C6yAwBP_2skRNNMkZpQAf9wVARcInwgurUAOoyfZLOPm_9YUXLJVXKSsFTvusv5nFm0Sh8PZTfEpA_A1Mt0aykiW17xtoA6nCdLiKMbrPwXEbvrmqtdzPsCipLfVnchsMwK5I7D6aBx8oRZwHAQsiVl9mfySQu0lq5u-jw8evB4-__0KmDHpbfJu5Q' }}
               style={[styles.previewImage, { opacity: 0.1 }]}
             />
             <View style={styles.previewContent}>
               <View style={[styles.previewLine, { backgroundColor: colors.primary }]} />
-              <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2, marginBottom: 4 }]}>SYSTEM STATUS: NOMINAL</Text>
-              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: -0.5 }]}>Latency: 2ms | Efficiency: 98.4%</Text>
+              <Text style={[typography.labelCaps, { color: colors.primary, letterSpacing: 2, marginBottom: 4 }]}>WORKSPACE ACTIVE</Text>
+              <Text style={[typography.labelSm, { color: colors.secondary, textTransform: 'uppercase', letterSpacing: -0.5 }]}>Sync: Realtime | Tasks: 18 Active</Text>
               
               <View style={styles.previewDotsRow}>
                 <View style={[styles.previewDot, { backgroundColor: colors.tertiaryFixed }]} />
@@ -268,7 +267,7 @@ const styles = StyleSheet.create({
   },
   modeIconContainer: {
     padding: 8,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   modeTextContainer: {
     flex: 1,
@@ -280,14 +279,14 @@ const styles = StyleSheet.create({
   densityCard: {
     flex: 1,
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   slidersCard: {
     padding: 24,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   sliderGroup: {
     gap: 16,
@@ -321,7 +320,6 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#fff',
     position: 'absolute',
     marginLeft: -12, // center
   },
@@ -332,7 +330,7 @@ const styles = StyleSheet.create({
   previewContainer: {
     height: 192,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
     position: 'relative',
     alignItems: 'center',

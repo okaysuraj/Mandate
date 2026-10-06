@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Image, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -101,7 +102,7 @@ const FocusTimerLogsScreen = ({ navigation }) => {
               <Text style={[typography.labelSm, styles.logTime, { color: colors.secondary }]}>14:18:32</Text>
               <Text style={[typography.labelSm, styles.logContent, { color: colors.onSurface }]}>Network requests optimized. Latency minimized.</Text>
             </View>
-            <View style={[styles.logEntry, { borderLeftWidth: 2, borderLeftColor: colors.primary, paddingLeft: 8 }]}>
+            <View style={[styles.logEntry, { backgroundColor: colors.surfaceContainerLow, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 }]}>
               <Text style={[typography.labelSm, styles.logTime, { color: colors.secondary }]}>14:24:19</Text>
               <Text style={[typography.labelSm, styles.logContent, { color: colors.primary, fontWeight: 'bold' }]}>Awaiting input... System nominal.</Text>
             </View>
@@ -233,6 +234,7 @@ const styles = StyleSheet.create({
   metricCard: {
     flex: 1,
     padding: 16,
+    borderRadius: 12,
   },
   progressTrack: {
     width: '100%',
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
   },
   logBento: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
     height: 300,
   },
@@ -279,7 +281,7 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 9999,
+    borderRadius: 10,
     paddingHorizontal: 16,
   },
   textInput: {
@@ -299,7 +301,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
-    borderRadius: 9999,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: 'transparent',
   },

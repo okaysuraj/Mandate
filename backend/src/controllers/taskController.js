@@ -90,25 +90,67 @@ export const getTaskById = async (req, res) => {
 
 export const createTask = async (req, res) => {
   try {
-    const { title, description, intent, status, priority, dueDate, projectId, workspaceId, parentTaskId, tags, timeSpent } = req.body;
-
-    if (!title) {
-      return res.status(400).json({ message: "Please add a title" });
-    }
-
-    const task = await Task.create({
+    const {
       title,
       description,
       intent,
       status,
       priority,
       dueDate,
+      startDate,
       projectId,
+      workspaceId,
       parentTaskId,
       tags,
       timeSpent,
+      timeEstimate,
+      energyLevel,
+      recurrenceRule,
+      subtasks,
+      attachments,
+    } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ message: "Please add a title" });
+    }
+
+    // Resolve valid workspaceId
+    let finalWorkspaceId = workspaceId || req.user.activeWorkspace;
+    if (!finalWorkspaceId) {
+      const existingWs = await Workspace.findOne({
+        $or: [{ owner: req.user.id }, { "members.user": req.user.id }],
+      });
+      if (existingWs) {
+        finalWorkspaceId = existingWs._id;
+      } else {
+        const newWs = await Workspace.create({
+          name: "Personal Workspace",
+          owner: req.user.id,
+          members: [{ user: req.user.id, role: "Admin" }],
+        });
+        finalWorkspaceId = newWs._id;
+      }
+    }
+
+    const task = await Task.create({
+      title,
+      description: description || "",
+      intent: intent || "",
+      status: status || "pending",
+      priority: priority || "medium",
+      dueDate: dueDate || null,
+      startDate: startDate || null,
+      projectId: projectId || null,
+      parentTaskId: parentTaskId || null,
+      tags: tags || [],
+      timeSpent: timeSpent || 0,
+      timeEstimate: timeEstimate || 0,
+      energyLevel: energyLevel || null,
+      recurrenceRule: recurrenceRule || "",
+      subtasks: subtasks || [],
+      attachments: attachments || [],
       creatorId: req.user.id,
-      workspaceId: workspaceId || req.user.activeWorkspace || req.user.id, // Fallback
+      workspaceId: finalWorkspaceId,
     });
     
     // Log activity
@@ -119,7 +161,7 @@ export const createTask = async (req, res) => {
       action: "created",
     });
     
-    if (req.io) {
+    if (req.io && task.workspaceId) {
       req.io.to(task.workspaceId.toString()).emit("task:created", task);
     }
     
@@ -128,8 +170,14 @@ export const createTask = async (req, res) => {
     
     res.status(201).json(task);
   } catch (error) {
-    import('fs').then(fs => fs.writeFileSync('error_log.txt', error.stack || error.message));
     console.error("Error in createTask controller", error);
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((e) => e.message);
+      return res.status(400).json({ message: "Validation error", errors: messages });
+    }
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: `Invalid format for ${error.path}: ${error.value}` });
+    }
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
@@ -221,7 +269,14 @@ export const updateTask = async (req, res) => {
     res.status(200).json(updatedTask);
   } catch (error) {
     console.error("Error in updateTask controller", error);
-    res.status(500).json({ message: "Internal server error" });
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((e) => e.message);
+      return res.status(400).json({ message: "Validation error", errors: messages });
+    }
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: `Invalid format for ${error.path}: ${error.value}` });
+    }
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 

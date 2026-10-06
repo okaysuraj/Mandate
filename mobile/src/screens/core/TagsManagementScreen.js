@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -90,7 +91,7 @@ const TagsManagementScreen = () => {
         {/* Tag List */}
         <View style={styles.tagList}>
           {tagsData.map((tag) => (
-            <View key={tag.id} style={[styles.tagCard, { backgroundColor: '#ffffff', borderColor: colors.outlineVariant }]}>
+            <View key={tag.id} style={[styles.tagCard, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
               
               <View style={styles.cardHeader}>
                 <View>
@@ -231,14 +232,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
-    borderRadius: 32,
+    borderRadius: 12,
   },
   tagList: {
     gap: 16,
   },
   tagCard: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 24,
   },
   cardHeader: {
@@ -250,7 +251,7 @@ const styles = StyleSheet.create({
   categoryBadge: {
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 16,
+    borderRadius: 8,
     alignSelf: 'flex-start',
   },
   statusBadge: {
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   cardMiddle: {
     flexDirection: 'row',

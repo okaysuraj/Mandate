@@ -1,10 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { StatusBar } from "expo-status-bar";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { View, Text, StyleSheet, Platform } from "react-native";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  Animated,
+  Easing,
+  BackHandler,
+  Pressable,
+  TouchableOpacity,
+} from "react-native";
 import * as Font from "expo-font";
 import { MaterialIcons } from "@expo/vector-icons";
 import { isRunningInExpoGo } from "expo";
@@ -52,6 +62,9 @@ import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { WorkspaceProvider } from "./src/context/WorkspaceContext";
 import { SocketProvider } from "./src/context/SocketContext";
 import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
+import { DrawerProvider, useDrawer } from "./src/context/DrawerContext";
+import RightSidebarDrawer, { DRAWER_WIDTH } from "./src/components/layout/RightSidebarDrawer";
+import { navigationRef } from "./src/navigation/navigationRef";
 
 import LandingScreen from "./src/screens/core/LandingScreen";
 import AiSmartReschedulingScreen from "./src/screens/automation/AiSmartReschedulingScreen";
@@ -161,231 +174,213 @@ import AccountabilityMatrixScreen from "./src/screens/core/AccountabilityMatrixS
 import DeviceManagementScreen from "./src/screens/core/DeviceManagementScreen";
 import NotificationPrefsScreen from "./src/screens/settings/NotificationPrefsScreen";
 import NotificationCenterScreen from "./src/screens/settings/NotificationCenterScreen";
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
-const KanbanStack = createNativeStackNavigator();
-const SettingsStack = createNativeStackNavigator();
-const KnowledgeStack = createNativeStackNavigator();
-const ProjectsStack = createNativeStackNavigator();
-const ProductivityStack = createNativeStackNavigator();
+const MainAppStack = createNativeStackNavigator();
 
-// Custom minimal tab bar icon matching BottomNavBar design
-const TabIcon = ({ label, focused, iconName, colors }) => (
-  <View style={[styles.tabIconContainer, focused && { borderTopColor: colors.primary, borderTopWidth: 2 }]}>
-    <MaterialIcons
-      name={iconName}
-      size={22}
-      color={focused ? colors.primary : colors.secondary}
-    />
-    <Text
-      style={[styles.tabLabel, { color: focused ? colors.primary : colors.secondary }]}
-      numberOfLines={1}
-      ellipsizeMode="tail"
-      allowFontScaling={false}
-    >
-      {label}
-    </Text>
-  </View>
-);
+// Tab configuration for bottom navigation
+const TAB_CONFIG = {
+  Dashboard: { label: "DASHBOARD", icon: "dashboard" },
+  Today: { label: "TODAY", icon: "event-available" },
+  Kanban: { label: "KANBAN", icon: "view-kanban" },
+  Calendar: { label: "CALENDAR", icon: "calendar-today" },
+};
 
-const KanbanStackScreen = () => (
-  <KanbanStack.Navigator screenOptions={{ headerShown: false }}>
-    <KanbanStack.Screen name="KanbanMain" component={KanbanScreen} />
-    <KanbanStack.Screen name="TaskDetail" component={TaskDetailScreen} />
-  </KanbanStack.Navigator>
-);
-
-const ProjectsStackScreen = () => (
-  <ProjectsStack.Navigator screenOptions={{ headerShown: false }}>
-    <ProjectsStack.Screen name="ProjectsMain" component={ProjectsScreen} />
-    <ProjectsStack.Screen name="ProjectDetail" component={ProjectDetailScreen} />
-    <ProjectsStack.Screen name="ProjectCalendar" component={ProjectCalendarScreen} />
-    <ProjectsStack.Screen name="TimelineView" component={TimelineViewScreen} />
-    <ProjectsStack.Screen name="ListView" component={ListViewScreen} />
-    <ProjectsStack.Screen name="AiSmartRescheduling" component={AiSmartReschedulingScreen} />
-    <ProjectsStack.Screen name="AiTaskBreakdown" component={AiTaskBreakdownScreen} />
-    <ProjectsStack.Screen name="AssignedToMe" component={AssignedToMeScreen} />
-    <ProjectsStack.Screen name="Backlog" component={BacklogScreen} />
-    <ProjectsStack.Screen name="BurnoutInsights" component={BurnoutInsightsScreen} />
-    <ProjectsStack.Screen name="CapacityView" component={CapacityViewScreen} />
-    <ProjectsStack.Screen name="CommitmentHistory" component={CommitmentHistoryScreen} />
-    <ProjectsStack.Screen name="CreateGoal" component={CreateGoalScreen} />
-    <ProjectsStack.Screen name="CreateProject" component={CreateProjectScreen} />
-    <ProjectsStack.Screen name="CreateTask" component={CreateTaskScreen} />
-    <ProjectsStack.Screen name="CriticalAlerts" component={CriticalAlertsScreen} />
-    <ProjectsStack.Screen name="DailyReview" component={DailyReviewScreen} />
-    <ProjectsStack.Screen name="DangerZone" component={DangerZoneScreen} />
-    <ProjectsStack.Screen name="DataExport" component={DataExportScreen} />
-    <ProjectsStack.Screen name="DeviationReport" component={DeviationReportScreen} />
-    <ProjectsStack.Screen name="DigestPreview" component={DigestPreviewScreen} />
-    <ProjectsStack.Screen name="EditTask" component={EditTaskScreen} />
-    <ProjectsStack.Screen name="EmailVerification" component={EmailVerificationScreen} />
-    <ProjectsStack.Screen name="EmptyStateNoMandates" component={EmptyStateNoMandatesScreen} />
-    <ProjectsStack.Screen name="EmptyStateNoTasks" component={EmptyStateNoTasksScreen} />
-    <ProjectsStack.Screen name="Error" component={ErrorScreen} />
-    <ProjectsStack.Screen name="FilterBuilder" component={FilterBuilderScreen} />
-    <ProjectsStack.Screen name="FirstMandateCreation" component={FirstMandateCreationScreen} />
-    <ProjectsStack.Screen name="FocusNotesLogs" component={FocusNotesLogsScreen} />
-    <ProjectsStack.Screen name="FocusSummary" component={FocusSummaryScreen} />
-    <ProjectsStack.Screen name="FocusTimerLogs" component={FocusTimerLogsScreen} />
-    <ProjectsStack.Screen name="GlobalSearch" component={GlobalSearchScreen} />
-    <ProjectsStack.Screen name="GoalProgressTracking" component={GoalProgressTrackingScreen} />
-    <ProjectsStack.Screen name="HomeDashboard" component={HomeDashboardScreen} />
-    <ProjectsStack.Screen name="InitialConfiguration" component={InitialConfigurationScreen} />
-    <ProjectsStack.Screen name="InviteMembers" component={InviteMembersScreen} />
-    <ProjectsStack.Screen name="KeyboardShortcuts" component={KeyboardShortcutsScreen} />
-    <ProjectsStack.Screen name="Maintenance" component={MaintenanceScreen} />
-    <ProjectsStack.Screen name="MonthlyReview" component={MonthlyReviewScreen} />
-    <ProjectsStack.Screen name="NaturalLanguageInput" component={NaturalLanguageInputScreen} />
-    <ProjectsStack.Screen name="NotificationPreferences" component={NotificationPreferencesScreen} />
-    <ProjectsStack.Screen name="OfflineMode" component={OfflineModeScreen} />
-    <ProjectsStack.Screen name="OwnershipTransfer" component={OwnershipTransferScreen} />
-    <ProjectsStack.Screen name="PreferencesBehavior" component={PreferencesBehaviorScreen} />
-    <ProjectsStack.Screen name="PriorityStatus" component={PriorityStatusScreen} />
-    <ProjectsStack.Screen name="ProjectTimeline" component={ProjectTimelineScreen} />
-    <ProjectsStack.Screen name="ProtocolPaused" component={ProtocolPausedScreen} />
-    <ProjectsStack.Screen name="QuickCreate" component={QuickCreateScreen} />
-    <ProjectsStack.Screen name="ReflectionHistory" component={ReflectionHistoryScreen} />
-    <ProjectsStack.Screen name="SavedViews" component={SavedViewsScreen} />
-    <ProjectsStack.Screen name="SelectionProtocol" component={SelectionProtocolScreen} />
-    <ProjectsStack.Screen name="SmartViews" component={SmartViewsScreen} />
-    <ProjectsStack.Screen name="Splash" component={SplashScreen} />
-    <ProjectsStack.Screen name="SubtaskManagement" component={SubtaskManagementScreen} />
-    <ProjectsStack.Screen name="SyncConflictResolution" component={SyncConflictResolutionScreen} />
-    <ProjectsStack.Screen name="TableView" component={TableViewScreen} />
-    <ProjectsStack.Screen name="TagsManagement" component={TagsManagementScreen} />
-    <ProjectsStack.Screen name="TaskActivityHistory" component={TaskActivityHistoryScreen} />
-    <ProjectsStack.Screen name="TaskAssignment" component={TaskAssignmentScreen} />
-    <ProjectsStack.Screen name="TaskAttachments" component={TaskAttachmentsScreen} />
-    <ProjectsStack.Screen name="TaskComments" component={TaskCommentsScreen} />
-    <ProjectsStack.Screen name="TaskCompletionTrends" component={TaskCompletionTrendsScreen} />
-    <ProjectsStack.Screen name="TaskRecurrence" component={TaskRecurrenceScreen} />
-    <ProjectsStack.Screen name="TaskReflection" component={TaskReflectionScreen} />
-    <ProjectsStack.Screen name="TaskToGoalLinking" component={TaskToGoalLinkingScreen} />
-    <ProjectsStack.Screen name="TeamActivity" component={TeamActivityScreen} />
-    <ProjectsStack.Screen name="WeeklyReview" component={WeeklyReviewScreen} />
-    <ProjectsStack.Screen name="Welcome" component={WelcomeScreen} />
-    <ProjectsStack.Screen name="TeamDashboard" component={TeamDashboardScreen} />
-    <ProjectsStack.Screen name="PersonnelLedger" component={PersonnelLedgerScreen} />
-  </ProjectsStack.Navigator>
-);
-
-const ProductivityStackScreen = () => (
-  <ProductivityStack.Navigator screenOptions={{ headerShown: false }}>
-    <ProductivityStack.Screen name="DailyPlanning" component={DailyPlanningScreen} />
-    <ProductivityStack.Screen name="LockIn" component={LockInScreen} />
-    <ProductivityStack.Screen name="FocusMode" component={FocusModeScreen} />
-    <ProductivityStack.Screen name="EndOfDayReview" component={EndOfDayReviewScreen} />
-  </ProductivityStack.Navigator>
-);
-
-const SettingsStackScreen = () => (
-  <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
-    <SettingsStack.Screen name="SettingsMain" component={SettingsScreen} />
-    <SettingsStack.Screen name="TeamSettings" component={TeamSettingsScreen} />
-    <SettingsStack.Screen name="Pricing" component={PricingScreen} />
-    <SettingsStack.Screen name="Admin" component={AdminScreen} />
-    <SettingsStack.Screen name="Automations" component={AutomationsScreen} />
-    <SettingsStack.Screen name="Integrations" component={IntegrationsScreen} />
-    <SettingsStack.Screen name="AiInsights" component={AiInsightsScreen} />
-    <SettingsStack.Screen name="AiPriority" component={AiPriorityScreen} />
-    <SettingsStack.Screen name="AutomationRules" component={AutomationRulesScreen} />
-    <SettingsStack.Screen name="RuleBuilder" component={RuleBuilderScreen} />
-    <SettingsStack.Screen name="ProfileSettings" component={ProfileSettingsScreen} />
-    <SettingsStack.Screen name="AccountSettings" component={AccountSettingsScreen} />
-    <SettingsStack.Screen name="ThemeAppearance" component={ThemeAppearanceScreen} />
-    <SettingsStack.Screen name="SecurityProtocols" component={SecurityProtocolsScreen} />
-    <SettingsStack.Screen name="AutomationLogs" component={AutomationLogsScreen} />
-    <SettingsStack.Screen name="Billing" component={BillingScreen} />
-    <SettingsStack.Screen name="Permissions" component={PermissionsScreen} />
-    <SettingsStack.Screen name="AccountabilityMatrix" component={AccountabilityMatrixScreen} />
-    <SettingsStack.Screen name="DeviceManagement" component={DeviceManagementScreen} />
-    <SettingsStack.Screen name="NotificationPrefs" component={NotificationPrefsScreen} />
-    <SettingsStack.Screen name="NotificationCenter" component={NotificationCenterScreen} />
-  </SettingsStack.Navigator>
-);
-
-const KnowledgeStackScreen = () => (
-  <KnowledgeStack.Navigator screenOptions={{ headerShown: false }}>
-    <KnowledgeStack.Screen name="KnowledgeMain" component={DocsScreen} />
-    <KnowledgeStack.Screen name="Goals" component={GoalsScreen} />
-    <KnowledgeStack.Screen name="GoalDetail" component={GoalDetailScreen} />
-  </KnowledgeStack.Navigator>
-);
-
-const MainTabs = () => {
+// Custom bottom tab bar showing complete labels without truncation, and no active indicator bar
+const CustomBottomTabBar = ({ state, descriptors, navigation }) => {
   const { colors } = useTheme();
-  
+  const insets = useSafeAreaInsets();
+  const bottomInset = insets.bottom > 0 ? insets.bottom : (Platform.OS === "android" ? 12 : 8);
+
+  return (
+    <View
+      style={[
+        styles.customTabBar,
+        {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.outlineVariant,
+          paddingBottom: bottomInset,
+        },
+      ]}
+    >
+      {state.routes.map((route, index) => {
+        const isFocused = state.index === index;
+        const config = TAB_CONFIG[route.name] || { label: route.name, icon: "circle" };
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: "tabPress",
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        return (
+          <TouchableOpacity
+            key={route.key}
+            onPress={onPress}
+            style={styles.customTabItem}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons
+              name={config.icon}
+              size={24}
+              color={isFocused ? colors.primary : colors.secondary}
+            />
+            <Text
+              style={[
+                styles.customTabLabel,
+                { color: isFocused ? colors.primary : colors.secondary },
+              ]}
+              numberOfLines={1}
+            >
+              {config.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+};
+
+// 4 Bottom Navigation Tabs matching Web BottomNav.jsx (Command/Dashboard, Today, Kanban, Calendar)
+const MainTabs = () => {
   return (
     <Tab.Navigator
+      initialRouteName="Dashboard"
+      tabBar={(props) => <CustomBottomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
         freezeOnBlur: true,
         lazy: true,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopWidth: 1,
-          borderTopColor: colors.outlineVariant,
-          height: 64, // Standard bottom nav height
-        },
-        tabBarShowLabel: false,
       }}
     >
-      <Tab.Screen
-        name="Today"
-        component={TodayScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="DASHBOARD" iconName="grid-view" focused={focused} colors={colors} />,
-        }}
-      />
-      <Tab.Screen
-        name="Projects"
-        component={ProjectsStackScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="PROJECTS" iconName="inventory-2" focused={focused} colors={colors} />,
-        }}
-      />
-      <Tab.Screen
-        name="Kanban"
-        component={KanbanStackScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="ASSETS" iconName="precision-manufacturing" focused={focused} colors={colors} />,
-        }}
-      />
-      <Tab.Screen
-        name="Focus"
-        component={ProductivityStackScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="FOCUS" iconName="center-focus-strong" focused={focused} colors={colors} />,
-        }}
-      />
-      <Tab.Screen
-        name="Inbox"
-        component={InboxScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="ALERTS" iconName="error-outline" focused={focused} colors={colors} />,
-        }}
-      />
-      <Tab.Screen
-        name="Analytics"
-        component={AnalyticsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="METRICS" iconName="analytics" focused={focused} colors={colors} />,
-        }}
-      />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsStackScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon label="SYSTEM" iconName="settings" focused={focused} colors={colors} />,
-        }}
-      />
+      <Tab.Screen name="Dashboard" component={HomeDashboardScreen} />
+      <Tab.Screen name="Today" component={TodayScreen} />
+      <Tab.Screen name="Kanban" component={KanbanScreen} />
+      <Tab.Screen name="Calendar" component={CalendarScreen} />
     </Tab.Navigator>
   );
 };
 
+// Main Logged-In Stack Navigator: Root is MainTabs, with all screens accessible
+const MainStackNavigator = () => (
+  <MainAppStack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Tabs">
+    <MainAppStack.Screen name="Tabs" component={MainTabs} />
+    <MainAppStack.Screen name="Dashboard" component={HomeDashboardScreen} />
+    <MainAppStack.Screen name="Today" component={TodayScreen} />
+    <MainAppStack.Screen name="Kanban" component={KanbanScreen} />
+    <MainAppStack.Screen name="Calendar" component={CalendarScreen} />
+    <MainAppStack.Screen name="Backlog" component={BacklogScreen} />
+    <MainAppStack.Screen name="ProjectsMain" component={ProjectsScreen} />
+    <MainAppStack.Screen name="Projects" component={ProjectsScreen} />
+    <MainAppStack.Screen name="ProjectDetail" component={ProjectDetailScreen} />
+    <MainAppStack.Screen name="TaskDetail" component={TaskDetailScreen} />
+    <MainAppStack.Screen name="CreateTask" component={CreateTaskScreen} />
+    <MainAppStack.Screen name="EditTask" component={EditTaskScreen} />
+    <MainAppStack.Screen name="Analytics" component={AnalyticsScreen} />
+    <MainAppStack.Screen name="Inbox" component={InboxScreen} />
+    <MainAppStack.Screen name="TeamDashboard" component={TeamDashboardScreen} />
+    <MainAppStack.Screen name="DailyPlanning" component={DailyPlanningScreen} />
+    <MainAppStack.Screen name="FocusMode" component={FocusModeScreen} />
+    <MainAppStack.Screen name="FocusSummary" component={FocusSummaryScreen} />
+    <MainAppStack.Screen name="AutomationRules" component={AutomationRulesScreen} />
+    <MainAppStack.Screen name="RuleBuilder" component={RuleBuilderScreen} />
+    <MainAppStack.Screen name="AutomationLogs" component={AutomationLogsScreen} />
+    <MainAppStack.Screen name="Billing" component={BillingScreen} />
+    <MainAppStack.Screen name="Settings" component={SettingsScreen} />
+    <MainAppStack.Screen name="SettingsMain" component={SettingsScreen} />
+    <MainAppStack.Screen name="GlobalSearch" component={GlobalSearchScreen} />
+    <MainAppStack.Screen name="KeyboardShortcuts" component={KeyboardShortcutsScreen} />
+    <MainAppStack.Screen name="SavedViews" component={SavedViewsScreen} />
+    <MainAppStack.Screen name="MonthlyReview" component={MonthlyReviewScreen} />
+    <MainAppStack.Screen name="GoalProgressTracking" component={GoalProgressTrackingScreen} />
+    <MainAppStack.Screen name="ProjectTimeline" component={ProjectTimelineScreen} />
+    <MainAppStack.Screen name="CapacityView" component={CapacityViewScreen} />
+    <MainAppStack.Screen name="TeamActivity" component={TeamActivityScreen} />
+    <MainAppStack.Screen name="DeviationReport" component={DeviationReportScreen} />
+    <MainAppStack.Screen name="BurnoutInsights" component={BurnoutInsightsScreen} />
+    <MainAppStack.Screen name="PersonnelLedger" component={PersonnelLedgerScreen} />
+    <MainAppStack.Screen name="TableView" component={TableViewScreen} />
+    <MainAppStack.Screen name="CriticalAlerts" component={CriticalAlertsScreen} />
+    <MainAppStack.Screen name="LockIn" component={LockInScreen} />
+    <MainAppStack.Screen name="EndOfDayReview" component={EndOfDayReviewScreen} />
+    <MainAppStack.Screen name="TeamSettings" component={TeamSettingsScreen} />
+    <MainAppStack.Screen name="Pricing" component={PricingScreen} />
+    <MainAppStack.Screen name="Admin" component={AdminScreen} />
+    <MainAppStack.Screen name="Automations" component={AutomationsScreen} />
+    <MainAppStack.Screen name="Integrations" component={IntegrationsScreen} />
+    <MainAppStack.Screen name="AiInsights" component={AiInsightsScreen} />
+    <MainAppStack.Screen name="AiPriority" component={AiPriorityScreen} />
+    <MainAppStack.Screen name="ProfileSettings" component={ProfileSettingsScreen} />
+    <MainAppStack.Screen name="AccountSettings" component={AccountSettingsScreen} />
+    <MainAppStack.Screen name="ThemeAppearance" component={ThemeAppearanceScreen} />
+    <MainAppStack.Screen name="SecurityProtocols" component={SecurityProtocolsScreen} />
+    <MainAppStack.Screen name="Permissions" component={PermissionsScreen} />
+    <MainAppStack.Screen name="AccountabilityMatrix" component={AccountabilityMatrixScreen} />
+    <MainAppStack.Screen name="DeviceManagement" component={DeviceManagementScreen} />
+    <MainAppStack.Screen name="NotificationPrefs" component={NotificationPrefsScreen} />
+    <MainAppStack.Screen name="NotificationCenter" component={NotificationCenterScreen} />
+    <MainAppStack.Screen name="Docs" component={DocsScreen} />
+    <MainAppStack.Screen name="KnowledgeMain" component={DocsScreen} />
+    <MainAppStack.Screen name="Goals" component={GoalsScreen} />
+    <MainAppStack.Screen name="GoalDetail" component={GoalDetailScreen} />
+    <MainAppStack.Screen name="CreateProject" component={CreateProjectScreen} />
+    <MainAppStack.Screen name="CreateGoal" component={CreateGoalScreen} />
+    <MainAppStack.Screen name="AiSmartRescheduling" component={AiSmartReschedulingScreen} />
+    <MainAppStack.Screen name="AiTaskBreakdown" component={AiTaskBreakdownScreen} />
+    <MainAppStack.Screen name="AssignedToMe" component={AssignedToMeScreen} />
+    <MainAppStack.Screen name="ProjectCalendar" component={ProjectCalendarScreen} />
+    <MainAppStack.Screen name="TimelineView" component={TimelineViewScreen} />
+    <MainAppStack.Screen name="ListView" component={ListViewScreen} />
+    <MainAppStack.Screen name="CommitmentHistory" component={CommitmentHistoryScreen} />
+    <MainAppStack.Screen name="DailyReview" component={DailyReviewScreen} />
+    <MainAppStack.Screen name="DangerZone" component={DangerZoneScreen} />
+    <MainAppStack.Screen name="DataExport" component={DataExportScreen} />
+    <MainAppStack.Screen name="DigestPreview" component={DigestPreviewScreen} />
+    <MainAppStack.Screen name="EmailVerification" component={EmailVerificationScreen} />
+    <MainAppStack.Screen name="FilterBuilder" component={FilterBuilderScreen} />
+    <MainAppStack.Screen name="FocusNotesLogs" component={FocusNotesLogsScreen} />
+    <MainAppStack.Screen name="FocusTimerLogs" component={FocusTimerLogsScreen} />
+    <MainAppStack.Screen name="InitialConfiguration" component={InitialConfigurationScreen} />
+    <MainAppStack.Screen name="InviteMembers" component={InviteMembersScreen} />
+    <MainAppStack.Screen name="Maintenance" component={MaintenanceScreen} />
+    <MainAppStack.Screen name="NaturalLanguageInput" component={NaturalLanguageInputScreen} />
+    <MainAppStack.Screen name="NotificationPreferences" component={NotificationPreferencesScreen} />
+    <MainAppStack.Screen name="OfflineMode" component={OfflineModeScreen} />
+    <MainAppStack.Screen name="OwnershipTransfer" component={OwnershipTransferScreen} />
+    <MainAppStack.Screen name="PreferencesBehavior" component={PreferencesBehaviorScreen} />
+    <MainAppStack.Screen name="PriorityStatus" component={PriorityStatusScreen} />
+    <MainAppStack.Screen name="ProtocolPaused" component={ProtocolPausedScreen} />
+    <MainAppStack.Screen name="QuickCreate" component={QuickCreateScreen} />
+    <MainAppStack.Screen name="ReflectionHistory" component={ReflectionHistoryScreen} />
+    <MainAppStack.Screen name="SelectionProtocol" component={SelectionProtocolScreen} />
+    <MainAppStack.Screen name="SmartViews" component={SmartViewsScreen} />
+    <MainAppStack.Screen name="SubtaskManagement" component={SubtaskManagementScreen} />
+    <MainAppStack.Screen name="SyncConflictResolution" component={SyncConflictResolutionScreen} />
+    <MainAppStack.Screen name="TagsManagement" component={TagsManagementScreen} />
+    <MainAppStack.Screen name="TaskActivityHistory" component={TaskActivityHistoryScreen} />
+    <MainAppStack.Screen name="TaskAssignment" component={TaskAssignmentScreen} />
+    <MainAppStack.Screen name="TaskAttachments" component={TaskAttachmentsScreen} />
+    <MainAppStack.Screen name="TaskComments" component={TaskCommentsScreen} />
+    <MainAppStack.Screen name="TaskCompletionTrends" component={TaskCompletionTrendsScreen} />
+    <MainAppStack.Screen name="TaskRecurrence" component={TaskRecurrenceScreen} />
+    <MainAppStack.Screen name="TaskReflection" component={TaskReflectionScreen} />
+    <MainAppStack.Screen name="TaskToGoalLinking" component={TaskToGoalLinkingScreen} />
+    <MainAppStack.Screen name="WeeklyReview" component={WeeklyReviewScreen} />
+    <MainAppStack.Screen name="EmptyStateNoMandates" component={EmptyStateNoMandatesScreen} />
+    <MainAppStack.Screen name="EmptyStateNoTasks" component={EmptyStateNoTasksScreen} />
+    <MainAppStack.Screen name="Error" component={ErrorScreen} />
+  </MainAppStack.Navigator>
+);
+
 const AuthStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
+  <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Landing">
     <Stack.Screen name="Landing" component={LandingScreen} />
     <Stack.Screen name="Login" component={LoginScreen} />
     <Stack.Screen name="Register" component={RegisterScreen} />
@@ -395,8 +390,32 @@ const AuthStack = () => (
 );
 
 const RootNavigator = () => {
-  const { user } = useAuth();
-  const { isDark } = useTheme();
+  const { user, loading } = useAuth();
+  const { isDark, colors } = useTheme();
+  const { isOpen, closeDrawer } = useDrawer();
+
+  const drawerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(drawerAnim, {
+      toValue: isOpen ? 1 : 0,
+      duration: 280,
+      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      useNativeDriver: true,
+    }).start();
+  }, [isOpen]);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      if (isOpen) {
+        closeDrawer();
+        return true;
+      }
+      return false;
+    };
+    const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+    return () => sub.remove();
+  }, [isOpen, closeDrawer]);
 
   useEffect(() => {
     if (user) {
@@ -414,7 +433,6 @@ const RootNavigator = () => {
   async function registerForPushNotificationsAsync() {
     // expo-notifications native module is not available in Expo Go (SDK 53+).
     if (!Notifications || isRunningInExpoGo()) {
-      console.log('[Notifications] Push notifications skipped: not available in this runtime.');
       return null;
     }
 
@@ -438,7 +456,6 @@ const RootNavigator = () => {
           finalStatus = status;
         }
         if (finalStatus !== 'granted') {
-          console.log('Failed to get push token for push notification!');
           return null;
         }
 
@@ -447,8 +464,6 @@ const RootNavigator = () => {
           Constants?.easConfig?.projectId;
 
         token = (await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined)).data;
-      } else {
-        console.log('Must use physical device for Push Notifications');
       }
 
       return token;
@@ -457,12 +472,142 @@ const RootNavigator = () => {
       return null;
     }
   }
-  
+
+  // Prevent flash of LandingScreen when restoring cached session
+  if (loading && !user) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background, alignItems: "center", justifyContent: "center" }}>
+        <StatusBar style={isDark ? "light" : "dark"} />
+        <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.primary, alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+          <MaterialIcons name="terminal" size={24} color={colors.onPrimary} />
+        </View>
+        <Text style={{ fontFamily: "HankenGrotesk-Bold", fontSize: 16, color: colors.primary, letterSpacing: 2 }}>MANDATE</Text>
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <StatusBar style={isDark ? "light" : "dark"} />
+        <AuthStack />
+      </View>
+    );
+  }
+
+  // ChatGPT-style transition interpolations
+  const appTranslateX = drawerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -DRAWER_WIDTH * 0.72],
+  });
+
+  const appScale = drawerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.91],
+  });
+
+  const drawerTranslateX = drawerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [DRAWER_WIDTH, 0],
+  });
+
+  const dimOpacity = drawerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0.45],
+  });
+
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: isDark ? "#0A0B0E" : "#111318" }}>
       <StatusBar style={isDark ? "light" : "dark"} />
-      {user ? <MainTabs /> : <AuthStack />}
-    </>
+
+      {/* Main App Content - Shifts left, scales down, rounds corners like ChatGPT mobile app */}
+      <Animated.View
+        style={{
+          flex: 1,
+          backgroundColor: colors.background,
+          transform: [
+            { translateX: appTranslateX },
+            { scale: appScale },
+          ],
+          borderRadius: isOpen ? 22 : 0,
+          overflow: "hidden",
+        }}
+      >
+        <MainStackNavigator />
+
+        {/* Dim Backdrop over main app when drawer is open */}
+        {isOpen && (
+          <Animated.View
+            style={[
+              StyleSheet.absoluteFillObject,
+              {
+                backgroundColor: "#000",
+                opacity: dimOpacity,
+              },
+            ]}
+          >
+            <Pressable style={StyleSheet.absoluteFillObject} onPress={closeDrawer} />
+          </Animated.View>
+        )}
+      </Animated.View>
+
+      {/* Right Sidebar Drawer - Slides in from right, spans 100% full vertical height */}
+      <Animated.View
+        pointerEvents={isOpen ? "auto" : "none"}
+        style={[
+          styles.drawerWrapper,
+          {
+            width: DRAWER_WIDTH,
+            transform: [{ translateX: drawerTranslateX }],
+          },
+        ]}
+      >
+        <RightSidebarDrawer />
+      </Animated.View>
+    </View>
+  );
+};
+
+const NavigationRoot = () => {
+  const { colors, isDark } = useTheme();
+
+  const baseTheme = isDark ? DarkTheme : DefaultTheme;
+  const navTheme = {
+    ...baseTheme,
+    dark: isDark,
+    colors: {
+      ...baseTheme.colors,
+      primary: colors.primary,
+      background: colors.background,
+      card: colors.surface,
+      text: colors.onSurface,
+      border: colors.outlineVariant,
+      notification: colors.primary,
+    },
+    fonts: baseTheme?.fonts || {
+      regular: {
+        fontFamily: "HankenGrotesk-Regular",
+        fontWeight: "normal",
+      },
+      medium: {
+        fontFamily: "HankenGrotesk-Medium",
+        fontWeight: "normal",
+      },
+      bold: {
+        fontFamily: "HankenGrotesk-Bold",
+        fontWeight: "600",
+      },
+      heavy: {
+        fontFamily: "HankenGrotesk-ExtraBold",
+        fontWeight: "700",
+      },
+    },
+  };
+
+  return (
+    <NavigationContainer ref={navigationRef} theme={navTheme}>
+      <RootNavigator />
+    </NavigationContainer>
   );
 };
 
@@ -488,7 +633,7 @@ export default function App() {
   }, []);
 
   if (!fontsLoaded) {
-    return null; // Or a splash screen
+    return null;
   }
 
   return (
@@ -497,9 +642,9 @@ export default function App() {
         <AuthProvider>
           <WorkspaceProvider>
             <SocketProvider>
-              <NavigationContainer>
-                <RootNavigator />
-              </NavigationContainer>
+              <DrawerProvider>
+                <NavigationRoot />
+              </DrawerProvider>
             </SocketProvider>
           </WorkspaceProvider>
         </AuthProvider>
@@ -509,18 +654,34 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  tabIconContainer: {
+  drawerWrapper: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    zIndex: 10,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: -2, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  customTabBar: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    paddingTop: 8,
+  },
+  customTabItem: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: 8,
-    flex: 1,
-    width: "100%",
+    paddingVertical: 2,
   },
-  tabLabel: {
-    fontFamily: "JetBrainsMono-Medium",
-    fontSize: 8.5,
-    letterSpacing: -0.2,
-    marginTop: 2,
+  customTabLabel: {
+    fontFamily: "JetBrainsMono-Bold",
+    fontSize: 10,
+    letterSpacing: 0.2,
+    marginTop: 3,
     textTransform: "uppercase",
   },
 });
