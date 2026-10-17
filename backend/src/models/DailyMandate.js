@@ -1,9 +1,13 @@
-import { schemaPolicy, safeUrl } from './schemaPolicy.js';
+import { schemaPolicy } from "./schemaPolicy.js";
 import mongoose from "mongoose";
 
 const dailyMandateSchema = new mongoose.Schema(
   {
-    workspaceId: {type:mongoose.Schema.Types.ObjectId,ref:"Workspace",required:true},
+    workspaceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Workspace",
+      required: true,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -21,13 +25,16 @@ const dailyMandateSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Task",
-      }
-    ]
+      },
+    ],
   },
-  { timestamps: true, strict: "throw" }
+  { timestamps: true, strict: "throw" },
 );
 
-dailyMandateSchema.index({ userId: 1, workspaceId: 1, date: 1 }, { unique: true });
+dailyMandateSchema.index(
+  { userId: 1, workspaceId: 1, date: 1 },
+  { unique: true },
+);
 
 schemaPolicy(dailyMandateSchema);
 

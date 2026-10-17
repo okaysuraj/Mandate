@@ -1,4 +1,4 @@
-import { schemaPolicy, safeUrl } from './schemaPolicy.js';
+import { schemaPolicy } from "./schemaPolicy.js";
 import mongoose from "mongoose";
 
 const savedViewSchema = new mongoose.Schema(
@@ -33,7 +33,7 @@ const savedViewSchema = new mongoose.Schema(
       default: "list",
     },
   },
-  { timestamps: true, strict: "throw", optimisticConcurrency: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true },
 );
 
 savedViewSchema.index({ workspaceId: 1 });

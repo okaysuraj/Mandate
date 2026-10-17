@@ -6,6 +6,9 @@
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" href="/favicon.svg" as="image" type="image/svg+xml" />
+    <meta name="theme-color" content="#eef2f6" />
+    <meta name="apple-mobile-web-app-title" content="Mandate" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mandate</title>
@@ -17,8 +20,14 @@
     <!-- /Text font preloads -->
     
   </head>
-  <body>
-    <div id="root"></div>
+  <body style="margin:0">
+    <div id="root">
+      <main role="status" aria-live="polite" aria-busy="true" style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:var(--background,#eef2f6);color:var(--on-surface,#090d16)">
+        <img src="/favicon.svg" alt="" width="144" height="144" style="border-radius:6px" />
+        <span style="font:700 20px monospace;letter-spacing:3px">MANDATE</span>
+        <p style="margin:0;font:14px system-ui;color:var(--on-surface-variant,#334155)">Loading your workspace…</p>
+      </main>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 
 const DrawerContext = createContext();
 const DrawerActionsContext = createContext();
@@ -27,9 +33,16 @@ export const DrawerProvider = ({ children }) => {
     setIsOpen((prev) => !prev);
   }, []);
 
-  const actions = useMemo(() => ({openDrawer, closeDrawer, toggleDrawer}), [openDrawer, closeDrawer, toggleDrawer]);
-  const value = useMemo(() => ({isOpen, ...actions}), [isOpen, actions]);
-  return <DrawerActionsContext.Provider value={actions}><DrawerContext.Provider value={value}>{children}</DrawerContext.Provider></DrawerActionsContext.Provider>;
+  const actions = useMemo(
+    () => ({ openDrawer, closeDrawer, toggleDrawer }),
+    [openDrawer, closeDrawer, toggleDrawer],
+  );
+  const value = useMemo(() => ({ isOpen, ...actions }), [isOpen, actions]);
+  return (
+    <DrawerActionsContext.Provider value={actions}>
+      <DrawerContext.Provider value={value}>{children}</DrawerContext.Provider>
+    </DrawerActionsContext.Provider>
+  );
 };
 
 export default DrawerContext;

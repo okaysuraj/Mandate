@@ -1,5 +1,9 @@
 import express from "express";
-import { createCheckoutSession, webhook, getPlans } from "../controllers/stripeController.js";
+import {
+  createCheckoutSession,
+  webhook,
+  getPlans,
+} from "../controllers/stripeController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();

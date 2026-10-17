@@ -1,3 +1,4 @@
+import BrandLogo from "../../components/common/BrandLogo";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
@@ -32,16 +33,17 @@ const LoginPage = () => {
           <div className="hidden md:flex md:col-span-6 bg-surface-container-lowest rounded-3xl border border-outline-variant p-8 flex-col justify-between shadow-sm relative overflow-hidden">
             <div className="relative z-10">
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center font-black text-sm">
-                  M
-                </div>
-                <span className="font-mono text-xs font-bold text-on-surface-variant tracking-widest uppercase">MANDATE_OS</span>
+                <BrandLogo size={32} decorative />
+                <span className="font-mono text-xs font-bold text-on-surface-variant tracking-widest uppercase">
+                  MANDATE_OS
+                </span>
               </div>
               <h1 className="font-display-lg text-3xl font-black text-on-surface tracking-tight">
                 High-Velocity Workspace
               </h1>
               <p className="font-body-md text-xs md:text-sm text-on-surface-variant mt-2 leading-relaxed">
-                Precision engineering workflows, dynamic schedule corridors, and intelligent automation protocols.
+                Precision engineering workflows, dynamic schedule corridors, and
+                intelligent automation protocols.
               </p>
             </div>
 
@@ -50,10 +52,16 @@ const LoginPage = () => {
               <div className="absolute inset-0 opacity-15 bg-[radial-gradient(var(--primary)_1px,transparent_1px)] [background-size:16px_16px]" />
               <div className="relative z-10 flex flex-col items-center gap-3 p-6 text-center">
                 <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm">
-                  <span className="material-symbols-outlined text-3xl">terminal</span>
+                  <span className="material-symbols-outlined text-3xl">
+                    terminal
+                  </span>
                 </div>
-                <span className="font-mono text-xs font-bold text-on-surface uppercase tracking-wider">SECURE NODE GATEWAY</span>
-                <span className="text-[11px] font-mono text-on-surface-variant">Sign in with your verified email</span>
+                <span className="font-mono text-xs font-bold text-on-surface uppercase tracking-wider">
+                  SECURE NODE GATEWAY
+                </span>
+                <span className="text-[11px] font-mono text-on-surface-variant">
+                  Sign in with your verified email
+                </span>
               </div>
             </div>
 
@@ -70,17 +78,25 @@ const LoginPage = () => {
           <div className="col-span-12 md:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-3xl p-6 md:p-8 flex flex-col justify-center shadow-sm relative">
             <div className="mb-6">
               <div className="md:hidden flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-lg bg-primary text-on-primary flex items-center justify-center font-black text-xs">
-                  M
-                </div>
-                <span className="font-mono text-xs font-bold text-on-surface-variant tracking-wider">MANDATE</span>
+                <BrandLogo size={28} decorative />
+                <span className="font-mono text-xs font-bold text-on-surface-variant tracking-wider">
+                  MANDATE
+                </span>
               </div>
-              <h2 className="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">Welcome Back</h2>
-              <p className="font-body-md text-xs md:text-sm text-on-surface-variant mt-1">Enter your credentials to access your workspace</p>
+              <h2 className="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
+                Welcome Back
+              </h2>
+              <p className="font-body-md text-xs md:text-sm text-on-surface-variant mt-1">
+                Enter your credentials to access your workspace
+              </p>
             </div>
 
-            {authError&&<p role="alert" className="text-error">{authError}</p>}
-              <form onSubmit={handleSubmit} className="space-y-4">
+            {authError && (
+              <p role="alert" className="text-error">
+                {authError}
+              </p>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <label
                   htmlFor="email"
@@ -107,7 +123,10 @@ const LoginPage = () => {
                   >
                     Password
                   </label>
-                  <Link to="/forgot-password" className="text-xs font-mono text-primary hover:underline">
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs font-mono text-primary hover:underline"
+                  >
                     Forgot password?
                   </Link>
                 </div>
@@ -130,13 +149,17 @@ const LoginPage = () => {
                 >
                   {loading ? (
                     <>
-                      <span className="material-symbols-outlined text-base animate-spin">sync</span>
+                      <span className="material-symbols-outlined text-base animate-spin">
+                        sync
+                      </span>
                       AUTHENTICATING...
                     </>
                   ) : (
                     <>
                       Sign In
-                      <span className="material-symbols-outlined text-base">arrow_forward</span>
+                      <span className="material-symbols-outlined text-base">
+                        arrow_forward
+                      </span>
                     </>
                   )}
                 </button>
@@ -145,12 +168,19 @@ const LoginPage = () => {
 
             <div className="mt-6 pt-5 border-t border-outline-variant/60 flex flex-col gap-3">
               <div className="flex items-center gap-2.5 p-3 bg-surface-container/60 rounded-xl border border-outline-variant/60 text-xs font-mono text-on-surface-variant">
-                <span className="material-symbols-outlined text-primary text-base">verified_user</span>
+                <span className="material-symbols-outlined text-primary text-base">
+                  verified_user
+                </span>
                 <span>Authentication provided by Firebase</span>
               </div>
               <div className="text-center text-xs text-on-surface-variant">
                 Don't have an account?{" "}
-                <Link to="/register" className="text-primary font-bold hover:underline">Sign up</Link>
+                <Link
+                  to="/register"
+                  className="text-primary font-bold hover:underline"
+                >
+                  Sign up
+                </Link>
               </div>
             </div>
           </div>

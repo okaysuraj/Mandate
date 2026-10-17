@@ -1,5 +1,9 @@
 import express from "express";
-import { suggestTaskBreakdown, parseSmartInput, detectBurnout } from "../controllers/aiController.js";
+import {
+  suggestTaskBreakdown,
+  parseSmartInput,
+  detectBurnout,
+} from "../controllers/aiController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();

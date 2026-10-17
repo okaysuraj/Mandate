@@ -1,6 +1,10 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
-import { addProject, updateProfile, registerPushToken } from "../controllers/userController.js";
+import {
+  addProject,
+  updateProfile,
+  registerPushToken,
+} from "../controllers/userController.js";
 
 const router = express.Router();
 

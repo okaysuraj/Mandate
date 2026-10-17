@@ -12,7 +12,7 @@ const AppLayout = ({ children, fullWidth = false }) => {
   });
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  const closeMobile=useCallback(()=>setIsMobileSidebarOpen(false),[]);
+  const closeMobile = useCallback(() => setIsMobileSidebarOpen(false), []);
   const handleToggleSidebar = () => {
     if (window.innerWidth < 768) {
       setIsMobileSidebarOpen((prev) => !prev);
@@ -41,11 +41,19 @@ const AppLayout = ({ children, fullWidth = false }) => {
           onCloseMobile={closeMobile}
         />
 
-        <main className={`flex-1 transition-all duration-200 ${
-          isSidebarCollapsed ? "md:ml-16" : "md:ml-64"
-        } pt-20 px-3 sm:px-5 md:px-8 pb-28 md:pb-16 min-h-[calc(100vh-4rem)]`}>
-          <div className={fullWidth ? "w-full max-w-[1720px] mx-auto" : "max-w-container-max mx-auto"}>
-            <DataStatus/>
+        <main
+          className={`flex-1 transition-all duration-200 ${
+            isSidebarCollapsed ? "md:ml-16" : "md:ml-64"
+          } pt-20 px-3 sm:px-5 md:px-8 pb-28 md:pb-16 min-h-[calc(100vh-4rem)]`}
+        >
+          <div
+            className={
+              fullWidth
+                ? "w-full max-w-[1720px] mx-auto"
+                : "max-w-container-max mx-auto"
+            }
+          >
+            <DataStatus />
             {children}
           </div>
         </main>

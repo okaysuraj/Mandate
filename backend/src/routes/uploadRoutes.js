@@ -1,5 +1,9 @@
 import express from "express";
-import { uploadMiddleware, uploadFile, getDownload } from "../controllers/uploadController.js";
+import {
+  uploadMiddleware,
+  uploadFile,
+  getDownload,
+} from "../controllers/uploadController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();

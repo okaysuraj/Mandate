@@ -17,7 +17,8 @@ const router = express.Router();
 
 router.get("/analytics", protect, getAnalytics);
 
-router.route("/")
+router
+  .route("/")
   .get(protect, getTasks)
   .post(protect, sanitizeAndValidateTask, createTask);
 
@@ -25,7 +26,8 @@ router.post("/bulk", protect, bulkAction);
 router.put("/reorder", protect, reorderTasks);
 router.post("/:id/duplicate", protect, duplicateTask);
 
-router.route("/:id")
+router
+  .route("/:id")
   .get(protect, getTaskById)
   .put(protect, sanitizeAndValidateTask, updateTask)
   .delete(protect, deleteTask);

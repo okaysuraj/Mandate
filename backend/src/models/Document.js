@@ -1,4 +1,4 @@
-import { schemaPolicy, safeUrl } from './schemaPolicy.js';
+import { schemaPolicy } from "./schemaPolicy.js";
 import mongoose from "mongoose";
 
 const documentSchema = new mongoose.Schema(
@@ -27,13 +27,13 @@ const documentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Document",
       default: null, // For nested pages
-    }
+    },
   },
-  { timestamps: true, strict: "throw", optimisticConcurrency: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true },
 );
 
 documentSchema.index({ workspaceId: 1, parentDocId: 1 });
-documentSchema.index({workspaceId:1,createdAt:-1,_id:-1});
+documentSchema.index({ workspaceId: 1, createdAt: -1, _id: -1 });
 
 schemaPolicy(documentSchema);
 

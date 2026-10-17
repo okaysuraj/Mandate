@@ -1,15 +1,25 @@
-import {useIsFocused} from '@react-navigation/native';
-import useVisibleTasks from '../../hooks/useVisibleTasks';
-import { useWorkspace } from '../../context/WorkspaceContext';
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, RefreshControl, TextInput, useWindowDimensions } from "react-native";
+import { KanbanTaskCard } from "./KanbanTaskCard";
+import styles from "./KanbanScreen.styles";
+import { useIsFocused } from "@react-navigation/native";
+import useVisibleTasks from "../../hooks/useVisibleTasks";
+import { useWorkspace } from "../../context/WorkspaceContext";
+import { useState, useEffect, useRef, useMemo } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  FlatList,
+  RefreshControl,
+  TextInput,
+  useWindowDimensions,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth } from "../../context/AuthContext";
 import { useDataStore } from "../../store/useDataStore";
 import { useTheme } from "../../context/ThemeContext";
 import AppHeader from "../../components/layout/AppHeader";
-
 
 const COLUMNS = [
   { id: "pending", title: "Backlog", status: "pending" },
@@ -19,30 +29,55 @@ const COLUMNS = [
 ];
 
 const KanbanScreen = ({ navigation }) => {
-  const {width} = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const { user } = useAuth();
   const tasks = useVisibleTasks();
   const focused = useIsFocused();
-  const storeWorkspaceId = useDataStore(state => state.workspaceId);
-  const loading = useDataStore(state => state.loading);
-  const loadTasks = useDataStore(state => state.loadTasks);
-  const moveTask = useDataStore(state => state.moveTask);
-  const reorderTasks = useDataStore(state => state.reorderTasks);
-  const { colors, typography } = useTheme();
+  const storeWorkspaceId = useDataStore((state) => state.workspaceId);
+  const loading = useDataStore((state) => state.loading);
+  const loadTasks = useDataStore((state) => state.loadTasks);
+  const moveTask = useDataStore((state) => state.moveTask);
+  const reorderTasks = useDataStore((state) => state.reorderTasks);
+  const { colors } = useTheme();
 
   const { activeWorkspace } = useWorkspace();
-  const role = activeWorkspace?.members?.find(member => String(member.user?._id || member.user) === String(user?._id))?.role;
-  const canEdit = String(activeWorkspace?.owner?._id || activeWorkspace?.owner) === String(user?._id) || ['Admin', 'Editor'].includes(role);
-  const [actionError, setActionError] = useState('');
+  const role = activeWorkspace?.members?.find(
+    (member) => String(member.user?._id || member.user) === String(user?._id),
+  )?.role;
+  const canEdit =
+    String(activeWorkspace?.owner?._id || activeWorkspace?.owner) ===
+      String(user?._id) || ["Admin", "Editor"].includes(role);
+  const [actionError, setActionError] = useState("");
   const [saving, setSaving] = useState(false);
-  const perform = async action => { setActionError(''); setSaving(true); try { await action(); } catch(error) { setActionError(error.response?.data?.message || 'Unable to save changes'); } finally { setSaving(false); } };
+  const perform = async (action) => {
+    setActionError("");
+    setSaving(true);
+    try {
+      await action();
+    } catch (error) {
+      setActionError(error.response?.data?.message || "Unable to save changes");
+    } finally {
+      setSaving(false);
+    }
+  };
   const shiftTask = (task, direction) => {
-   const column = tasks.filter(item => item.status === task.status).sort((a,b) => (a.orderIndex || 0) - (b.orderIndex || 0));
-   const index = column.findIndex(item => item._id === task._id), target = index + direction;
-   if (target < 0 || target >= column.length) return;
-   [column[index], column[target]] = [column[target], column[index]];
-   const order = new Map(column.map((item,i) => [item._id,i]));
-   return perform(() => reorderTasks(tasks.map(item => order.has(item._id) ? {...item, orderIndex: order.get(item._id)} : item)));
+    const column = tasks
+      .filter((item) => item.status === task.status)
+      .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+    const index = column.findIndex((item) => item._id === task._id),
+      target = index + direction;
+    if (target < 0 || target >= column.length) return;
+    [column[index], column[target]] = [column[target], column[index]];
+    const order = new Map(column.map((item, i) => [item._id, i]));
+    return perform(() =>
+      reorderTasks(
+        tasks.map((item) =>
+          order.has(item._id)
+            ? { ...item, orderIndex: order.get(item._id) }
+            : item,
+        ),
+      ),
+    );
   };
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,17 +88,21 @@ const KanbanScreen = ({ navigation }) => {
   }, [user, loadTasks, focused, storeWorkspaceId]);
 
   const onRefresh = async () => {
-    await loadTasks({force:true});
+    await loadTasks({ force: true });
   };
 
   const filteredTasks = useMemo(() => {
-    const taskList = Array.isArray(tasks) ? tasks : (Array.isArray(tasks?.data) ? tasks.data : []);
+    const taskList = Array.isArray(tasks)
+      ? tasks
+      : Array.isArray(tasks?.data)
+        ? tasks.data
+        : [];
     const q = searchQuery.trim().toLowerCase();
     if (!q) return taskList;
     return taskList.filter(
       (t) =>
         (t?.title && t.title.toLowerCase().includes(q)) ||
-        (t?.description && t.description.toLowerCase().includes(q))
+        (t?.description && t.description.toLowerCase().includes(q)),
     );
   }, [tasks, searchQuery]);
 
@@ -72,7 +111,9 @@ const KanbanScreen = ({ navigation }) => {
       const s = (t.status || "pending").toLowerCase();
       if (status === "pending") return s === "pending" || s === "todo";
       if (status === "in-progress")
-        return s === "in-progress" || s === "in_progress" || s === "in progress";
+        return (
+          s === "in-progress" || s === "in_progress" || s === "in progress"
+        );
       if (status === "validation") return s === "validation";
       if (status === "completed") return s === "completed" || s === "done";
       return false;
@@ -92,219 +133,52 @@ const KanbanScreen = ({ navigation }) => {
     }
   };
 
-  const getPriorityDetails = (priority) => {
-    switch (priority) {
-      case "urgent":
-        return {
-          label: "CRITICAL",
-          dotColor: colors.error,
-          textColor: colors.error,
-          bg: colors.errorContainer,
-        };
-      case "high":
-        return {
-          label: "HIGH",
-          dotColor: colors.primary,
-          textColor: colors.primary,
-          bg: colors.surfaceContainerHighest,
-        };
-      case "medium":
-        return {
-          label: "MEDIUM",
-          dotColor: colors.tertiary,
-          textColor: colors.onTertiaryContainer,
-          bg: colors.tertiaryContainer,
-        };
-      default:
-        return {
-          label: "ROUTINE",
-          dotColor: colors.outline,
-          textColor: colors.onSurfaceVariant,
-          bg: colors.surfaceContainer,
-        };
-    }
-  };
-
-  const renderCard = (task, colStatus) => {
-    const taskIdStr = String(task._id || task.id || "0000");
-    const displayCode =
-      taskIdStr.length >= 6
-        ? taskIdStr.slice(-6).toUpperCase()
-        : taskIdStr.toUpperCase();
-    const priority = getPriorityDetails(task.priority);
-    const isCompleted = colStatus === "completed";
-    const isInProgress = colStatus === "in-progress";
-
-    return (
-      <TouchableOpacity
-        key={taskIdStr}
-        onPress={() =>
-          navigation.navigate("TaskDetail", { task, taskId: task._id || task.id })
-        }
-        style={[
-          styles.taskCard,
-          {
-            backgroundColor: colors.surfaceContainerLowest,
-            borderColor: isInProgress ? colors.primary : colors.outlineVariant,
-          },
-        ]}
-        activeOpacity={0.75}
-      >
-        {/* Card Header: Ref Code & Priority */}
-        <View style={styles.cardHeader}>
-          <Text style={[styles.refCodeText, { color: colors.onSurfaceVariant, backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}>
-            #MND-{displayCode}
-          </Text>
-          <View
-            style={[
-              styles.priorityBadge,
-              { backgroundColor: priority.bg, borderColor: colors.outlineVariant },
-            ]}
-          >
-            <View style={[styles.priorityDot, { backgroundColor: priority.dotColor }]} />
-            <Text style={[styles.priorityText, { color: priority.textColor }]}>
-              {priority.label}
-            </Text>
-          </View>
-        </View>
-
-        {/* Task Title */}
-        <Text
-          style={[
-            styles.cardTitle,
-            {
-              color: colors.onSurface,
-              textDecorationLine: isCompleted ? "line-through" : "none",
-            },
-          ]}
-          numberOfLines={2}
-        >
-          {task.title || "Untitled Mandate"}
-        </Text>
-
-        {/* Description */}
-        {task.description ? (
-          <Text style={[styles.cardDescription, { color: colors.onSurfaceVariant }]} numberOfLines={2}>
-            {task.description}
-          </Text>
-        ) : null}
-
-        {/* Tags */}
-        {task.tags && task.tags.length > 0 ? (
-          <View style={styles.tagsRow}>
-            {task.tags.slice(0, 3).map((tag, tIdx) => (
-              <View
-                key={tIdx}
-                style={[
-                  styles.tagPill,
-                  {
-                    backgroundColor: colors.surfaceContainer,
-                    borderColor: colors.outlineVariant,
-                  },
-                ]}
-              >
-                <Text style={[styles.tagText, { color: colors.onSurfaceVariant }]}>
-                  #{tag}
-                </Text>
-              </View>
-            ))}
-          </View>
-        ) : null}
-
-        {/* Footer Meta */}
-        <View style={[styles.cardFooter, { borderTopColor: colors.outlineVariant }]}>
-          <View style={styles.metaLeft}>
-            {task.dueDate ? (
-              <View style={styles.dateRow}>
-                <MaterialIcons name="calendar-today" size={12} color={colors.onSurfaceVariant} />
-                <Text style={[styles.metaText, { color: colors.onSurfaceVariant }]}>
-                  {new Date(task.dueDate).toLocaleDateString([], {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.dateRow}>
-                <MaterialIcons name="schedule" size={12} color={colors.onSurfaceVariant} />
-                <Text style={[styles.metaText, { color: colors.onSurfaceVariant }]}>QUEUE</Text>
-              </View>
-            )}
-
-            {isInProgress ? (
-              <View style={styles.activePill}>
-                <View style={[styles.activeDot, { backgroundColor: colors.primary }]} />
-                <Text style={[styles.activePillText, { color: colors.primary }]}>ACTIVE</Text>
-              </View>
-            ) : null}
-
-            {isCompleted ? (
-              <View style={styles.activePill}>
-                <MaterialIcons name="check-circle" size={12} color={colors.tertiary} />
-                <Text style={[styles.activePillText, { color: colors.tertiary }]}>DONE</Text>
-              </View>
-            ) : null}
-          </View>
-        </View>
-
-        {/* Quick Status Transition Actions */}
-        {canEdit && <View style={[styles.statusActionsRow, { borderTopColor: colors.outlineVariant }]}><TouchableOpacity disabled={saving} accessibilityLabel="Move task earlier" onPress={() => shiftTask(task,-1)}><MaterialIcons name="arrow-upward" size={18} color={colors.onSurface} /></TouchableOpacity><TouchableOpacity disabled={saving} accessibilityLabel="Move task later" onPress={() => shiftTask(task,1)}><MaterialIcons name="arrow-downward" size={18} color={colors.onSurface} /></TouchableOpacity>
-          {colStatus !== "pending" ? (
-            <TouchableOpacity
-              disabled={saving} onPress={() => perform(() => moveTask(task._id || task.id, "pending"))}
-              style={[styles.transitionBtn, { backgroundColor: colors.surfaceContainerHigh }]}
-            >
-              <Text style={[styles.transitionBtnText, { color: colors.secondary }]}>TO BACKLOG</Text>
-            </TouchableOpacity>
-          ) : null}
-
-          {colStatus !== "in-progress" ? (
-            <TouchableOpacity
-              disabled={saving} onPress={() => perform(() => moveTask(task._id || task.id, "in-progress"))}
-              style={[styles.transitionBtn, { backgroundColor: colors.primary }]}
-            >
-              <Text style={[styles.transitionBtnText, { color: colors.onPrimary }]}>START</Text>
-            </TouchableOpacity>
-          ) : null}
-
-          {colStatus !== "validation" ? (
-            <TouchableOpacity
-              disabled={saving} onPress={() => perform(() => moveTask(task._id || task.id, "validation"))}
-              style={[styles.transitionBtn, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant, borderWidth: 1 }]}
-            >
-              <Text style={[styles.transitionBtnText, { color: colors.onSurfaceVariant }]}>VALIDATE</Text>
-            </TouchableOpacity>
-          ) : null}
-
-          {colStatus !== "completed" ? (
-            <TouchableOpacity
-              disabled={saving} onPress={() => perform(() => moveTask(task._id || task.id, "completed"))}
-              style={[styles.transitionBtn, { backgroundColor: colors.tertiary }]}
-            >
-              <Text style={[styles.transitionBtnText, { color: colors.onTertiary }]}>DEPLOY</Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>}
-      </TouchableOpacity>
-    );
-  };
-
   return (
-    <SafeAreaView edges={["top"]} style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      edges={["top"]}
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <AppHeader title="KANBAN" navigation={navigation} />
-      {actionError ? <Text accessibilityRole="alert" style={{color:colors.error,padding:12}}>{actionError}</Text> : null}
+      {actionError ? (
+        <Text
+          accessibilityRole="alert"
+          style={{ color: colors.error, padding: 12 }}
+        >
+          {actionError}
+        </Text>
+      ) : null}
 
       {/* Board Header matching web KanbanPage.jsx */}
-      <View style={[styles.boardHeader, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
+      <View
+        style={[
+          styles.boardHeader,
+          {
+            backgroundColor: colors.surface,
+            borderBottomColor: colors.outlineVariant,
+          },
+        ]}
+      >
         <View style={styles.boardHeaderTop}>
           <View>
             <View style={styles.pipelineTagRow}>
-              <View style={[styles.pipelineDot, { backgroundColor: colors.primary }]} />
-              <Text style={[styles.pipelineTagText, { color: colors.onSurfaceVariant }]}>
+              <View
+                style={[
+                  styles.pipelineDot,
+                  { backgroundColor: colors.primary },
+                ]}
+              />
+              <Text
+                style={[
+                  styles.pipelineTagText,
+                  { color: colors.onSurfaceVariant },
+                ]}
+              >
                 EXECUTION PIPELINE · REALTIME INTERACTIVE
               </Text>
             </View>
-            <Text style={[styles.boardTitle, { color: colors.onSurface }]}>Kanban Board</Text>
+            <Text style={[styles.boardTitle, { color: colors.onSurface }]}>
+              Kanban Board
+            </Text>
           </View>
 
           {/* New Mandate Button */}
@@ -314,15 +188,30 @@ const KanbanScreen = ({ navigation }) => {
             activeOpacity={0.85}
           >
             <MaterialIcons name="add" size={16} color={colors.onPrimary} />
-            <Text style={[styles.newMandateBtnText, { color: colors.onPrimary }]}>
+            <Text
+              style={[styles.newMandateBtnText, { color: colors.onPrimary }]}
+            >
               New Mandate
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Filter Mandates Search Bar */}
-        <View style={[styles.searchBox, { backgroundColor: colors.surfaceContainerLowest, borderColor: colors.outlineVariant }]}>
-          <MaterialIcons name="search" size={18} color={colors.onSurfaceVariant} style={{ marginRight: 6 }} />
+        <View
+          style={[
+            styles.searchBox,
+            {
+              backgroundColor: colors.surfaceContainerLowest,
+              borderColor: colors.outlineVariant,
+            },
+          ]}
+        >
+          <MaterialIcons
+            name="search"
+            size={18}
+            color={colors.onSurfaceVariant}
+            style={{ marginRight: 6 }}
+          />
           <TextInput
             style={[styles.searchInput, { color: colors.onSurface }]}
             placeholder="Filter mandates..."
@@ -332,15 +221,31 @@ const KanbanScreen = ({ navigation }) => {
           />
           {searchQuery ? (
             <TouchableOpacity onPress={() => setSearchQuery("")}>
-              <MaterialIcons name="close" size={16} color={colors.onSurfaceVariant} />
+              <MaterialIcons
+                name="close"
+                size={16}
+                color={colors.onSurfaceVariant}
+              />
             </TouchableOpacity>
           ) : null}
         </View>
       </View>
 
       {/* Column Switcher Tabs */}
-      <View style={[styles.columnTabsRow, { backgroundColor: colors.surface, borderBottomColor: colors.outlineVariant }]}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScrollContent}>
+      <View
+        style={[
+          styles.columnTabsRow,
+          {
+            backgroundColor: colors.surface,
+            borderBottomColor: colors.outlineVariant,
+          },
+        ]}
+      >
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabsScrollContent}
+        >
           {COLUMNS.map((col, idx) => {
             const count = getColumnTasks(col.status).length;
             const isSelected = activeTab === idx;
@@ -352,8 +257,12 @@ const KanbanScreen = ({ navigation }) => {
                 style={[
                   styles.tabChip,
                   {
-                    backgroundColor: isSelected ? colors.primary : colors.surfaceContainerLow,
-                    borderColor: isSelected ? colors.primary : colors.outlineVariant,
+                    backgroundColor: isSelected
+                      ? colors.primary
+                      : colors.surfaceContainerLow,
+                    borderColor: isSelected
+                      ? colors.primary
+                      : colors.outlineVariant,
                   },
                 ]}
                 activeOpacity={0.8}
@@ -362,7 +271,9 @@ const KanbanScreen = ({ navigation }) => {
                   style={[
                     styles.tabChipText,
                     {
-                      color: isSelected ? colors.onPrimary : colors.onSurfaceVariant,
+                      color: isSelected
+                        ? colors.onPrimary
+                        : colors.onSurfaceVariant,
                       fontWeight: isSelected ? "bold" : "600",
                     },
                   ]}
@@ -391,8 +302,19 @@ const KanbanScreen = ({ navigation }) => {
             <FlatList
               key={col.id}
               data={colTasks}
-              keyExtractor={task=>task._id}
-              renderItem={({item})=>renderCard(item,col.status)}
+              keyExtractor={(task) => task._id}
+              renderItem={({ item }) => (
+                <KanbanTaskCard
+                  task={item}
+                  colStatus={col.status}
+                  navigation={navigation}
+                  canEdit={canEdit}
+                  saving={saving}
+                  shiftTask={shiftTask}
+                  perform={perform}
+                  moveTask={moveTask}
+                />
+              )}
               initialNumToRender={5}
               maxToRenderPerBatch={5}
               windowSize={5}
@@ -407,16 +329,42 @@ const KanbanScreen = ({ navigation }) => {
               }
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={
-                <View style={[styles.emptyColumnBox, { borderColor: colors.outlineVariant }]}>
-                  <MaterialIcons name="add-task" size={28} color={colors.outline} style={{ marginBottom: 6 }} />
-                  <Text style={[styles.emptyColumnTitle, { color: colors.onSurfaceVariant }]}>
+                <View
+                  style={[
+                    styles.emptyColumnBox,
+                    { borderColor: colors.outlineVariant },
+                  ]}
+                >
+                  <MaterialIcons
+                    name="add-task"
+                    size={28}
+                    color={colors.outline}
+                    style={{ marginBottom: 6 }}
+                  />
+                  <Text
+                    style={[
+                      styles.emptyColumnTitle,
+                      { color: colors.onSurfaceVariant },
+                    ]}
+                  >
                     No tasks in {col.title}
                   </Text>
                   <TouchableOpacity
                     onPress={() => navigation.navigate("CreateTask")}
-                    style={[styles.emptyAssignBtn, { backgroundColor: colors.surfaceContainer, borderColor: colors.outlineVariant }]}
+                    style={[
+                      styles.emptyAssignBtn,
+                      {
+                        backgroundColor: colors.surfaceContainer,
+                        borderColor: colors.outlineVariant,
+                      },
+                    ]}
                   >
-                    <Text style={[styles.emptyAssignText, { color: colors.primary }]}>
+                    <Text
+                      style={[
+                        styles.emptyAssignText,
+                        { color: colors.primary },
+                      ]}
+                    >
                       + Create Task
                     </Text>
                   </TouchableOpacity>
@@ -429,236 +377,5 @@ const KanbanScreen = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
-  boardHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    gap: 10,
-  },
-  boardHeaderTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-  },
-  pipelineTagRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 2,
-  },
-  pipelineDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  pipelineTagText: {
-    fontFamily: "JetBrainsMono-Bold",
-    fontSize: 9,
-    letterSpacing: 0.8,
-  },
-  boardTitle: {
-    fontFamily: "HankenGrotesk-Bold",
-    fontSize: 22,
-    letterSpacing: -0.5,
-    textTransform: "uppercase",
-  },
-  newMandateBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 8,
-    gap: 4,
-  },
-  newMandateBtnText: {
-    fontFamily: "JetBrainsMono-Bold",
-    fontSize: 11,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    height: 38,
-  },
-  searchInput: {
-    flex: 1,
-    fontFamily: "HankenGrotesk-Regular",
-    fontSize: 12,
-  },
-  columnTabsRow: {
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-  },
-  tabsScrollContent: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  tabChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 9999,
-    borderWidth: 1,
-  },
-  tabChipText: {
-    fontFamily: "JetBrainsMono-Bold",
-    fontSize: 10,
-    letterSpacing: 0.5,
-  },
-  columnsPager: {
-    flex: 1,
-  },
-  columnScrollContent: {
-    padding: 16,
-    paddingBottom: 48,
-    gap: 12,
-  },
-  taskCard: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 14,
-    gap: 8,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  refCodeText: {
-    fontFamily: "JetBrainsMono-Bold",
-    fontSize: 9,
-    letterSpacing: 0.8,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-  },
-  priorityBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 9999,
-    borderWidth: 1,
-    gap: 4,
-  },
-  priorityDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-  },
-  priorityText: {
-    fontFamily: "JetBrainsMono-Bold",
-    fontSize: 9,
-  },
-  cardTitle: {
-    fontFamily: "JetBrainsMono-Bold",
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  cardDescription: {
-    fontFamily: "HankenGrotesk-Regular",
-    fontSize: 11,
-    lineHeight: 16,
-  },
-  tagsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 4,
-  },
-  tagPill: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-  },
-  tagText: {
-    fontFamily: "JetBrainsMono-Regular",
-    fontSize: 9,
-  },
-  cardFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderTopWidth: 1,
-    paddingTop: 8,
-  },
-  metaLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  dateRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  metaText: {
-    fontFamily: "JetBrainsMono-Regular",
-    fontSize: 10,
-  },
-  activePill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  activeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  activePillText: {
-    fontFamily: "JetBrainsMono-Bold",
-    fontSize: 9,
-  },
-  statusActionsRow: {
-    flexDirection: "row",
-    gap: 6,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    flexWrap: "wrap",
-  },
-  transitionBtn: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-  },
-  transitionBtnText: {
-    fontFamily: "JetBrainsMono-Bold",
-    fontSize: 9,
-    letterSpacing: 0.5,
-  },
-  emptyColumnBox: {
-    padding: 32,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 24,
-  },
-  emptyColumnTitle: {
-    fontFamily: "JetBrainsMono-Bold",
-    fontSize: 11,
-    textTransform: "uppercase",
-  },
-  emptyAssignBtn: {
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  emptyAssignText: {
-    fontFamily: "JetBrainsMono-Bold",
-    fontSize: 10,
-  },
-});
 
 export default KanbanScreen;

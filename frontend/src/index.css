@@ -2,15 +2,37 @@
 @import "./assets/text-fonts.css";
 @config "../tailwind.config.js";
 
+/* Tailwind v4 resolves these max-width names against our spacing tokens.
+   Restore container widths so prose and dialogs do not collapse to 4–96px. */
+@layer utilities {
+  .max-w-xs {
+    max-width: 20rem;
+  }
+  .max-w-sm {
+    max-width: 24rem;
+  }
+  .max-w-md {
+    max-width: 28rem;
+  }
+  .max-w-lg {
+    max-width: 32rem;
+  }
+  .max-w-xl {
+    max-width: 36rem;
+  }
+  .max-w-2xl {
+    max-width: 42rem;
+  }
+}
+
 /* Self-hosted Material Symbols subset. */
 @font-face {
-  font-family: 'Material Symbols Outlined';
+  font-family: "Material Symbols Outlined";
   font-style: normal;
   font-weight: 500;
   font-display: block;
-  src: url('/fonts/material-symbols-8f3a717db160.woff2') format('woff2');
+  src: url("/fonts/material-symbols-8f3a717db160.woff2") format("woff2");
 }
-
 
 /* ─────────────────────────────────────────────────────
    MANDATE — Industrial Design System
@@ -142,7 +164,11 @@
 
   body {
     @apply bg-background text-on-surface antialiased;
-    font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+    font-family:
+      "Hanken Grotesk",
+      system-ui,
+      -apple-system,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -156,7 +182,7 @@
 @layer components {
   /* Material Symbols — slightly heavier for industrial feel */
   .material-symbols-outlined {
-    font-family: 'Material Symbols Outlined';
+    font-family: "Material Symbols Outlined";
     font-weight: 500;
     font-style: normal;
     font-size: 24px;
@@ -167,7 +193,11 @@
     white-space: nowrap;
     direction: ltr;
     -webkit-font-smoothing: antialiased;
-    font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    font-variation-settings:
+      "FILL" 0,
+      "wght" 500,
+      "GRAD" 0,
+      "opsz" 24;
   }
 
   /* Bento Card — refined industrial card */
@@ -175,7 +205,9 @@
     background-color: var(--surface-container-lowest);
     border: 1px solid var(--outline-variant);
     border-radius: 8px;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
   }
   .bento-card:hover {
     border-color: var(--outline);
@@ -287,8 +319,12 @@
 
 /* ── Animations ── */
 @keyframes scan {
-  0% { transform: translateY(-100vh); }
-  100% { transform: translateY(100vh); }
+  0% {
+    transform: translateY(-100vh);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
 }
 
 .scanline {
@@ -312,7 +348,9 @@
   animation: dash 3s ease-in-out forwards;
 }
 @keyframes dash {
-  to { stroke-dashoffset: 0; }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* Progress circle */
@@ -322,10 +360,10 @@
 
 /* Timer glow */
 .timer-glow {
-  filter: drop-shadow(0 0 8px rgba(0,0,0,0.06));
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.06));
 }
 .dark .timer-glow {
-  filter: drop-shadow(0 0 8px rgba(255,255,255,0.04));
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.04));
 }
 
 /* Task detail expand */

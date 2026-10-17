@@ -1,4 +1,4 @@
-import { schemaPolicy, safeUrl } from './schemaPolicy.js';
+import { schemaPolicy } from "./schemaPolicy.js";
 import mongoose from "mongoose";
 
 const workspaceSchema = new mongoose.Schema(
@@ -12,7 +12,7 @@ const workspaceSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: ["personal", "team"],
-      default: "personal"
+      default: "personal",
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
@@ -35,16 +35,21 @@ const workspaceSchema = new mongoose.Schema(
     ],
     integrations: {
       slack: { type: Boolean, default: false },
-      googleCalendar: { type: Boolean, default: false }
-    }
+      googleCalendar: { type: Boolean, default: false },
+    },
   },
-  { timestamps: true, strict: "throw", optimisticConcurrency: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true },
 );
 
 schemaPolicy(workspaceSchema);
 
-workspaceSchema.index({'members.user':1}); workspaceSchema.index({owner:1});
-  workspaceSchema.pre('validate',function(){const ids=this.members.map(m=>String(m.user)); if(new Set(ids).size!==ids.length)this.invalidate('members','Duplicate workspace members');});
-  const Workspace = mongoose.model("Workspace", workspaceSchema);
+workspaceSchema.index({ "members.user": 1 });
+workspaceSchema.index({ owner: 1 });
+workspaceSchema.pre("validate", function () {
+  const ids = this.members.map((m) => String(m.user));
+  if (new Set(ids).size !== ids.length)
+    this.invalidate("members", "Duplicate workspace members");
+});
+const Workspace = mongoose.model("Workspace", workspaceSchema);
 
 export default Workspace;

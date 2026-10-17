@@ -1,3 +1,4 @@
+import BrandLogo from "../../components/common/BrandLogo";
 import { useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../../context/AuthContext";
@@ -11,7 +12,6 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const { register } = useAuth();
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,16 +38,17 @@ const RegisterPage = () => {
           <div className="hidden md:flex md:col-span-6 bg-surface-container-lowest rounded-3xl border border-outline-variant p-8 flex-col justify-between shadow-sm relative overflow-hidden">
             <div className="relative z-10">
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center font-black text-sm">
-                  M
-                </div>
-                <span className="font-mono text-xs font-bold text-on-surface-variant tracking-widest uppercase">MANDATE_OS</span>
+                <BrandLogo size={32} decorative />
+                <span className="font-mono text-xs font-bold text-on-surface-variant tracking-widest uppercase">
+                  MANDATE_OS
+                </span>
               </div>
               <h1 className="font-display-lg text-3xl font-black text-on-surface tracking-tight">
                 Initialize Your Node
               </h1>
               <p className="font-body-md text-xs md:text-sm text-on-surface-variant mt-2 leading-relaxed">
-                Join thousands of high-output engineering teams orchestrating projects and goals in Mandate.
+                Join thousands of high-output engineering teams orchestrating
+                projects and goals in Mandate.
               </p>
             </div>
 
@@ -56,10 +57,16 @@ const RegisterPage = () => {
               <div className="absolute inset-0 opacity-15 bg-[radial-gradient(var(--primary)_1px,transparent_1px)] [background-size:16px_16px]" />
               <div className="relative z-10 flex flex-col items-center gap-3 p-6 text-center">
                 <div className="w-14 h-14 rounded-2xl bg-tertiary-container border border-outline-variant flex items-center justify-center text-on-tertiary-container shadow-sm">
-                  <span className="material-symbols-outlined text-3xl">verified_user</span>
+                  <span className="material-symbols-outlined text-3xl">
+                    verified_user
+                  </span>
                 </div>
-                <span className="font-mono text-xs font-bold text-on-surface uppercase tracking-wider">SECURE ACCOUNT CREATION</span>
-                <span className="text-[11px] font-mono text-on-surface-variant">MULTI-TENANT ISOLATION ACTIVATED</span>
+                <span className="font-mono text-xs font-bold text-on-surface uppercase tracking-wider">
+                  SECURE ACCOUNT CREATION
+                </span>
+                <span className="text-[11px] font-mono text-on-surface-variant">
+                  MULTI-TENANT ISOLATION ACTIVATED
+                </span>
               </div>
             </div>
 
@@ -77,31 +84,46 @@ const RegisterPage = () => {
             {submitted ? (
               <div className="py-6 text-center flex flex-col items-center animate-in fade-in duration-300">
                 <div className="w-16 h-16 rounded-2xl bg-tertiary-container border border-outline-variant text-on-tertiary-container flex items-center justify-center mb-4 shadow-sm">
-                  <span className="material-symbols-outlined text-3xl">mark_email_read</span>
+                  <span className="material-symbols-outlined text-3xl">
+                    mark_email_read
+                  </span>
                 </div>
-                <h2 className="font-headline-lg text-2xl font-bold text-on-surface mb-2">Verify Your Email</h2>
+                <h2 className="font-headline-lg text-2xl font-bold text-on-surface mb-2">
+                  Verify Your Email
+                </h2>
                 <p className="text-xs md:text-sm text-on-surface-variant leading-relaxed mb-6 max-w-sm">
-                  We have dispatched a verification link to <span className="font-mono font-bold text-on-surface">{email}</span>. Click the link to activate your workspace node, then proceed to sign in.
+                  We have dispatched a verification link to{" "}
+                  <span className="font-mono font-bold text-on-surface">
+                    {email}
+                  </span>
+                  . Click the link to activate your workspace node, then proceed
+                  to sign in.
                 </p>
                 <Link
                   to="/login"
                   className="w-full min-h-[44px] text-on-primary bg-primary hover:opacity-90 font-label-caps text-xs font-bold py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                 >
                   Proceed to Sign In
-                  <span className="material-symbols-outlined text-base">arrow_forward</span>
+                  <span className="material-symbols-outlined text-base">
+                    arrow_forward
+                  </span>
                 </Link>
               </div>
             ) : (
               <>
                 <div className="mb-6">
                   <div className="md:hidden flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-primary text-on-primary flex items-center justify-center font-black text-xs">
-                      M
-                    </div>
-                    <span className="font-mono text-xs font-bold text-on-surface-variant tracking-wider">MANDATE</span>
+                    <BrandLogo size={28} decorative />
+                    <span className="font-mono text-xs font-bold text-on-surface-variant tracking-wider">
+                      MANDATE
+                    </span>
                   </div>
-                  <h2 className="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">Create Account</h2>
-                  <p className="font-body-md text-xs md:text-sm text-on-surface-variant mt-1">Fill in your information to join your workspace</p>
+                  <h2 className="font-headline-lg text-2xl font-bold text-on-surface tracking-tight">
+                    Create Account
+                  </h2>
+                  <p className="font-body-md text-xs md:text-sm text-on-surface-variant mt-1">
+                    Fill in your information to join your workspace
+                  </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -167,13 +189,17 @@ const RegisterPage = () => {
                     >
                       {loading ? (
                         <>
-                          <span className="material-symbols-outlined text-base animate-spin">sync</span>
+                          <span className="material-symbols-outlined text-base animate-spin">
+                            sync
+                          </span>
                           PROVISIONING ACCOUNT...
                         </>
                       ) : (
                         <>
                           Create Account
-                          <span className="material-symbols-outlined text-base">arrow_forward</span>
+                          <span className="material-symbols-outlined text-base">
+                            arrow_forward
+                          </span>
                         </>
                       )}
                     </button>
@@ -182,12 +208,19 @@ const RegisterPage = () => {
 
                 <div className="mt-6 pt-5 border-t border-outline-variant/60 flex flex-col gap-3">
                   <div className="flex items-center gap-2.5 p-3 bg-surface-container/60 rounded-xl border border-outline-variant/60 text-xs font-mono text-on-surface-variant">
-                    <span className="material-symbols-outlined text-primary text-base">verified_user</span>
+                    <span className="material-symbols-outlined text-primary text-base">
+                      verified_user
+                    </span>
                     <span>Authentication provided by Firebase</span>
                   </div>
                   <div className="text-center text-xs text-on-surface-variant">
                     Already have an account?{" "}
-                    <Link to="/login" className="text-primary font-bold hover:underline">Sign In</Link>
+                    <Link
+                      to="/login"
+                      className="text-primary font-bold hover:underline"
+                    >
+                      Sign In
+                    </Link>
                   </div>
                 </div>
               </>

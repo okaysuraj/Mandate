@@ -1,32 +1,46 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from "react";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import {
-  X, Calendar, Flag, Folder, Zap,
-  ChevronDown, ChevronUp, Clock, Battery, Sparkles
-} from 'lucide-react';
-import api from '../../lib/axios';
-import toast from 'react-hot-toast';
-import { useWorkspace } from '../../context/WorkspaceContext';
-import { User as UserIcon } from 'lucide-react';
+  X,
+  Calendar,
+  Flag,
+  Zap,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Battery,
+  Sparkles,
+} from "lucide-react";
+import api from "../../lib/axios";
+import toast from "react-hot-toast";
+import { useWorkspace } from "../../context/WorkspaceContext";
+import { User as UserIcon } from "lucide-react";
 
-const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialStatus = 'pending', initialDueDate = '' }) => {
-  const [title, setTitle] = useState('');
-  const [intent, setIntent] = useState('');
-  const [tags, setTags] = useState('');
-  const [dueDate, setDueDate] = useState('');
-  const [priority, setPriority] = useState('medium');
-  const [projectId, setProjectId] = useState('');
-  const [assigneeId, setAssigneeId] = useState('');
+const TaskComposer = ({
+  isOpen,
+  onClose,
+  onTaskCreated,
+  parentTaskId,
+  initialStatus = "pending",
+  initialDueDate = "",
+}) => {
+  const [title, setTitle] = useState("");
+  const [intent, setIntent] = useState("");
+  const [tags, setTags] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [priority, setPriority] = useState("medium");
+  const [projectId, setProjectId] = useState("");
+  const [assigneeId, setAssigneeId] = useState("");
   const [workspaceMembers, setWorkspaceMembers] = useState([]);
 
   const { activeWorkspace } = useWorkspace();
-  const [projects,setProjects]=useState([]);
+  const [projects, setProjects] = useState([]);
 
   // Advanced fields
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [recurrence, setRecurrence] = useState('');
-  const [timeEstimate, setTimeEstimate] = useState('');
-  const [energyLevel, setEnergyLevel] = useState('');
+  const [recurrence, setRecurrence] = useState("");
+  const [timeEstimate, setTimeEstimate] = useState("");
+  const [energyLevel, setEnergyLevel] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
@@ -36,20 +50,41 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
     if (isOpen) {
       setTimeout(() => titleInputRef.current?.focus(), 100);
       // Reset form
-      setTitle('');
-      setIntent('');
-      setTags('');
+      setTitle("");
+      setIntent("");
+      setTags("");
       setDueDate(initialDueDate);
-      setProjectId('');setRecurrence('');setTimeEstimate('');setEnergyLevel('');
-      setPriority('medium');
-      setAssigneeId('');
+      setProjectId("");
+      setRecurrence("");
+      setTimeEstimate("");
+      setEnergyLevel("");
+      setPriority("medium");
+      setAssigneeId("");
       setShowAdvanced(false);
 
       // Fetch members
       if (activeWorkspace?._id) {
-        const controller=new AbortController();
-        Promise.all([api.get('/workspaces/'+activeWorkspace._id+'/members',{signal:controller.signal}),api.get('/projects',{params:{workspaceId:activeWorkspace._id,limit:200},signal:controller.signal})]).then(([members,projects])=>{setWorkspaceMembers(members.data);setProjects(projects.data.data||projects.data);}).catch(err=>{if(!controller.signal.aborted)toast.error(err.response?.data?.message||'Could not load task options');});
-        return()=>controller.abort();
+        const controller = new AbortController();
+        Promise.all([
+          api.get("/workspaces/" + activeWorkspace._id + "/members", {
+            signal: controller.signal,
+          }),
+          api.get("/projects", {
+            params: { workspaceId: activeWorkspace._id, limit: 200 },
+            signal: controller.signal,
+          }),
+        ])
+          .then(([members, projects]) => {
+            setWorkspaceMembers(members.data);
+            setProjects(projects.data.data || projects.data);
+          })
+          .catch((err) => {
+            if (!controller.signal.aborted)
+              toast.error(
+                err.response?.data?.message || "Could not load task options",
+              );
+          });
+        return () => controller.abort();
       }
     }
   }, [isOpen, activeWorkspace?._id, initialDueDate]);
@@ -57,16 +92,16 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
   const handleParse = async () => {
     if (!title.trim()) return;
     setIsParsing(true);
-    toast.loading('AI is parsing your input...', { id: 'parse-toast' });
+    toast.loading("AI is parsing your input...", { id: "parse-toast" });
     try {
-      const { data } = await api.post('/ai/parse-task', { input: title });
+      const { data } = await api.post("/ai/parse-task", { input: title });
       setTitle(data.title || title);
-      if (data.tags?.length > 0) setTags(data.tags.join(', '));
+      if (data.tags?.length > 0) setTags(data.tags.join(", "));
       if (data.priority) setPriority(data.priority);
       if (data.intent) setIntent(data.intent);
-      toast.success('Parsed successfully!', { id: 'parse-toast' });
+      toast.success("Parsed successfully!", { id: "parse-toast" });
     } catch {
-      toast.error('Failed to parse input', { id: 'parse-toast' });
+      toast.error("Failed to parse input", { id: "parse-toast" });
     } finally {
       setIsParsing(false);
     }
@@ -78,7 +113,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
 
     setLoading(true);
     try {
-      const res = await api.post('/tasks', {
+      const res = await api.post("/tasks", {
         title,
         workspaceId: activeWorkspace?._id,
         status: initialStatus,
@@ -91,15 +126,20 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
         energyLevel: energyLevel || undefined,
         parentTaskId: parentTaskId || undefined,
         assigneeId: assigneeId || undefined,
-        tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
+        tags: tags
+          ? tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : undefined,
       });
 
-      toast.success('Mandate registered');
+      toast.success("Mandate registered");
       if (onTaskCreated) onTaskCreated(res.data);
       onClose();
     } catch (error) {
-      console.error('Failed to create task:', error.name);
-      toast.error('Failed to register mandate');
+      console.error("Failed to create task:", error.name);
+      toast.error("Failed to register mandate");
     } finally {
       setLoading(false);
     }
@@ -107,10 +147,10 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
 
   // Keyboard shortcut to submit
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       handleSubmit(e);
     }
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       onClose();
     }
   };
@@ -162,7 +202,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
                 type="text"
                 placeholder="Task title (e.g. Deploy v2.4 to staging #infra p1)"
                 value={title}
-                onChange={e => setTitle(e.target.value)}
+                onChange={(e) => setTitle(e.target.value)}
                 className="w-full bg-transparent text-xl md:text-2xl font-mono font-bold text-on-surface placeholder:text-outline focus:outline-none pr-10 border-b border-outline-variant pb-2"
               />
               <button
@@ -184,7 +224,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
               <textarea
                 placeholder="Detail purpose, expected outcome, or context..."
                 value={intent}
-                onChange={e => setIntent(e.target.value)}
+                onChange={(e) => setIntent(e.target.value)}
                 className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-xs md:text-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary min-h-[70px] resize-y font-body-md transition-colors"
               />
             </div>
@@ -197,51 +237,105 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
                 <input
                   type="date"
                   value={dueDate}
-                  onChange={e => setDueDate(e.target.value)}
+                  onChange={(e) => setDueDate(e.target.value)}
                   className="bg-transparent text-xs font-mono text-on-surface focus:outline-none w-full"
                 />
               </div>
 
               {/* Priority */}
               <div className="flex items-center bg-surface-container-low rounded-xl border border-outline-variant p-2.5">
-                <Flag className={`w-4 h-4 mr-2 flex-shrink-0 ${priority === 'high' ? 'text-error' : priority === 'medium' ? 'text-tertiary' : 'text-on-surface-variant'}`} />
+                <Flag
+                  className={`w-4 h-4 mr-2 flex-shrink-0 ${priority === "high" ? "text-error" : priority === "medium" ? "text-tertiary" : "text-on-surface-variant"}`}
+                />
                 <select
                   value={priority}
-                  onChange={e => setPriority(e.target.value)}
+                  onChange={(e) => setPriority(e.target.value)}
                   className="bg-transparent text-xs font-mono uppercase text-on-surface focus:outline-none w-full cursor-pointer"
                 >
-                  <option value="low" className="bg-surface-container text-on-surface">Low Priority</option>
-                  <option value="medium" className="bg-surface-container text-on-surface">Medium Priority</option>
-                  <option value="high" className="bg-surface-container text-on-surface">High Priority (Urgent)</option>
+                  <option
+                    value="low"
+                    className="bg-surface-container text-on-surface"
+                  >
+                    Low Priority
+                  </option>
+                  <option
+                    value="medium"
+                    className="bg-surface-container text-on-surface"
+                  >
+                    Medium Priority
+                  </option>
+                  <option
+                    value="high"
+                    className="bg-surface-container text-on-surface"
+                  >
+                    High Priority (Urgent)
+                  </option>
                 </select>
               </div>
 
               {/* Tags */}
               <div className="flex items-center bg-surface-container-low rounded-xl border border-outline-variant p-2.5">
-                <span className="text-primary font-mono font-bold mr-2 text-xs">#</span>
+                <span className="text-primary font-mono font-bold mr-2 text-xs">
+                  #
+                </span>
                 <input
                   type="text"
                   placeholder="tags (comma separated)"
                   value={tags}
-                  onChange={e => setTags(e.target.value)}
+                  onChange={(e) => setTags(e.target.value)}
                   className="bg-transparent text-xs font-mono text-on-surface focus:outline-none w-full placeholder:text-on-surface-variant/60"
                 />
               </div>
 
-              <label className="text-xs">Project<select value={projectId} onChange={e=>setProjectId(e.target.value)} className="w-full bg-surface-container p-2"><option value="">None</option>{projects.map(p=><option key={p._id} value={p._id}>{p.name}</option>)}</select></label>
-              <label className="text-xs">Repeat<select value={recurrence} onChange={e=>setRecurrence(e.target.value)} className="w-full bg-surface-container p-2"><option value="">Never</option>{['daily','weekly','monthly'].map(v=><option key={v}>{v}</option>)}</select></label>
+              <label className="text-xs">
+                Project
+                <select
+                  value={projectId}
+                  onChange={(e) => setProjectId(e.target.value)}
+                  className="w-full bg-surface-container p-2"
+                >
+                  <option value="">None</option>
+                  {projects.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs">
+                Repeat
+                <select
+                  value={recurrence}
+                  onChange={(e) => setRecurrence(e.target.value)}
+                  className="w-full bg-surface-container p-2"
+                >
+                  <option value="">Never</option>
+                  {["daily", "weekly", "monthly"].map((v) => (
+                    <option key={v}>{v}</option>
+                  ))}
+                </select>
+              </label>
               {/* Assignee */}
               {workspaceMembers.length > 0 && (
                 <div className="flex items-center bg-surface-container-low rounded-xl border border-outline-variant p-2.5">
                   <UserIcon className="w-4 h-4 text-primary mr-2 flex-shrink-0" />
                   <select
                     value={assigneeId}
-                    onChange={e => setAssigneeId(e.target.value)}
+                    onChange={(e) => setAssigneeId(e.target.value)}
                     className="bg-transparent text-xs font-mono text-on-surface focus:outline-none w-full cursor-pointer"
                   >
-                    <option value="" className="bg-surface-container text-on-surface">Unassigned</option>
-                    {workspaceMembers.map(m => (
-                      <option key={m.user._id} value={m.user._id} className="bg-surface-container text-on-surface">
+                    <option
+                      value=""
+                      className="bg-surface-container text-on-surface"
+                    >
+                      Unassigned
+                    </option>
+                    {workspaceMembers.map((m) => (
+                      <option
+                        key={m.user._id}
+                        value={m.user._id}
+                        className="bg-surface-container text-on-surface"
+                      >
                         {m.user.name} ({m.role})
                       </option>
                     ))}
@@ -256,7 +350,11 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
               onClick={() => setShowAdvanced(!showAdvanced)}
               className="flex items-center text-xs font-mono uppercase font-bold text-on-surface-variant hover:text-primary transition-colors cursor-pointer py-1"
             >
-              {showAdvanced ? <ChevronUp className="w-4 h-4 mr-1" /> : <ChevronDown className="w-4 h-4 mr-1" />}
+              {showAdvanced ? (
+                <ChevronUp className="w-4 h-4 mr-1" />
+              ) : (
+                <ChevronDown className="w-4 h-4 mr-1" />
+              )}
               Additional Parameters
             </button>
 
@@ -265,36 +363,46 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
               {showAdvanced && (
                 <Motion.div
                   initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
+                  animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden space-y-3 pt-1"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="flex items-center text-[10px] font-mono font-bold text-on-surface-variant mb-1 uppercase">
-                        <Clock className="w-3 h-3 mr-1 text-primary" /> Est. Duration (mins)
+                        <Clock className="w-3 h-3 mr-1 text-primary" /> Est.
+                        Duration (mins)
                       </label>
                       <input
                         type="number"
                         value={timeEstimate}
-                        onChange={e => setTimeEstimate(e.target.value)}
+                        onChange={(e) => setTimeEstimate(e.target.value)}
                         placeholder="e.g. 45"
                         className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary transition-colors"
                       />
                     </div>
                     <div>
                       <label className="flex items-center text-[10px] font-mono font-bold text-on-surface-variant mb-1 uppercase">
-                        <Battery className="w-3 h-3 mr-1 text-primary" /> Energy Requirement
+                        <Battery className="w-3 h-3 mr-1 text-primary" /> Energy
+                        Requirement
                       </label>
                       <select
                         value={energyLevel}
-                        onChange={e => setEnergyLevel(e.target.value)}
+                        onChange={(e) => setEnergyLevel(e.target.value)}
                         className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-2.5 text-xs font-mono text-on-surface focus:outline-none focus:border-primary uppercase cursor-pointer transition-colors"
                       >
-                        <option value="" className="bg-surface-container">Any Energy</option>
-                        <option value="high" className="bg-surface-container">High Focus</option>
-                        <option value="medium" className="bg-surface-container">Standard</option>
-                        <option value="low" className="bg-surface-container">Low Routine</option>
+                        <option value="" className="bg-surface-container">
+                          Any Energy
+                        </option>
+                        <option value="high" className="bg-surface-container">
+                          High Focus
+                        </option>
+                        <option value="medium" className="bg-surface-container">
+                          Standard
+                        </option>
+                        <option value="low" className="bg-surface-container">
+                          Low Routine
+                        </option>
                       </select>
                     </div>
                   </div>
@@ -306,8 +414,12 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
           {/* Footer */}
           <div className="flex items-center justify-between p-3 md:p-4 border-t border-outline-variant bg-surface-container flex-shrink-0">
             <div className="text-[11px] text-outline font-mono hidden sm:flex items-center">
-              <span className="border border-outline-variant px-1 mr-1">⌘/Ctrl</span>
-              <span className="border border-outline-variant px-1 mr-1.5">Enter</span>
+              <span className="border border-outline-variant px-1 mr-1">
+                ⌘/Ctrl
+              </span>
+              <span className="border border-outline-variant px-1 mr-1.5">
+                Enter
+              </span>
               to save
             </div>
 
@@ -325,7 +437,7 @@ const TaskComposer = ({ isOpen, onClose, onTaskCreated, parentTaskId, initialSta
                 disabled={loading || !title.trim()}
                 className="px-5 py-2 text-xs font-mono font-bold uppercase tracking-wider bg-primary text-on-primary border border-primary hover:opacity-90 rounded-md transition-opacity disabled:opacity-40 cursor-pointer shadow-sm"
               >
-                {loading ? 'Saving...' : 'Create Task'}
+                {loading ? "Saving..." : "Create Task"}
               </button>
             </div>
           </div>

@@ -1,7 +1,20 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useColorScheme } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { lightColors, darkColors, typography, spacing, borderRadius, fonts } from "../theme";
+import {
+  lightColors,
+  darkColors,
+  typography,
+  spacing,
+  borderRadius,
+  fonts,
+} from "../theme";
 
 const ThemeContext = createContext();
 
@@ -10,7 +23,7 @@ export const useTheme = () => useContext(ThemeContext);
 export const ThemeProvider = ({ children }) => {
   const systemColorScheme = useColorScheme();
   const [themeMode, setThemeMode] = useState("system"); // "light", "dark", "system"
-  
+
   useEffect(() => {
     const loadTheme = async () => {
       try {
@@ -25,34 +38,38 @@ export const ThemeProvider = ({ children }) => {
     loadTheme();
   }, []);
 
-  const isDark = themeMode === "dark" || (themeMode === "system" && systemColorScheme === "dark");
+  const isDark =
+    themeMode === "dark" ||
+    (themeMode === "system" && systemColorScheme === "dark");
   const colors = isDark ? darkColors : lightColors;
 
-  const changeTheme = async (mode) => {
+  const changeTheme = useCallback(async (mode) => {
     setThemeMode(mode);
     try {
       await AsyncStorage.setItem("@theme_mode", mode);
     } catch (error) {
       console.error("Failed to save theme preference", error);
     }
-  };
+  }, []);
 
   const toggleTheme = () => {
     changeTheme(isDark ? "light" : "dark");
   };
 
   return (
-    <ThemeContext.Provider value={{
-      themeMode,
-      isDark,
-      colors,
-      typography,
-      spacing,
-      borderRadius,
-      fonts,
-      changeTheme,
-      toggleTheme
-    }}>
+    <ThemeContext.Provider
+      value={{
+        themeMode,
+        isDark,
+        colors,
+        typography,
+        spacing,
+        borderRadius,
+        fonts,
+        changeTheme,
+        toggleTheme,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

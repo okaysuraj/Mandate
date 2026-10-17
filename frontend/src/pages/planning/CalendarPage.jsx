@@ -1,13 +1,22 @@
-import useVisibleTasks from '../../hooks/useVisibleTasks';
-import React, { useState, useEffect, useMemo } from "react";
+import useVisibleTasks from "../../hooks/useVisibleTasks";
+import { useState, useEffect, useMemo } from "react";
 import AppLayout from "../../components/layout/AppLayout";
 import TaskComposer from "../../components/core/TaskComposer";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router";
 import { useDataStore } from "../../store/useDataStore";
 import {
-  format, startOfMonth, endOfMonth, startOfWeek, endOfWeek,
-  eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  addMonths,
+  subMonths,
+  isToday,
 } from "date-fns";
 
 const CalendarPage = () => {
@@ -18,10 +27,10 @@ const CalendarPage = () => {
 
   const { user } = useAuth();
   const navigate = useNavigate();
-  const storeWorkspaceId = useDataStore(state => state.workspaceId);
+  const storeWorkspaceId = useDataStore((state) => state.workspaceId);
   const tasks = useVisibleTasks();
-  const _Loading = useDataStore(state => state.loading);
-  const loadTasks = useDataStore(state => state.loadTasks);
+  const _Loading = useDataStore((state) => state.loading);
+  const loadTasks = useDataStore((state) => state.loadTasks);
 
   useEffect(() => {
     if (user && storeWorkspaceId) {
@@ -29,7 +38,7 @@ const CalendarPage = () => {
     }
   }, [user, loadTasks, storeWorkspaceId]);
 
-  const safeTasks = useMemo(() => Array.isArray(tasks) ? tasks : [], [tasks]);
+  const safeTasks = useMemo(() => (Array.isArray(tasks) ? tasks : []), [tasks]);
 
   // Compute days for calendar grid (Monday start)
   const daysInGrid = useMemo(() => {
@@ -43,7 +52,7 @@ const CalendarPage = () => {
   // Map tasks to dates
   const tasksByDate = useMemo(() => {
     const map = new Map();
-    safeTasks.forEach(task => {
+    safeTasks.forEach((task) => {
       if (!task.dueDate) return;
       const d = new Date(task.dueDate);
       if (isNaN(d.getTime())) return;
@@ -57,8 +66,8 @@ const CalendarPage = () => {
   const selectedKey = format(selectedDate, "yyyy-MM-dd");
   const selectedDayTasks = tasksByDate.get(selectedKey) || [];
 
-  const handlePrevMonth = () => setCurrentDate(prev => subMonths(prev, 1));
-  const handleNextMonth = () => setCurrentDate(prev => addMonths(prev, 1));
+  const handlePrevMonth = () => setCurrentDate((prev) => subMonths(prev, 1));
+  const handleNextMonth = () => setCurrentDate((prev) => addMonths(prev, 1));
   const handleToday = () => {
     const now = new Date();
     setCurrentDate(now);
@@ -76,34 +85,41 @@ const CalendarPage = () => {
         return {
           pill: "bg-error-container text-error border border-error font-bold",
           dot: "bg-error",
-          label: "CRITICAL"
+          label: "CRITICAL",
         };
       case "high":
         return {
           pill: "bg-surface-container-highest text-primary border border-primary font-bold",
           dot: "bg-primary",
-          label: "HIGH"
+          label: "HIGH",
         };
       case "medium":
         return {
           pill: "bg-tertiary-container text-on-tertiary-container border border-outline-variant font-medium",
           dot: "bg-tertiary",
-          label: "MEDIUM"
+          label: "MEDIUM",
         };
       default:
         return {
           pill: "bg-surface-container text-on-surface-variant border border-outline-variant",
           dot: "bg-outline",
-          label: "ROUTINE"
+          label: "ROUTINE",
         };
     }
   };
 
   // Metrics
   const totalTasksCount = safeTasks.length;
-  const completedCount = safeTasks.filter(t => t.status === "completed").length;
-  const highPriorityCount = safeTasks.filter(t => t.priority === "urgent" || t.priority === "high").length;
-  const completionRate = totalTasksCount > 0 ? Math.round((completedCount / totalTasksCount) * 100) : 0;
+  const completedCount = safeTasks.filter(
+    (t) => t.status === "completed",
+  ).length;
+  const highPriorityCount = safeTasks.filter(
+    (t) => t.priority === "urgent" || t.priority === "high",
+  ).length;
+  const completionRate =
+    totalTasksCount > 0
+      ? Math.round((completedCount / totalTasksCount) * 100)
+      : 0;
 
   return (
     <AppLayout>
@@ -121,7 +137,8 @@ const CalendarPage = () => {
               {format(currentDate, "MMMM yyyy")}
             </h1>
             <p className="text-xs md:text-sm text-on-surface-variant mt-0.5">
-              {safeTasks.length} total directive cycles registered in temporal pipeline.
+              {safeTasks.length} total directive cycles registered in temporal
+              pipeline.
             </p>
           </div>
 
@@ -139,14 +156,18 @@ const CalendarPage = () => {
                 title="Previous Month"
                 className="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors cursor-pointer border-r border-outline-variant"
               >
-                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                <span className="material-symbols-outlined text-[18px]">
+                  chevron_left
+                </span>
               </button>
               <button
                 onClick={handleNextMonth}
                 title="Next Month"
                 className="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                <span className="material-symbols-outlined text-[18px]">
+                  chevron_right
+                </span>
               </button>
             </div>
             <button
@@ -177,7 +198,9 @@ const CalendarPage = () => {
                 <div
                   key={day.full}
                   className={`py-2.5 text-center font-mono text-[11px] font-bold uppercase tracking-wider ${
-                    idx >= 5 ? 'text-on-surface-variant/70 bg-surface-container-high/30' : 'text-on-surface'
+                    idx >= 5
+                      ? "text-on-surface-variant/70 bg-surface-container-high/30"
+                      : "text-on-surface"
                   } border-r border-outline-variant last:border-r-0`}
                 >
                   <span className="hidden sm:inline">{day.full}</span>
@@ -200,26 +223,28 @@ const CalendarPage = () => {
                     key={dayKey}
                     onClick={() => setSelectedDate(day)}
                     className={`min-h-[72px] sm:min-h-[105px] md:min-h-[125px] p-1.5 md:p-2.5 relative group cursor-pointer transition-colors border-r border-b border-outline-variant select-none ${
-                      cellIdx % 7 === 6 ? 'border-r-0' : ''
+                      cellIdx % 7 === 6 ? "border-r-0" : ""
                     } ${
                       !isCurrentMonth
-                        ? 'bg-surface-container-low/40 text-on-surface-variant/40'
+                        ? "bg-surface-container-low/40 text-on-surface-variant/40"
                         : isSelected
-                        ? 'bg-surface-container-high/50 ring-1 ring-inset ring-primary'
-                        : 'bg-surface-container-lowest hover:bg-surface-container-low'
+                          ? "bg-surface-container-high/50 ring-1 ring-inset ring-primary"
+                          : "bg-surface-container-lowest hover:bg-surface-container-low"
                     }`}
                   >
                     {/* Top Row: Date Number and Count */}
                     <div className="flex items-center justify-between mb-1">
-                      <span className={`inline-flex items-center justify-center font-mono text-xs font-bold rounded-full ${
-                        isCurrentToday
-                          ? 'w-6 h-6 bg-primary text-on-primary'
-                          : isSelected
-                          ? 'w-6 h-6 border border-primary text-primary font-bold'
-                          : isCurrentMonth
-                          ? 'text-on-surface'
-                          : 'text-on-surface-variant/40'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center justify-center font-mono text-xs font-bold rounded-full ${
+                          isCurrentToday
+                            ? "w-6 h-6 bg-primary text-on-primary"
+                            : isSelected
+                              ? "w-6 h-6 border border-primary text-primary font-bold"
+                              : isCurrentMonth
+                                ? "text-on-surface"
+                                : "text-on-surface-variant/40"
+                        }`}
+                      >
                         {format(day, "d")}
                       </span>
 
@@ -246,10 +271,14 @@ const CalendarPage = () => {
                               }
                             }}
                             className={`px-1.5 py-0.5 rounded text-[9px] font-mono uppercase truncate flex items-center gap-1 border transition-all ${pri.pill} ${
-                              isDone ? 'line-through opacity-50' : 'hover:border-primary'
+                              isDone
+                                ? "line-through opacity-50"
+                                : "hover:border-primary"
                             }`}
                           >
-                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${pri.dot}`}></span>
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${pri.dot}`}
+                            ></span>
                             <span className="truncate">{t.title}</span>
                           </div>
                         );
@@ -289,7 +318,9 @@ const CalendarPage = () => {
                       title="Schedule directive on this date"
                       className="opacity-0 group-hover:opacity-100 absolute bottom-1.5 right-1.5 w-6 h-6 rounded-md bg-primary text-on-primary hover:opacity-90 flex items-center justify-center transition-all cursor-pointer shadow-sm"
                     >
-                      <span className="material-symbols-outlined text-[14px]">add</span>
+                      <span className="material-symbols-outlined text-[14px]">
+                        add
+                      </span>
                     </button>
                   </div>
                 );
@@ -314,7 +345,9 @@ const CalendarPage = () => {
                   className="w-8 h-8 rounded-lg border border-outline-variant hover:border-primary bg-surface-container-lowest text-on-surface flex items-center justify-center cursor-pointer transition-colors"
                   title="Add Mandate for this Day"
                 >
-                  <span className="material-symbols-outlined text-[18px]">add</span>
+                  <span className="material-symbols-outlined text-[18px]">
+                    add
+                  </span>
                 </button>
               </div>
 
@@ -324,7 +357,10 @@ const CalendarPage = () => {
                     const pri = getPriorityStyle(task.priority);
                     const isDone = task.status === "completed";
                     const idStr = String(task._id || task.id || "0000");
-                    const refCode = idStr.length >= 4 ? idStr.slice(-4).toUpperCase() : idStr.toUpperCase();
+                    const refCode =
+                      idStr.length >= 4
+                        ? idStr.slice(-4).toUpperCase()
+                        : idStr.toUpperCase();
 
                     return (
                       <div
@@ -336,21 +372,25 @@ const CalendarPage = () => {
                         }}
                         className={`p-3.5 rounded-lg border transition-all cursor-pointer ${
                           isDone
-                            ? 'bg-surface-container-low/40 border-outline-variant/40 opacity-70'
-                            : 'bg-surface-container-low hover:bg-surface-container border-outline-variant hover:border-primary'
+                            ? "bg-surface-container-low/40 border-outline-variant/40 opacity-70"
+                            : "bg-surface-container-low hover:bg-surface-container border-outline-variant hover:border-primary"
                         }`}
                       >
                         <div className="flex items-center justify-between gap-1 mb-1.5">
                           <span className="font-mono text-[9px] font-bold text-on-surface-variant tracking-wider bg-surface-container px-1.5 py-0.5 rounded border border-outline-variant">
                             #MND-{refCode}
                           </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase border ${pri.pill}`}>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase border ${pri.pill}`}
+                          >
                             {pri.label}
                           </span>
                         </div>
-                        <h4 className={`font-mono text-xs font-bold text-on-surface line-clamp-1 mb-1 ${
-                          isDone ? 'line-through text-on-surface-variant' : ''
-                        }`}>
+                        <h4
+                          className={`font-mono text-xs font-bold text-on-surface line-clamp-1 mb-1 ${
+                            isDone ? "line-through text-on-surface-variant" : ""
+                          }`}
+                        >
                           {task.title}
                         </h4>
                         {task.description && (
@@ -359,8 +399,12 @@ const CalendarPage = () => {
                           </p>
                         )}
                         <div className="flex items-center justify-between text-[10px] text-on-surface-variant font-mono mt-2 pt-1.5 border-t border-outline-variant">
-                          <span className="uppercase text-[9px] tracking-wider">{task.status || "Pending"}</span>
-                          <span className="material-symbols-outlined text-[13px] text-on-surface-variant">arrow_forward</span>
+                          <span className="uppercase text-[9px] tracking-wider">
+                            {task.status || "Pending"}
+                          </span>
+                          <span className="material-symbols-outlined text-[13px] text-on-surface-variant">
+                            arrow_forward
+                          </span>
                         </div>
                       </div>
                     );
@@ -368,7 +412,9 @@ const CalendarPage = () => {
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-8 text-center text-on-surface-variant">
-                  <span className="material-symbols-outlined text-[32px] text-on-surface-variant/40 mb-2">event_available</span>
+                  <span className="material-symbols-outlined text-[32px] text-on-surface-variant/40 mb-2">
+                    event_available
+                  </span>
                   <p className="font-mono text-xs font-bold uppercase tracking-wider text-on-surface">
                     Horizon Clear
                   </p>
@@ -393,19 +439,27 @@ const CalendarPage = () => {
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-surface-container-low border border-outline-variant">
                   <span className="w-2 h-2 rounded-full bg-error"></span>
-                  <span className="font-mono text-[10px] text-on-surface uppercase">Critical</span>
+                  <span className="font-mono text-[10px] text-on-surface uppercase">
+                    Critical
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-surface-container-low border border-outline-variant">
                   <span className="w-2 h-2 rounded-full bg-primary"></span>
-                  <span className="font-mono text-[10px] text-on-surface uppercase">High</span>
+                  <span className="font-mono text-[10px] text-on-surface uppercase">
+                    High
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-surface-container-low border border-outline-variant">
                   <span className="w-2 h-2 rounded-full bg-tertiary"></span>
-                  <span className="font-mono text-[10px] text-on-surface uppercase">Medium</span>
+                  <span className="font-mono text-[10px] text-on-surface uppercase">
+                    Medium
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-surface-container-low border border-outline-variant">
                   <span className="w-2 h-2 rounded-full bg-surface-container-highest"></span>
-                  <span className="font-mono text-[10px] text-on-surface uppercase">Completed</span>
+                  <span className="font-mono text-[10px] text-on-surface uppercase">
+                    Completed
+                  </span>
                 </div>
               </div>
             </div>
@@ -416,12 +470,16 @@ const CalendarPage = () => {
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
             <div className="flex justify-between items-center mb-2">
-              <span className="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+              <span className="material-symbols-outlined text-primary text-[20px]">
+                calendar_month
+              </span>
               <span className="font-mono text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">
                 Scheduled Volume
               </span>
             </div>
-            <div className="text-2xl md:text-3xl font-black text-on-surface font-mono">{totalTasksCount}</div>
+            <div className="text-2xl md:text-3xl font-black text-on-surface font-mono">
+              {totalTasksCount}
+            </div>
             <p className="text-xs text-on-surface-variant mt-1">
               Total directives tracked in tactical pipeline
             </p>
@@ -429,12 +487,16 @@ const CalendarPage = () => {
 
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
             <div className="flex justify-between items-center mb-2">
-              <span className="material-symbols-outlined text-tertiary text-[20px]">task_alt</span>
+              <span className="material-symbols-outlined text-tertiary text-[20px]">
+                task_alt
+              </span>
               <span className="font-mono text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">
                 Resolution Ratio
               </span>
             </div>
-            <div className="text-2xl md:text-3xl font-black text-on-surface font-mono">{completionRate}%</div>
+            <div className="text-2xl md:text-3xl font-black text-on-surface font-mono">
+              {completionRate}%
+            </div>
             <div className="w-full bg-surface-container-high h-2.5 mt-3 rounded-full overflow-hidden">
               <div
                 className="bg-primary h-full transition-all duration-500 rounded-full"
@@ -445,12 +507,16 @@ const CalendarPage = () => {
 
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
             <div className="flex justify-between items-center mb-2">
-              <span className="material-symbols-outlined text-error text-[20px]">priority_high</span>
+              <span className="material-symbols-outlined text-error text-[20px]">
+                priority_high
+              </span>
               <span className="font-mono text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">
                 Critical Density
               </span>
             </div>
-            <div className="text-2xl md:text-3xl font-black text-error font-mono">{highPriorityCount}</div>
+            <div className="text-2xl md:text-3xl font-black text-error font-mono">
+              {highPriorityCount}
+            </div>
             <p className="text-xs text-on-surface-variant mt-1">
               Directives requiring priority executive focus
             </p>
@@ -464,17 +530,20 @@ const CalendarPage = () => {
           aria-label="Schedule New Directive"
           className="fixed bottom-20 right-4 md:bottom-8 md:right-8 w-12 h-12 md:w-14 md:h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95 z-40 cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[24px]">edit_calendar</span>
+          <span className="material-symbols-outlined text-[24px]">
+            edit_calendar
+          </span>
         </button>
       </div>
 
       {/* Task Composer Modal */}
-      <TaskComposer initialDueDate={composerDueDate}
+      <TaskComposer
+        initialDueDate={composerDueDate}
         isOpen={isComposerOpen}
         onClose={() => setIsComposerOpen(false)}
         onTaskCreated={() => {
           setIsComposerOpen(false);
-          loadTasks({force:true});
+          loadTasks({ force: true });
         }}
       />
     </AppLayout>

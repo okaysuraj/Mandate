@@ -11,9 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+# Local agent and editor files
+.agents/
+.claude/
+.vscode/
 .idea
 .DS_Store
 *.suo
@@ -28,12 +29,7 @@ dist-ssr
 .env.test.local
 .env.production.local
 
-# Playwright
-playwright-report/
-test-results/
-blob-report/
-# Credentials and generated audit bundles
+# Credentials
 .env.*
 *serviceAccount*.json
 *service-account*.json
-dist-audit/

@@ -5,19 +5,11 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "server": "node --watch src/server.js",
-    "client": "npm run dev --prefix ../frontend",
-    "dev:all": "node src/scripts/devServers.js",
     "db:audit": "node src/scripts/databaseAudit.js",
     "db:migrate": "node src/scripts/databaseAudit.js --apply",
-    "db:repair": "node src/scripts/repairDatabase.js",
     "content:publish": "node src/scripts/publishPublicPages.js"
   },
   "type": "module",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "cloudinary": "^2.11.0",
     "cors": "^2.8.5",
@@ -26,7 +18,6 @@
     "express": "^4.18.2",
     "express-rate-limit": "^8.5.2",
     "firebase-admin": "^14.1.0",
-    "mongodb": "^7.4.0",
     "mongoose": "^8.14.3",
     "multer": "^2.2.0",
     "node-cron": "^4.4.1",
@@ -35,5 +26,6 @@
   },
   "engines": {
     "node": ">=22"
-  }
+  },
+  "private": true
 }

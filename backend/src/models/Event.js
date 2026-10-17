@@ -1,4 +1,4 @@
-import { schemaPolicy, safeUrl } from './schemaPolicy.js';
+import { schemaPolicy, safeUrl } from "./schemaPolicy.js";
 import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema(
@@ -44,15 +44,20 @@ const eventSchema = new mongoose.Schema(
       ref: "Workspace",
     },
   },
-  { timestamps: true, strict: "throw", optimisticConcurrency: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true },
 );
 
 eventSchema.index({ workspaceId: 1, startTime: 1 });
 
 schemaPolicy(eventSchema);
 
-eventSchema.path('meetingLink').validate(safeUrl, 'Meeting link must use HTTPS');
-  eventSchema.pre('validate', function() { if (this.endTime <= this.startTime) this.invalidate('endTime', 'Event end must be after start'); });
-  const Event = mongoose.model("Event", eventSchema);
+eventSchema
+  .path("meetingLink")
+  .validate(safeUrl, "Meeting link must use HTTPS");
+eventSchema.pre("validate", function () {
+  if (this.endTime <= this.startTime)
+    this.invalidate("endTime", "Event end must be after start");
+});
+const Event = mongoose.model("Event", eventSchema);
 
 export default Event;

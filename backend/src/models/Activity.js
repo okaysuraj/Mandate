@@ -1,9 +1,13 @@
-import { schemaPolicy, safeUrl } from './schemaPolicy.js';
+import { schemaPolicy } from "./schemaPolicy.js";
 import mongoose from "mongoose";
 
 const activitySchema = new mongoose.Schema(
   {
-    workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: "Workspace", index: true },
+    workspaceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Workspace",
+      index: true,
+    },
     entityType: {
       type: String, // "task", "project", "workspace"
       required: true,
@@ -25,13 +29,13 @@ const activitySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
     },
   },
-  { timestamps: true, strict: "throw" }
+  { timestamps: true, strict: "throw" },
 );
 
 activitySchema.index({ entityId: 1, entityType: 1 });
 activitySchema.index({ userId: 1 });
-activitySchema.index({workspaceId:1,createdAt:-1,_id:-1});
-activitySchema.index({workspaceId:1,entityType:1,createdAt:-1,_id:-1});
+activitySchema.index({ workspaceId: 1, createdAt: -1, _id: -1 });
+activitySchema.index({ workspaceId: 1, entityType: 1, createdAt: -1, _id: -1 });
 
 schemaPolicy(activitySchema);
 

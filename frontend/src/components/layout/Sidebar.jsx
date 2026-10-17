@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 
 const navItems = [
-  {path:"/features",icon:"apps",label:"All features"},
+  { path: "/features", icon: "apps", label: "All features" },
   { path: "/dashboard", icon: "dashboard", label: "Dashboard" },
   { path: "/today", icon: "event_upcoming", label: "Today" },
   { path: "/kanban", icon: "view_kanban", label: "Kanban" },
@@ -17,7 +17,11 @@ const navItems = [
   { path: "/focus-summary", icon: "filter_center_focus", label: "Focus Stats" },
   { path: "/automation-rules", icon: "bolt", label: "Automation" },
   { path: "/billing", icon: "credit_card", label: "Billing" },
-  { path: "/command-palette", icon: "keyboard_command_key", label: "Shortcuts" },
+  {
+    path: "/command-palette",
+    icon: "keyboard_command_key",
+    label: "Shortcuts",
+  },
   { path: "/global-search", icon: "search", label: "Search" },
   { path: "/keyboard-shortcuts", icon: "keyboard", label: "Shortcuts" },
   { path: "/saved-views", icon: "collections_bookmark", label: "Views" },
@@ -37,7 +41,12 @@ const navItems = [
   { path: "/status-center", icon: "monitor_heart", label: "Status" },
 ];
 
-const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onCloseMobile }) => {
+const Sidebar = ({
+  onNewTask,
+  isCollapsed = false,
+  isMobileOpen = false,
+  onCloseMobile,
+}) => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const navRef = useRef(null);
@@ -58,7 +67,10 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
   // Keep active navigation item visible smoothly
   useEffect(() => {
     if (activeItemRef.current) {
-      activeItemRef.current.scrollIntoView({ block: "nearest", behavior: "auto" });
+      activeItemRef.current.scrollIntoView({
+        block: "nearest",
+        behavior: "auto",
+      });
     }
   }, [location.pathname]);
 
@@ -80,15 +92,23 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-9 h-9 rounded-full bg-primary text-on-primary flex items-center justify-center flex-shrink-0 overflow-hidden border border-outline-variant font-mono font-bold text-xs">
             {user?.avatar ? (
-              <img src={user.avatar} alt={user?.name || "User Avatar"} className="w-full h-full object-cover" />
+              <img
+                src={user.avatar}
+                alt={user?.name || "User Avatar"}
+                className="w-full h-full object-cover"
+              />
             ) : (
               <span>{(user?.name || "U").slice(0, 2).toUpperCase()}</span>
             )}
           </div>
           {(!isCollapsed || isMobileView) && (
             <div className="min-w-0">
-              <p className="font-label-caps text-xs text-on-surface font-bold uppercase truncate">{user?.name || "Workspace Member"}</p>
-              <p className="font-mono text-[9px] text-outline uppercase tracking-wider truncate">{user?.email || "Active Member"}</p>
+              <p className="font-label-caps text-xs text-on-surface font-bold uppercase truncate">
+                {user?.name || "Workspace Member"}
+              </p>
+              <p className="font-mono text-[9px] text-outline uppercase tracking-wider truncate">
+                {user?.email || "Active Member"}
+              </p>
             </div>
           )}
         </div>
@@ -105,7 +125,9 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
       </div>
 
       {/* Primary Action Button */}
-      <div className={`p-3 border-b border-outline-variant flex-shrink-0 bg-surface-container-lowest ${isCollapsed && !isMobileView ? "px-1.5" : "px-3"}`}>
+      <div
+        className={`p-3 border-b border-outline-variant flex-shrink-0 bg-surface-container-lowest ${isCollapsed && !isMobileView ? "px-1.5" : "px-3"}`}
+      >
         {isCollapsed && !isMobileView ? (
           <button
             onClick={onNewTask}
@@ -153,9 +175,13 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
                     }`
               }`}
             >
-              <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+              <span className="material-symbols-outlined text-[18px]">
+                {item.icon}
+              </span>
               {(!isCollapsed || isMobileView) && (
-                <span className="font-label-caps uppercase text-xs truncate tracking-wider">{item.label}</span>
+                <span className="font-label-caps uppercase text-xs truncate tracking-wider">
+                  {item.label}
+                </span>
               )}
             </Link>
           );
@@ -168,21 +194,35 @@ const Sidebar = ({ onNewTask, isCollapsed = false, isMobileOpen = false, onClose
           to="/settings"
           title={isCollapsed && !isMobileView ? "Settings" : undefined}
           className={`flex items-center text-on-surface-variant hover:text-on-surface font-medium hover:bg-surface-container-highest transition-all rounded-md border border-transparent hover:border-outline-variant ${
-            isCollapsed && !isMobileView ? "justify-center p-2" : "gap-3 px-3 py-1.5"
+            isCollapsed && !isMobileView
+              ? "justify-center p-2"
+              : "gap-3 px-3 py-1.5"
           }`}
         >
-          <span className="material-symbols-outlined text-[18px]">settings</span>
-          {(!isCollapsed || isMobileView) && <span className="font-label-caps uppercase text-xs tracking-wider">Settings</span>}
+          <span className="material-symbols-outlined text-[18px]">
+            settings
+          </span>
+          {(!isCollapsed || isMobileView) && (
+            <span className="font-label-caps uppercase text-xs tracking-wider">
+              Settings
+            </span>
+          )}
         </Link>
         <button
           onClick={logout}
           title={isCollapsed && !isMobileView ? "Sign Out" : undefined}
           className={`flex items-center text-error hover:bg-error/10 transition-all rounded-md border border-transparent hover:border-error/30 w-full cursor-pointer ${
-            isCollapsed && !isMobileView ? "justify-center p-2" : "gap-3 px-3 py-1.5 text-left"
+            isCollapsed && !isMobileView
+              ? "justify-center p-2"
+              : "gap-3 px-3 py-1.5 text-left"
           }`}
         >
           <span className="material-symbols-outlined text-[18px]">logout</span>
-          {(!isCollapsed || isMobileView) && <span className="font-label-caps uppercase text-xs tracking-wider">Sign Out</span>}
+          {(!isCollapsed || isMobileView) && (
+            <span className="font-label-caps uppercase text-xs tracking-wider">
+              Sign Out
+            </span>
+          )}
         </button>
       </div>
     </div>

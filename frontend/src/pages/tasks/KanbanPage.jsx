@@ -1,5 +1,5 @@
-import useVisibleTasks from '../../hooks/useVisibleTasks';
-import React, { useState, useEffect } from "react";
+import useVisibleTasks from "../../hooks/useVisibleTasks";
+import { useState, useEffect } from "react";
 import AppLayout from "../../components/layout/AppLayout";
 import KanbanBoard from "../../components/core/KanbanBoard";
 import TaskComposer from "../../components/core/TaskComposer";
@@ -7,15 +7,15 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
 import { useDataStore } from "../../store/useDataStore";
-import { deleteTask as apiDeleteTask } from "../../services/taskService";
+import api from "../../lib/axios";
 
 const KanbanPage = () => {
-  const storeWorkspaceId = useDataStore(state => state.workspaceId);
+  const storeWorkspaceId = useDataStore((state) => state.workspaceId);
   const tasks = useVisibleTasks();
-  const loading = useDataStore(state => state.loading);
-  const loadTasks = useDataStore(state => state.loadTasks);
-  const moveTask = useDataStore(state => state.moveTask);
-  const reorderTasks = useDataStore(state => state.reorderTasks);
+  const loading = useDataStore((state) => state.loading);
+  const loadTasks = useDataStore((state) => state.loadTasks);
+  const moveTask = useDataStore((state) => state.moveTask);
+  const reorderTasks = useDataStore((state) => state.reorderTasks);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isComposerOpen, setIsComposerOpen] = useState(false);
@@ -28,8 +28,16 @@ const KanbanPage = () => {
     }
   }, [user, loadTasks, storeWorkspaceId]);
 
-  const handleEdit=task=>navigate('/tasks/'+task._id);
-  const handleDelete=async taskId=>{try{await apiDeleteTask(taskId);await loadTasks({force:true});toast.success('Task deleted');}catch{toast.error('Failed to delete task');}};
+  const handleEdit = (task) => navigate("/tasks/" + task._id);
+  const handleDelete = async (taskId) => {
+    try {
+      await api.delete("/tasks/" + taskId);
+      await loadTasks({ force: true });
+      toast.success("Task deleted");
+    } catch {
+      toast.error("Failed to delete task");
+    }
+  };
 
   const handleStatusChange = async (taskId, newStatus) => {
     try {
@@ -45,9 +53,12 @@ const KanbanPage = () => {
   };
 
   const filteredTasks = searchQuery.trim()
-    ? tasks.filter(t =>
-        (t.title && t.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (t.description && t.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? tasks.filter(
+        (t) =>
+          (t.title &&
+            t.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (t.description &&
+            t.description.toLowerCase().includes(searchQuery.toLowerCase())),
       )
     : tasks;
 
@@ -67,7 +78,8 @@ const KanbanPage = () => {
               Kanban Board
             </h1>
             <p className="text-on-surface-variant text-xs md:text-sm mt-0.5">
-              Strategic directive workflow across development and deployment states.
+              Strategic directive workflow across development and deployment
+              states.
             </p>
           </div>
 
@@ -108,7 +120,9 @@ const KanbanPage = () => {
         {loading && tasks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <p className="font-mono text-xs text-on-surface-variant uppercase tracking-wider">Loading Mandates...</p>
+            <p className="font-mono text-xs text-on-surface-variant uppercase tracking-wider">
+              Loading Mandates...
+            </p>
           </div>
         ) : (
           <div className="w-full">
@@ -125,12 +139,13 @@ const KanbanPage = () => {
       </div>
 
       {/* Task Composer Modal */}
-      <TaskComposer initialStatus={targetStatus}
+      <TaskComposer
+        initialStatus={targetStatus}
         isOpen={isComposerOpen}
         onClose={() => setIsComposerOpen(false)}
         onTaskCreated={() => {
           setIsComposerOpen(false);
-          loadTasks({force:true});
+          loadTasks({ force: true });
         }}
       />
     </AppLayout>

@@ -21,7 +21,16 @@
     "plugins": [
       "expo-font",
       "expo-notifications",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 144,
+          "resizeMode": "contain",
+          "backgroundColor": "#eef2f6"
+        }
+      ]
     ]
   }
 }

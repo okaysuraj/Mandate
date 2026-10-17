@@ -2,6 +2,7 @@ import api from "../../lib/axios";
 import toast from "react-hot-toast";
 import { Link, useLocation } from "react-router";
 import { useAuth } from "../../context/AuthContext";
+import BrandLogo from "../common/BrandLogo";
 import { useState, useEffect, useRef } from "react";
 import NotificationBell from "../common/NotificationBell";
 import GlobalSearchBar from "../common/GlobalSearchBar";
@@ -18,7 +19,9 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
     const syncTheme = () => {
       const isDark =
         localStorage.getItem("theme") === "dark" ||
-        ((!("theme" in localStorage)||localStorage.getItem("theme")==="system") && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        ((!("theme" in localStorage) ||
+          localStorage.getItem("theme") === "system") &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches);
       setIsDarkMode(isDark);
       if (isDark) {
         document.documentElement.classList.add("dark");
@@ -47,7 +50,17 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
   }, []);
 
   const toggleDarkMode = async () => {
-    if(user){try{const {data}=await api.put('/users/profile',{preferences:{theme:isDarkMode?'light':'dark'}});updateUser(data);}catch(error){toast.error(error.response?.data?.message||'Cannot save theme');return;}}
+    if (user) {
+      try {
+        const { data } = await api.put("/users/profile", {
+          preferences: { theme: isDarkMode ? "light" : "dark" },
+        });
+        updateUser(data);
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Cannot save theme");
+        return;
+      }
+    }
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     if (newMode) {
@@ -63,7 +76,8 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
   const isActiveLink = (path) => location.pathname === path;
 
   const linkClass = (path) => {
-    const base = "font-label-caps text-label-caps transition-colors duration-200 uppercase text-xs";
+    const base =
+      "font-label-caps text-label-caps transition-colors duration-200 uppercase text-xs";
     return isActiveLink(path)
       ? `${base} text-primary font-bold border-b-2 border-primary pb-1`
       : `${base} text-on-surface-variant font-medium hover:text-primary`;
@@ -74,13 +88,21 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
     return (
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-8 py-3 bg-surface-container-lowest border-b border-outline-variant/70 shadow-xs">
         <div className="flex items-center gap-6">
-          <Link to="/" className="text-xl md:text-2xl font-black tracking-tight text-primary font-mono uppercase flex items-center gap-2">
-            <span className="w-2.5 h-2.5 bg-primary rounded-sm inline-block"></span>
-            <span>MANDATE</span>
+          <Link
+            to="/"
+            aria-label="Mandate home"
+            className="text-base sm:text-xl md:text-2xl font-black tracking-tight text-primary font-mono uppercase flex items-center gap-2"
+          >
+            <BrandLogo size={36} decorative />
+            <span className="hidden min-[360px]:inline">MANDATE</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/" className={linkClass("/")}>Dashboard</Link>
-            <Link to="/pricing" className={linkClass("/pricing")}>Pricing</Link>
+            <Link to="/" className={linkClass("/")}>
+              Dashboard
+            </Link>
+            <Link to="/pricing" className={linkClass("/pricing")}>
+              Pricing
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-2">
@@ -90,7 +112,7 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
             title="Toggle theme"
           >
             <span className="material-symbols-outlined text-[20px]">
-              {isDarkMode ? 'light_mode' : 'dark_mode'}
+              {isDarkMode ? "light_mode" : "dark_mode"}
             </span>
           </button>
 
@@ -103,25 +125,44 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
                   className="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant hover:border-primary flex items-center justify-center cursor-pointer overflow-hidden"
                 >
                   {user?.avatar ? (
-                    <img src={user.avatar} alt={user?.name || "User Avatar"} className="w-full h-full object-cover" />
+                    <img
+                      src={user.avatar}
+                      alt={user?.name || "User Avatar"}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
-                    <span className="material-symbols-outlined text-on-surface-variant text-[20px]">person</span>
+                    <span className="material-symbols-outlined text-on-surface-variant text-[20px]">
+                      person
+                    </span>
                   )}
                 </button>
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-52 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-2xl z-50 overflow-hidden">
                     <div className="px-3.5 py-2.5 border-b border-outline-variant bg-surface-container">
-                      <p className="font-label-caps text-xs text-primary font-bold truncate">{user.name}</p>
-                      <p className="font-mono text-[10px] text-on-surface-variant truncate">{user.email}</p>
+                      <p className="font-label-caps text-xs text-primary font-bold truncate">
+                        {user.name}
+                      </p>
+                      <p className="font-mono text-[10px] text-on-surface-variant truncate">
+                        {user.email}
+                      </p>
                     </div>
-                    <Link to="/settings" className="block px-3.5 py-2 font-label-caps text-xs text-on-surface hover:bg-surface-container transition-colors uppercase">
+                    <Link
+                      to="/settings"
+                      className="block px-3.5 py-2 font-label-caps text-xs text-on-surface hover:bg-surface-container transition-colors uppercase"
+                    >
                       SETTINGS
                     </Link>
-                    <Link to="/theme-appearance" className="block px-3.5 py-2 font-label-caps text-xs text-on-surface hover:bg-surface-container transition-colors uppercase">
+                    <Link
+                      to="/theme-appearance"
+                      className="block px-3.5 py-2 font-label-caps text-xs text-on-surface hover:bg-surface-container transition-colors uppercase"
+                    >
                       THEME & CONTRAST
                     </Link>
                     <button
-                      onClick={() => { setDropdownOpen(false); logout(); }}
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        logout();
+                      }}
                       className="w-full text-left px-3.5 py-2 font-label-caps text-xs text-error hover:bg-error/10 transition-colors border-t border-outline-variant uppercase cursor-pointer"
                     >
                       SIGN OUT
@@ -132,10 +173,16 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
             </>
           ) : (
             <div className="flex items-center gap-2">
-              <Link to="/login" className="px-3.5 py-2 font-label-caps text-xs text-on-surface-variant hover:text-primary transition-colors uppercase">
+              <Link
+                to="/login"
+                className="px-2 sm:px-3.5 py-2 font-label-caps text-xs text-on-surface-variant hover:text-primary transition-colors uppercase whitespace-nowrap"
+              >
                 LOG IN
               </Link>
-              <Link to="/register" className="mandate-btn-primary px-3.5 py-2 text-xs">
+              <Link
+                to="/register"
+                className="mandate-btn-primary px-2 sm:px-3.5 py-2 text-[10px] sm:text-xs whitespace-nowrap"
+              >
                 GET STARTED
               </Link>
             </div>
@@ -157,8 +204,11 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
         >
           <span className="material-symbols-outlined text-[22px]">menu</span>
         </button>
-        <Link to="/" className="font-mono text-lg md:text-xl font-black tracking-tight text-primary hover:opacity-85 transition-opacity flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 bg-primary rounded-sm inline-block"></span>
+        <Link
+          to="/"
+          className="font-mono text-lg md:text-xl font-black tracking-tight text-primary hover:opacity-85 transition-opacity flex items-center gap-1.5"
+        >
+          <BrandLogo size={36} decorative />
           <span>MANDATE</span>
         </Link>
       </div>
@@ -186,7 +236,7 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
           title="Toggle Theme (Dark / Light)"
         >
           <span className="material-symbols-outlined text-[20px]">
-            {isDarkMode ? 'light_mode' : 'dark_mode'}
+            {isDarkMode ? "light_mode" : "dark_mode"}
           </span>
         </button>
 
@@ -205,7 +255,9 @@ const Navbar = ({ variant = "app", onToggleSidebar }) => {
               onClick={() => setIsMobileSearchOpen(false)}
               className="w-10 h-10 rounded-xl border border-outline-variant text-on-surface hover:border-primary hover:bg-surface-container flex items-center justify-center cursor-pointer flex-shrink-0 transition-colors"
             >
-              <span className="material-symbols-outlined text-[18px]">close</span>
+              <span className="material-symbols-outlined text-[18px]">
+                close
+              </span>
             </button>
           </div>
         </div>

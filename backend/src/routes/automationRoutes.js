@@ -4,12 +4,15 @@ import {
   createAutomation,
   getAutomations,
   updateAutomation,
-  deleteAutomation
+  deleteAutomation,
 } from "../controllers/automationsController.js";
 
 const router = express.Router();
 
 router.route("/").post(protect, createAutomation).get(protect, getAutomations);
-router.route("/:id").put(protect, updateAutomation).delete(protect, deleteAutomation);
+router
+  .route("/:id")
+  .put(protect, updateAutomation)
+  .delete(protect, deleteAutomation);
 
 export default router;

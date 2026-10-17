@@ -3,20 +3,17 @@ import {
   getSuggestions,
   getMandateHistory,
   getDailyMandate,
-  lockDailyMandate
+  lockDailyMandate,
 } from "../controllers/planningController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.route("/suggestions")
-  .get(protect, getSuggestions);
+router.route("/suggestions").get(protect, getSuggestions);
 
-router.route("/daily")
-  .get(protect, getDailyMandate);
+router.route("/daily").get(protect, getDailyMandate);
 
-router.route("/lock")
-  .post(protect, lockDailyMandate);
+router.route("/lock").post(protect, lockDailyMandate);
 
-router.get("/history",protect,getMandateHistory);
+router.get("/history", protect, getMandateHistory);
 export default router;

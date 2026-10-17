@@ -1,4 +1,4 @@
-import { schemaPolicy, safeUrl } from './schemaPolicy.js';
+import { schemaPolicy } from "./schemaPolicy.js";
 import mongoose from "mongoose";
 
 const projectSchema = new mongoose.Schema(
@@ -25,10 +25,10 @@ const projectSchema = new mongoose.Schema(
       default: "active",
     },
   },
-  { timestamps: true, strict: "throw", optimisticConcurrency: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true },
 );
 
-projectSchema.index({workspaceId:1,createdAt:-1});
+projectSchema.index({ workspaceId: 1, createdAt: -1 });
 schemaPolicy(projectSchema);
 
 const Project = mongoose.model("Project", projectSchema);

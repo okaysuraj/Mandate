@@ -1,17 +1,16 @@
 {
   "name": "mandate",
   "version": "1.0.0",
-  "main": "index.js",
   "scripts": {
-    "dev": "npm run dev:all --prefix backend",
+    "brand:generate": "node scripts/generate-brand-assets.cjs",
+    "dev": "node scripts/dev.mjs",
     "build": "npm ci --prefix backend && npm ci --prefix frontend && npm run build --prefix frontend",
-    "start": "npm run start --prefix backend"
+    "start": "npm run start --prefix backend",
+    "mobile": "npm run start --prefix mobile",
+    "lint": "npm run lint --prefix frontend"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "private": true
 }

@@ -1,4 +1,4 @@
-import { schemaPolicy, safeUrl } from './schemaPolicy.js';
+import { schemaPolicy, safeUrl } from "./schemaPolicy.js";
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -31,12 +31,20 @@ const userSchema = new mongoose.Schema(
       default: "UTC",
     },
     preferences: {
-      theme: { type: String, enum: ["light", "dark", "system"], default: "system" },
-      notifications: { type: String, enum: ["light", "normal", "strict"], default: "normal" },
+      theme: {
+        type: String,
+        enum: ["light", "dark", "system"],
+        default: "system",
+      },
+      notifications: {
+        type: String,
+        enum: ["light", "normal", "strict"],
+        default: "normal",
+      },
       workHours: {
         start: { type: String, default: "09:00" },
-        end: { type: String, default: "17:00" }
-      }
+        end: { type: String, default: "17:00" },
+      },
     },
     projects: {
       type: [String],
@@ -69,7 +77,16 @@ const userSchema = new mongoose.Schema(
     },
     subscriptionStatus: {
       type: String,
-      enum: ["active", "past_due", "canceled", "incomplete", "incomplete_expired", "trialing", "unpaid", "none"],
+      enum: [
+        "active",
+        "past_due",
+        "canceled",
+        "incomplete",
+        "incomplete_expired",
+        "trialing",
+        "unpaid",
+        "none",
+      ],
       default: "none",
     },
     subscriptionPlan: {
@@ -78,20 +95,55 @@ const userSchema = new mongoose.Schema(
     },
     expoPushToken: {
       type: String,
-    }
+    },
   },
-  { timestamps: true, strict: "throw", optimisticConcurrency: true }
+  { timestamps: true, strict: "throw", optimisticConcurrency: true },
 );
 
 schemaPolicy(userSchema);
 
-userSchema.path('email').validate(value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), 'Invalid email');
-  userSchema.path('avatar').validate(safeUrl, 'Avatar must be an HTTPS URL');
-  userSchema.path('timezone').validate(value => { try { new Intl.DateTimeFormat('en', {timeZone:value}); return true; } catch { return false; } }, 'Invalid timezone');
-  for(const field of ['preferences.workHours.start','preferences.workHours.end']) userSchema.path(field).validate(value => /^([01]\d|2[0-3]):[0-5]\d$/.test(value), 'Time must be HH:mm');
-  userSchema.path('subscriptionPlan').enum(...['free','pro','team']);
-  userSchema.path('subscriptionStatus').enum(...['active','past_due','canceled','incomplete','incomplete_expired','trialing','unpaid','paused','none']);
-  userSchema.add({sessionsRevokedBefore:{type:Date,default:null}});
+userSchema
+  .path("email")
+  .validate(
+    (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+    "Invalid email",
+  );
+userSchema.path("avatar").validate(safeUrl, "Avatar must be an HTTPS URL");
+userSchema.path("timezone").validate((value) => {
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: value });
+    return true;
+  } catch {
+    return false;
+  }
+}, "Invalid timezone");
+for (const field of [
+  "preferences.workHours.start",
+  "preferences.workHours.end",
+])
+  userSchema
+    .path(field)
+    .validate(
+      (value) => /^([01]\d|2[0-3]):[0-5]\d$/.test(value),
+      "Time must be HH:mm",
+    );
+userSchema.path("subscriptionPlan").enum(...["free", "pro", "team"]);
+userSchema
+  .path("subscriptionStatus")
+  .enum(
+    ...[
+      "active",
+      "past_due",
+      "canceled",
+      "incomplete",
+      "incomplete_expired",
+      "trialing",
+      "unpaid",
+      "paused",
+      "none",
+    ],
+  );
+userSchema.add({ sessionsRevokedBefore: { type: Date, default: null } });
 const User = mongoose.model("User", userSchema);
 
 export default User;

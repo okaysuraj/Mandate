@@ -1,4 +1,4 @@
-import { schemaPolicy, safeUrl } from './schemaPolicy.js';
+import { schemaPolicy } from "./schemaPolicy.js";
 import mongoose from "mongoose";
 
 const commentSchema = new mongoose.Schema(
@@ -20,7 +20,7 @@ const commentSchema = new mongoose.Schema(
       maxlength: 10000,
     },
   },
-  { timestamps: true, strict: "throw" }
+  { timestamps: true, strict: "throw" },
 );
 
 commentSchema.index({ taskId: 1, createdAt: -1 });

@@ -1,7 +1,5 @@
 import { Link, useLocation } from "react-router";
 
-
-
 const BottomNav = ({ onOpenMenu, onNewTask }) => {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
@@ -21,7 +19,9 @@ const BottomNav = ({ onOpenMenu, onNewTask }) => {
           <span className="absolute top-0 w-8 h-0.5 bg-primary rounded-full" />
         )}
         <span className="material-symbols-outlined text-[20px]">dashboard</span>
-        <span className="text-[9px] font-mono uppercase tracking-wider mt-0.5">Dashboard</span>
+        <span className="text-[9px] font-mono uppercase tracking-wider mt-0.5">
+          Dashboard
+        </span>
       </Link>
 
       {/* Today */}
@@ -36,8 +36,12 @@ const BottomNav = ({ onOpenMenu, onNewTask }) => {
         {isActive("/today") && (
           <span className="absolute top-0 w-8 h-0.5 bg-primary rounded-full" />
         )}
-        <span className="material-symbols-outlined text-[20px]">event_upcoming</span>
-        <span className="text-[9px] font-mono uppercase tracking-wider mt-0.5">Today</span>
+        <span className="material-symbols-outlined text-[20px]">
+          event_upcoming
+        </span>
+        <span className="text-[9px] font-mono uppercase tracking-wider mt-0.5">
+          Today
+        </span>
       </Link>
 
       {/* Quick Add Task Button */}
@@ -65,8 +69,12 @@ const BottomNav = ({ onOpenMenu, onNewTask }) => {
         {isActive("/kanban") && (
           <span className="absolute top-0 w-8 h-0.5 bg-primary rounded-full" />
         )}
-        <span className="material-symbols-outlined text-[20px]">view_kanban</span>
-        <span className="text-[9px] font-mono uppercase tracking-wider mt-0.5">Kanban</span>
+        <span className="material-symbols-outlined text-[20px]">
+          view_kanban
+        </span>
+        <span className="text-[9px] font-mono uppercase tracking-wider mt-0.5">
+          Kanban
+        </span>
       </Link>
 
       {/* Menu / All Tools button */}
@@ -76,7 +84,9 @@ const BottomNav = ({ onOpenMenu, onNewTask }) => {
         title="All Sections"
       >
         <span className="material-symbols-outlined text-[20px]">grid_view</span>
-        <span className="text-[9px] font-mono uppercase tracking-wider mt-0.5">Menu</span>
+        <span className="text-[9px] font-mono uppercase tracking-wider mt-0.5">
+          Menu
+        </span>
       </button>
     </nav>
   );

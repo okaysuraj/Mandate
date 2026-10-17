@@ -1,10 +1,17 @@
 import express from "express";
-import { getNotifications, markAsRead, deleteNotification, clearAllNotifications, markOneAsRead } from "../controllers/notificationController.js";
+import {
+  getNotifications,
+  markAsRead,
+  deleteNotification,
+  clearAllNotifications,
+  markOneAsRead,
+} from "../controllers/notificationController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.route("/")
+router
+  .route("/")
   .get(protect, getNotifications)
   .delete(protect, clearAllNotifications);
 
